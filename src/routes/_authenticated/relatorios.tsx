@@ -109,6 +109,22 @@ function ReportsPage() {
         <CardContent className="flex flex-wrap items-end gap-4 p-4">
           <div className="space-y-1"><Label>De</Label><Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} /></div>
           <div className="space-y-1"><Label>Até</Label><Input type="date" value={to} onChange={(e) => setTo(e.target.value)} /></div>
+          <div className="flex gap-2">
+            <Button type="button" size="sm" variant="ghost" onClick={() => {
+              const n = new Date();
+              setFrom(new Date(n.getFullYear(), n.getMonth(), 1).toISOString().slice(0, 10));
+              setTo(new Date(n.getFullYear(), n.getMonth() + 1, 0).toISOString().slice(0, 10));
+            }}>Mês atual</Button>
+            <Button type="button" size="sm" variant="ghost" onClick={() => {
+              const n = new Date();
+              setFrom(new Date(n.getFullYear(), n.getMonth() - 1, 1).toISOString().slice(0, 10));
+              setTo(new Date(n.getFullYear(), n.getMonth(), 0).toISOString().slice(0, 10));
+            }}>Mês anterior</Button>
+            <Button type="button" size="sm" variant="ghost" onClick={() => {
+              const y = new Date().getFullYear();
+              setFrom(`${y}-01-01`); setTo(`${y}-12-31`);
+            }}>Ano</Button>
+          </div>
           <Button onClick={exportCSV} variant="outline" className="ml-auto" disabled={!data || data.rows.length === 0}>
             <Download className="h-4 w-4" /> Exportar CSV
           </Button>
@@ -116,11 +132,11 @@ function ReportsPage() {
       </Card>
 
       <div className="grid gap-4 sm:grid-cols-3">
-        <Card><CardHeader><CardTitle className="text-sm text-muted-foreground">Receitas</CardTitle></CardHeader>
+        <Card><CardHeader><CardTitle className="text-sm text-muted-foreground">Receita bruta</CardTitle></CardHeader>
           <CardContent><div className="text-2xl font-bold text-success">{formatBRL(data?.receitas ?? 0)}</div></CardContent></Card>
         <Card><CardHeader><CardTitle className="text-sm text-muted-foreground">Despesas</CardTitle></CardHeader>
           <CardContent><div className="text-2xl font-bold text-destructive">{formatBRL(data?.despesas ?? 0)}</div></CardContent></Card>
-        <Card><CardHeader><CardTitle className="text-sm text-muted-foreground">Saldo</CardTitle></CardHeader>
+        <Card><CardHeader><CardTitle className="text-sm text-muted-foreground">Lucro líquido</CardTitle></CardHeader>
           <CardContent><div className={"text-2xl font-bold " + (saldo >= 0 ? "text-success" : "text-destructive")}>{formatBRL(saldo)}</div></CardContent></Card>
       </div>
 

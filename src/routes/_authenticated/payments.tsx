@@ -1,11 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, CheckCircle2, Send, ExternalLink } from "lucide-react";
+import { Plus, Pencil, Trash2, CheckCircle2, Send, ExternalLink, MailCheck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { createAsaasChargeForPayment } from "@/lib/asaas.functions";
 import { Button } from "@/components/ui/button";
@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -44,7 +44,8 @@ type Payment = FormValues & {
   id: string;
   asaas_payment_id?: string | null;
   asaas_invoice_url?: string | null;
-  contract?: { property?: { nickname: string }; tenant?: { full_name: string } };
+  charge_sent_at?: string | null;
+  contract?: { property_id?: string; property?: { nickname: string }; tenant?: { full_name: string } };
 };
 
 function statusOf(p: Payment): string {
@@ -56,22 +57,61 @@ const VARIANT: Record<string, "default" | "secondary" | "destructive" | "outline
   pago: "default", pendente: "outline", atrasado: "destructive", cancelado: "secondary",
 };
 
+const MONTHS_PT = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+
 function PaymentsPage() {
   const qc = useQueryClient();
   const [editing, setEditing] = useState<Payment | null>(null);
   const [open, setOpen] = useState(false);
+
+  const now = new Date();
+  const [fMonth, setFMonth] = useState<string>(String(now.getMonth() + 1)); // 1-12 or "all"
+  const [fYear, setFYear] = useState<string>(String(now.getFullYear()));
+  const [fStatus, setFStatus] = useState<string>("all");
+  const [fProperty, setFProperty] = useState<string>("all");
+
+  const { data: properties = [] } = useQuery({
+    queryKey: ["payments-properties"],
+    queryFn: async () => (await supabase.from("properties").select("id,nickname").order("nickname")).data ?? [],
+  });
 
   const { data = [], isLoading } = useQuery({
     queryKey: ["payments"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("payments")
-        .select("*, contract:contracts(property:properties(nickname), tenant:tenants(full_name))")
+        .select("*, contract:contracts(property_id, property:properties(nickname), tenant:tenants(full_name))")
         .order("due_date", { ascending: false });
       if (error) throw error;
       return data as unknown as Payment[];
     },
   });
+
+  const filtered = useMemo(() => data.filter((p) => {
+    const d = p.due_date;
+    if (fYear !== "all" && d.slice(0, 4) !== fYear) return false;
+    if (fMonth !== "all" && d.slice(5, 7) !== String(fMonth).padStart(2, "0")) return false;
+    if (fStatus !== "all" && statusOf(p) !== fStatus) return false;
+    if (fProperty !== "all" && p.contract?.property_id !== fProperty) return false;
+    return true;
+  }), [data, fYear, fMonth, fStatus, fProperty]);
+
+  const summary = useMemo(() => {
+    let previsto = 0, recebido = 0, atrasado = 0;
+    for (const p of filtered) {
+      if (p.status === "cancelado") continue;
+      previsto += Number(p.amount || 0);
+      if (p.status === "pago") recebido += Number(p.paid_amount || p.amount || 0);
+      else if (p.due_date < todayISO()) atrasado += Number(p.amount || 0);
+    }
+    return { previsto, recebido, atrasado };
+  }, [filtered]);
+
+  const years = useMemo(() => {
+    const ys = new Set<string>([String(now.getFullYear())]);
+    data.forEach((p) => ys.add(p.due_date.slice(0, 4)));
+    return Array.from(ys).sort().reverse();
+  }, [data, now]);
 
   const del = useMutation({
     mutationFn: async (id: string) => {
@@ -96,7 +136,12 @@ function PaymentsPage() {
   });
 
   const sendCharge = useMutation({
-    mutationFn: async (id: string) => createAsaasChargeForPayment({ data: { paymentId: id } }),
+    mutationFn: async (id: string) => {
+      const r = await createAsaasChargeForPayment({ data: { paymentId: id } });
+      // marca data de envio
+      await supabase.from("payments").update({ charge_sent_at: new Date().toISOString() }).eq("id", id);
+      return r;
+    },
     onSuccess: (r) => {
       qc.invalidateQueries({ queryKey: ["payments"] });
       toast.success(r.reused ? "Cobrança já existente no ASAAS" : "Cobrança gerada no ASAAS");
@@ -110,26 +155,81 @@ function PaymentsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Pagamentos</h1>
-          <p className="text-sm text-muted-foreground">{data.length} lançamento(s)</p>
+          <p className="text-sm text-muted-foreground">{filtered.length} de {data.length} lançamento(s)</p>
         </div>
         <Button onClick={() => { setEditing(null); setOpen(true); }}><Plus className="h-4 w-4" /> Novo pagamento</Button>
       </div>
 
+      <div className="grid gap-3 sm:grid-cols-3">
+        <Card><CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground">Previsto</CardTitle></CardHeader>
+          <CardContent><div className="text-2xl font-bold">{formatBRL(summary.previsto)}</div></CardContent></Card>
+        <Card><CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground">Recebido</CardTitle></CardHeader>
+          <CardContent><div className="text-2xl font-bold text-success">{formatBRL(summary.recebido)}</div></CardContent></Card>
+        <Card><CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground">Atrasado</CardTitle></CardHeader>
+          <CardContent><div className="text-2xl font-bold text-destructive">{formatBRL(summary.atrasado)}</div></CardContent></Card>
+      </div>
+
+      <Card>
+        <CardContent className="flex flex-wrap items-end gap-3 p-4">
+          <div className="space-y-1">
+            <Label className="text-xs">Mês</Label>
+            <Select value={fMonth} onValueChange={setFMonth}>
+              <SelectTrigger className="w-[140px]"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos</SelectItem>
+                {MONTHS_PT.map((m, i) => <SelectItem key={i} value={String(i + 1)}>{m}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1">
+            <Label className="text-xs">Ano</Label>
+            <Select value={fYear} onValueChange={setFYear}>
+              <SelectTrigger className="w-[110px]"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos</SelectItem>
+                {years.map((y) => <SelectItem key={y} value={y}>{y}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1">
+            <Label className="text-xs">Status</Label>
+            <Select value={fStatus} onValueChange={setFStatus}>
+              <SelectTrigger className="w-[140px]"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos</SelectItem>
+                {STATUSES.map((s) => <SelectItem key={s} value={s} className="capitalize">{s}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1">
+            <Label className="text-xs">Imóvel</Label>
+            <Select value={fProperty} onValueChange={setFProperty}>
+              <SelectTrigger className="w-[200px]"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos</SelectItem>
+                {properties.map((p) => <SelectItem key={p.id} value={p.id}>{p.nickname}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+        </CardContent>
+      </Card>
+
       <Card>
         <CardContent className="p-0">
           {isLoading ? <p className="p-6 text-muted-foreground">Carregando...</p>
-          : data.length === 0 ? <p className="p-6 text-center text-muted-foreground">Nenhum pagamento lançado.</p>
+          : filtered.length === 0 ? <p className="p-6 text-center text-muted-foreground">Nenhum pagamento no filtro.</p>
           : (
             <Table>
               <TableHeader><TableRow>
                 <TableHead>Imóvel / Inquilino</TableHead><TableHead>Referência</TableHead>
                 <TableHead>Vencimento</TableHead><TableHead>Valor</TableHead>
                 <TableHead>Pago em</TableHead><TableHead>Status</TableHead>
-                <TableHead className="w-[140px]">Ações</TableHead>
+                <TableHead className="w-[170px]">Ações</TableHead>
               </TableRow></TableHeader>
               <TableBody>
-                {data.map((p) => {
+                {filtered.map((p) => {
                   const s = statusOf(p);
+                  const sent = !!(p.asaas_payment_id || p.charge_sent_at);
                   return (
                     <TableRow key={p.id}>
                       <TableCell>
@@ -140,7 +240,16 @@ function PaymentsPage() {
                       <TableCell>{formatDate(p.due_date)}</TableCell>
                       <TableCell>{formatBRL(p.amount)}</TableCell>
                       <TableCell>{p.paid_date ? formatDate(p.paid_date) : "—"}</TableCell>
-                      <TableCell><Badge variant={VARIANT[s]} className="capitalize">{s}</Badge></TableCell>
+                      <TableCell>
+                        <div className="flex flex-col gap-1">
+                          <Badge variant={VARIANT[s]} className="capitalize w-fit">{s}</Badge>
+                          {sent && (
+                            <Badge variant="secondary" className="w-fit gap-1 text-[10px]">
+                              <MailCheck className="h-3 w-3" /> Cobrança enviada
+                            </Badge>
+                          )}
+                        </div>
+                      </TableCell>
                       <TableCell>
                         <div className="flex gap-1">
                           {s !== "pago" && s !== "cancelado" && (

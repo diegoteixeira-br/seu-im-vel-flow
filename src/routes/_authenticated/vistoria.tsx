@@ -1,8 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Plus, Trash2, Upload, FileDown, ImageIcon } from "lucide-react";
+import { Plus, Trash2, Upload, FileDown, ImageIcon, ChevronDown } from "lucide-react";
 import jsPDF from "jspdf";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import {
   PHOTO_BUCKET,
   PHOTO_CATEGORIES,
@@ -45,6 +46,11 @@ type InspectionPhoto = {
   storage_path: string;
   category: PhotoCategory;
   notes: string | null;
+};
+type PropertyPhoto = {
+  id: string;
+  storage_path: string;
+  category: PhotoCategory;
 };
 
 function VistoriaPage() {
@@ -200,6 +206,8 @@ function VistoriaPage() {
             </div>
           </div>
 
+          {propertyId && <PropertyPhotoReference propertyId={propertyId} />}
+
           <div className="space-y-1">
             <Label>Observações gerais</Label>
             <Textarea rows={3} value={generalNotes} onChange={(e) => setGeneralNotes(e.target.value)} />
@@ -268,6 +276,57 @@ function VistoriaPage() {
 
       <InspectionHistory propertyId={propertyId} properties={properties} />
     </div>
+  );
+}
+
+function PropertyPhotoReference({ propertyId }: { propertyId: string }) {
+  const [open, setOpen] = useState(true);
+  const [urls, setUrls] = useState<Record<string, string>>({});
+
+  const { data: photos = [] } = useQuery({
+    queryKey: ["property-photos-ref", propertyId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("property_photos")
+        .select("id, storage_path, category")
+        .eq("property_id", propertyId);
+      if (error) throw error;
+      return data as PropertyPhoto[];
+    },
+  });
+
+  useEffect(() => {
+    if (photos.length === 0) { setUrls({}); return; }
+    getSignedUrls(photos.map((p) => p.storage_path)).then(setUrls).catch(() => setUrls({}));
+  }, [photos]);
+
+  if (photos.length === 0) return null;
+
+  return (
+    <Collapsible open={open} onOpenChange={setOpen} className="rounded-md border bg-muted/30">
+      <CollapsibleTrigger asChild>
+        <button type="button" className="flex w-full items-center justify-between p-3 text-sm font-medium">
+          <span className="flex items-center gap-2"><ImageIcon className="h-4 w-4" /> Fotos do imóvel (referência) — {photos.length}</span>
+          <ChevronDown className={`h-4 w-4 transition-transform ${open ? "rotate-180" : ""}`} />
+        </button>
+      </CollapsibleTrigger>
+      <CollapsibleContent className="px-3 pb-3">
+        <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
+          {photos.map((p) => (
+            <div key={p.id} className="space-y-1">
+              <div className="aspect-square overflow-hidden rounded-md bg-background">
+                {urls[p.storage_path] ? (
+                  <img src={urls[p.storage_path]} alt="" className="h-full w-full object-cover" />
+                ) : (
+                  <div className="flex h-full items-center justify-center text-muted-foreground"><ImageIcon className="h-5 w-5" /></div>
+                )}
+              </div>
+              <p className="truncate text-[10px] text-muted-foreground">{CATEGORY_LABEL[p.category] ?? p.category}</p>
+            </div>
+          ))}
+        </div>
+      </CollapsibleContent>
+    </Collapsible>
   );
 }
 

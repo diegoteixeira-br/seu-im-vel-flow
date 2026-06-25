@@ -1,14 +1,17 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
+import { PlayCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
@@ -34,11 +37,15 @@ const schema = z.object({
   pix_key: z.string().max(200).optional().or(z.literal("")),
   asaas_api_key: z.string().max(500).optional().or(z.literal("")),
   asaas_environment: z.enum(["sandbox", "production"]),
+  auto_charge_enabled: z.boolean(),
+  auto_charge_days_before: z.coerce.number().int().min(1).max(15),
+  auto_charge_message: z.string().max(500).optional().or(z.literal("")),
 });
 type Values = z.infer<typeof schema>;
 
 function ConfigPage() {
   const qc = useQueryClient();
+  const [testing, setTesting] = useState(false);
 
   const { data, isLoading } = useQuery({
     queryKey: ["profile", "me"],
@@ -47,7 +54,7 @@ function ConfigPage() {
       if (!u.user) throw new Error("Sem sessão");
       const { data, error } = await supabase.from("profiles").select("*").eq("id", u.user.id).maybeSingle();
       if (error) throw error;
-      return { profile: data, email: u.user.email ?? "" };
+      return { profile: data, email: u.user.email ?? "", userId: u.user.id };
     },
   });
 
@@ -59,29 +66,33 @@ function ConfigPage() {
       address_city: "", address_uf: "", address_zip: "",
       bank_name: "", bank_agency: "", bank_account: "", pix_key: "",
       asaas_api_key: "", asaas_environment: "sandbox",
+      auto_charge_enabled: false, auto_charge_days_before: 3, auto_charge_message: "",
     },
   });
 
   useEffect(() => {
     if (!data) return;
-    const p = (data.profile ?? {}) as Partial<Values>;
+    const p = (data.profile ?? {}) as Partial<Values> & Record<string, unknown>;
     form.reset({
-      full_name: p.full_name ?? "",
-      phone: p.phone ?? "",
-      cpf: p.cpf ?? "",
-      email: p.email ?? data.email ?? "",
-      address_street: p.address_street ?? "",
-      address_number: p.address_number ?? "",
-      address_neighborhood: p.address_neighborhood ?? "",
-      address_city: p.address_city ?? "",
-      address_uf: p.address_uf ?? "",
-      address_zip: p.address_zip ?? "",
-      bank_name: p.bank_name ?? "",
-      bank_agency: p.bank_agency ?? "",
-      bank_account: p.bank_account ?? "",
-      pix_key: p.pix_key ?? "",
-      asaas_api_key: p.asaas_api_key ?? "",
-      asaas_environment: (p.asaas_environment as Values["asaas_environment"]) ?? "sandbox",
+      full_name: (p.full_name as string) ?? "",
+      phone: (p.phone as string) ?? "",
+      cpf: (p.cpf as string) ?? "",
+      email: (p.email as string) ?? data.email ?? "",
+      address_street: (p.address_street as string) ?? "",
+      address_number: (p.address_number as string) ?? "",
+      address_neighborhood: (p.address_neighborhood as string) ?? "",
+      address_city: (p.address_city as string) ?? "",
+      address_uf: (p.address_uf as string) ?? "",
+      address_zip: (p.address_zip as string) ?? "",
+      bank_name: (p.bank_name as string) ?? "",
+      bank_agency: (p.bank_agency as string) ?? "",
+      bank_account: (p.bank_account as string) ?? "",
+      pix_key: (p.pix_key as string) ?? "",
+      asaas_api_key: (p.asaas_api_key as string) ?? "",
+      asaas_environment: ((p.asaas_environment as Values["asaas_environment"]) ?? "sandbox"),
+      auto_charge_enabled: Boolean(p.auto_charge_enabled),
+      auto_charge_days_before: Number(p.auto_charge_days_before ?? 3),
+      auto_charge_message: (p.auto_charge_message as string) ?? "",
     });
   }, [data, form]);
 
@@ -89,9 +100,11 @@ function ConfigPage() {
     mutationFn: async (v: Values) => {
       const { data: u } = await supabase.auth.getUser();
       if (!u.user) throw new Error("Sessão expirada");
-      const payload: Record<string, string | null> = Object.fromEntries(
-        Object.entries(v).map(([k, val]) => [k, val === "" || val == null ? null : String(val)]),
-      );
+      const payload: Record<string, unknown> = {};
+      for (const [k, val] of Object.entries(v)) {
+        if (typeof val === "boolean" || typeof val === "number") payload[k] = val;
+        else payload[k] = val === "" || val == null ? null : String(val);
+      }
       const { error } = await supabase.from("profiles").update(payload as never).eq("id", u.user.id);
       if (error) throw error;
     },
@@ -101,6 +114,24 @@ function ConfigPage() {
     },
     onError: (e: Error) => toast.error(e.message),
   });
+
+  const testSend = async () => {
+    if (!data?.userId) return;
+    setTesting(true);
+    try {
+      const { data: res, error } = await supabase.functions.invoke("send-charges", {
+        body: { user_id: data.userId },
+      });
+      if (error) throw error;
+      const r = res as { created?: number; failed?: number; results?: Array<{ checked?: number }> };
+      const checked = r.results?.[0]?.checked ?? 0;
+      toast.success(`Teste concluído — ${checked} pagamento(s) elegível(is), ${r.created ?? 0} cobrança(s) criada(s), ${r.failed ?? 0} falha(s)`);
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setTesting(false);
+    }
+  };
 
   if (isLoading) return <p className="text-muted-foreground">Carregando...</p>;
 
@@ -167,6 +198,54 @@ function ConfigPage() {
                 </SelectContent>
               </Select>
             </Field>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Automação de cobranças</CardTitle>
+            <CardDescription>
+              Quando ativada, o sistema verifica diariamente os pagamentos pendentes e gera a cobrança no ASAAS X dias antes do vencimento.
+              O ASAAS envia o boleto e PIX por e-mail diretamente ao inquilino.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="grid gap-4 sm:grid-cols-2">
+            <div className="flex items-center justify-between rounded-md border p-3 sm:col-span-2">
+              <div>
+                <p className="text-sm font-medium">Enviar cobranças automaticamente</p>
+                <p className="text-xs text-muted-foreground">Requer chave ASAAS configurada acima.</p>
+              </div>
+              <Switch
+                checked={form.watch("auto_charge_enabled")}
+                onCheckedChange={(b) => form.setValue("auto_charge_enabled", b)}
+              />
+            </div>
+            <Field label="Dias antes do vencimento">
+              <Select
+                value={String(form.watch("auto_charge_days_before"))}
+                onValueChange={(v) => form.setValue("auto_charge_days_before", Number(v))}
+              >
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {[1, 2, 3, 5, 7].map((d) => <SelectItem key={d} value={String(d)}>{d} dia(s)</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </Field>
+            <div className="sm:col-span-2">
+              <Field label="Mensagem personalizada (anexada à descrição da cobrança)">
+                <Textarea
+                  rows={3}
+                  placeholder="Ex.: Olá, segue o boleto referente ao aluguel. Em caso de dúvidas, fale conosco no WhatsApp."
+                  {...form.register("auto_charge_message")}
+                />
+              </Field>
+            </div>
+            <div className="sm:col-span-2">
+              <Button type="button" variant="outline" onClick={testSend} disabled={testing}>
+                <PlayCircle className="h-4 w-4" />
+                {testing ? "Testando..." : "Testar envio agora"}
+              </Button>
+            </div>
           </CardContent>
         </Card>
 
