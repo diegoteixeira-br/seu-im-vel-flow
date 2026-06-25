@@ -591,7 +591,17 @@ function StepGuarantee({ state, patch }: { state: WizardState; patch: <K extends
   );
 }
 
-function StepDocument({ payload, onPreview, templateId, onTemplateChange }: { payload: ContractPDFData; onPreview: () => void; templateId: TemplateId; onTemplateChange: (id: TemplateId) => void }) {
+function StepDocument({
+  payload, owner, onPreview, templateId, onTemplateChange, editorText, onEditorTextChange,
+}: {
+  payload: ContractPDFData;
+  owner: OwnerProfile | null;
+  onPreview: () => void;
+  templateId: TemplateId;
+  onTemplateChange: (id: TemplateId) => void;
+  editorText: string;
+  onEditorTextChange: (v: string) => void;
+}) {
   const tpl = TEMPLATES.find((t) => t.id === templateId);
   return (
     <div className="space-y-4">
@@ -611,20 +621,26 @@ function StepDocument({ payload, onPreview, templateId, onTemplateChange }: { pa
         {tpl && <p className="text-xs text-muted-foreground">{tpl.desc}</p>}
       </div>
 
-      <Card><CardContent className="p-4 text-sm space-y-1">
-        <p><b>Imóvel:</b> {payload.property?.nickname} — {payload.property?.address}</p>
-        <p><b>Inquilino:</b> {payload.tenant?.full_name}</p>
-        {payload.guarantor?.name && <p><b>Fiador:</b> {payload.guarantor.name}</p>}
-        <p><b>Vigência:</b> {formatDate(payload.start_date)} a {formatDate(payload.end_date)}</p>
-        <p><b>Aluguel:</b> {formatBRL(payload.rent_amount)} — venc. dia {payload.due_day}</p>
-        {payload.extra_charges && payload.extra_charges.length > 0 && (
-          <p><b>Cobranças extras:</b> {payload.extra_charges.map((e) => `${e.label} (${formatBRL(e.amount)})`).join(", ")}</p>
-        )}
-        <p><b>Garantia:</b> {payload.guarantee_type}</p>
-      </CardContent></Card>
-      <Button type="button" variant="outline" onClick={onPreview}>
-        <FileDown className="h-4 w-4" /> Visualizar PDF
-      </Button>
+      {templateId === "editor_dinamico" ? (
+        <ContractEditor payload={payload} owner={owner} value={editorText} onChange={onEditorTextChange} />
+      ) : (
+        <>
+          <Card><CardContent className="p-4 text-sm space-y-1">
+            <p><b>Imóvel:</b> {payload.property?.nickname} — {payload.property?.address}</p>
+            <p><b>Inquilino:</b> {payload.tenant?.full_name}</p>
+            {payload.guarantor?.name && <p><b>Fiador:</b> {payload.guarantor.name}</p>}
+            <p><b>Vigência:</b> {formatDate(payload.start_date)} a {formatDate(payload.end_date)}</p>
+            <p><b>Aluguel:</b> {formatBRL(payload.rent_amount)} — venc. dia {payload.due_day}</p>
+            {payload.extra_charges && payload.extra_charges.length > 0 && (
+              <p><b>Cobranças extras:</b> {payload.extra_charges.map((e) => `${e.label} (${formatBRL(e.amount)})`).join(", ")}</p>
+            )}
+            <p><b>Garantia:</b> {payload.guarantee_type}</p>
+          </CardContent></Card>
+          <Button type="button" variant="outline" onClick={onPreview}>
+            <FileDown className="h-4 w-4" /> Visualizar PDF
+          </Button>
+        </>
+      )}
     </div>
   );
 }
