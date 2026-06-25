@@ -18,7 +18,6 @@ import { Route as AuthenticatedPaymentsRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedExpensesRouteImport } from './routes/_authenticated/expenses'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedContractsRouteImport } from './routes/_authenticated/contracts'
-import { Route as ApiPublicSeedTestUserRouteImport } from './routes/api/public/seed-test-user'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -64,11 +63,6 @@ const AuthenticatedContractsRoute = AuthenticatedContractsRouteImport.update({
   path: '/contracts',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const ApiPublicSeedTestUserRoute = ApiPublicSeedTestUserRouteImport.update({
-  id: '/api/public/seed-test-user',
-  path: '/api/public/seed-test-user',
-  getParentRoute: () => rootRouteImport,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -79,7 +73,6 @@ export interface FileRoutesByFullPath {
   '/payments': typeof AuthenticatedPaymentsRoute
   '/properties': typeof AuthenticatedPropertiesRoute
   '/tenants': typeof AuthenticatedTenantsRoute
-  '/api/public/seed-test-user': typeof ApiPublicSeedTestUserRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -90,7 +83,6 @@ export interface FileRoutesByTo {
   '/payments': typeof AuthenticatedPaymentsRoute
   '/properties': typeof AuthenticatedPropertiesRoute
   '/tenants': typeof AuthenticatedTenantsRoute
-  '/api/public/seed-test-user': typeof ApiPublicSeedTestUserRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -103,7 +95,6 @@ export interface FileRoutesById {
   '/_authenticated/payments': typeof AuthenticatedPaymentsRoute
   '/_authenticated/properties': typeof AuthenticatedPropertiesRoute
   '/_authenticated/tenants': typeof AuthenticatedTenantsRoute
-  '/api/public/seed-test-user': typeof ApiPublicSeedTestUserRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -116,7 +107,6 @@ export interface FileRouteTypes {
     | '/payments'
     | '/properties'
     | '/tenants'
-    | '/api/public/seed-test-user'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -127,7 +117,6 @@ export interface FileRouteTypes {
     | '/payments'
     | '/properties'
     | '/tenants'
-    | '/api/public/seed-test-user'
   id:
     | '__root__'
     | '/'
@@ -139,14 +128,12 @@ export interface FileRouteTypes {
     | '/_authenticated/payments'
     | '/_authenticated/properties'
     | '/_authenticated/tenants'
-    | '/api/public/seed-test-user'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
-  ApiPublicSeedTestUserRoute: typeof ApiPublicSeedTestUserRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -214,13 +201,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedContractsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/api/public/seed-test-user': {
-      id: '/api/public/seed-test-user'
-      path: '/api/public/seed-test-user'
-      fullPath: '/api/public/seed-test-user'
-      preLoaderRoute: typeof ApiPublicSeedTestUserRouteImport
-      parentRoute: typeof rootRouteImport
-    }
   }
 }
 
@@ -249,7 +229,6 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
-  ApiPublicSeedTestUserRoute: ApiPublicSeedTestUserRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
