@@ -89,10 +89,10 @@ function ConfigPage() {
     mutationFn: async (v: Values) => {
       const { data: u } = await supabase.auth.getUser();
       if (!u.user) throw new Error("Sessão expirada");
-      const payload = Object.fromEntries(
-        Object.entries(v).map(([k, val]) => [k, val === "" ? null : val]),
+      const payload: Record<string, string | null> = Object.fromEntries(
+        Object.entries(v).map(([k, val]) => [k, val === "" || val == null ? null : String(val)]),
       );
-      const { error } = await supabase.from("profiles").update(payload).eq("id", u.user.id);
+      const { error } = await supabase.from("profiles").update(payload as never).eq("id", u.user.id);
       if (error) throw error;
     },
     onSuccess: () => {

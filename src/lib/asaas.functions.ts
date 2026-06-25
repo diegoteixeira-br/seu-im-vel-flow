@@ -98,7 +98,7 @@ export const createAsaasChargeForPayment = createServerFn({ method: "POST" })
     if (cErr) throw cErr;
     if (!contract?.tenant) throw new Error("Inquilino do contrato não encontrado");
 
-    const customerId = await ensureAsaasCustomer({ supabase }, env, key, contract.tenant);
+    const customerId = await ensureAsaasCustomer(supabase, env, key, contract.tenant);
     const refLabel = payment.reference_month ? new Date(payment.reference_month + "T00:00:00").toLocaleDateString("pt-BR", { month: "long", year: "numeric" }) : "";
 
     const created = await asaasFetch(env, key, "/payments", {
