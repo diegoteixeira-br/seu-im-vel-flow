@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
-import { Building2, Users, FileText, Wallet, TrendingUp, Shield } from "lucide-react";
+import { Building2, Users, FileText, Wallet, TrendingUp, Shield, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
 
