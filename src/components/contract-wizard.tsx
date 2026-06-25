@@ -16,9 +16,17 @@ import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { PropertyCover } from "@/components/property-cover";
 import { downloadContractPDF, type ContractPDFData, type OwnerProfile, type ExtraCharge } from "@/lib/contract-pdf";
+import { gerarContratoResidencial, gerarContratoLocacaoCompleto } from "@/lib/contract-templates";
 import { formatBRL, formatDate } from "@/lib/format";
 import { createSignatureInvites } from "@/lib/signatures.functions";
 import { createAsaasChargesForContract } from "@/lib/asaas.functions";
+
+type TemplateId = "padrao_11" | "completo_20" | "residencial_20";
+const TEMPLATES: Array<{ id: TemplateId; label: string; desc: string }> = [
+  { id: "padrao_11", label: "Padrão (11 cláusulas, Lei 8.245/91)", desc: "Modelo enxuto, cobre obrigações essenciais." },
+  { id: "completo_20", label: "Locação completo (20 cláusulas) — Residencial/Comercial", desc: "Modelo robusto com LGPD, sinistros, sublocação, alienação e foro." },
+  { id: "residencial_20", label: "Locação Residencial (20 cláusulas)", desc: "Modelo específico residencial com cláusulas estendidas." },
+];
 
 const STEPS = ["Imóvel", "Detalhes", "Participantes", "Garantia", "Documento", "Assinatura"] as const;
 
