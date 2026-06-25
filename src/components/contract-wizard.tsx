@@ -194,11 +194,14 @@ export function ContractWizard({ open, onOpenChange }: { open: boolean; onOpenCh
 
   function previewPDF() {
     if (!ownerProfile) return;
-    downloadContractPDF(
-      selectedProperty?.nickname ?? "contrato",
-      contractPayload,
-      ownerProfile,
-    );
+    const name = selectedProperty?.nickname ?? "contrato";
+    if (templateId === "completo_20") {
+      gerarContratoLocacaoCompleto(contractPayload, ownerProfile).save(`contrato-${name.replace(/\s+/g, "-").toLowerCase()}.pdf`);
+    } else if (templateId === "residencial_20") {
+      gerarContratoResidencial(contractPayload, ownerProfile).save(`contrato-${name.replace(/\s+/g, "-").toLowerCase()}.pdf`);
+    } else {
+      downloadContractPDF(name, contractPayload, ownerProfile);
+    }
   }
 
   // Save contract (creates payments via existing buildMonthlyPayments logic inline)
