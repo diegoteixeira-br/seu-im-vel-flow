@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Plus, Trash2, FileDown, Send, ShieldCheck } from "lucide-react";
+import { Plus, Trash2, FileDown, Send, ShieldCheck, FileMinus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { createAsaasChargesForContract } from "@/lib/asaas.functions";
 import { Button } from "@/components/ui/button";
@@ -10,9 +10,15 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import { formatBRL, formatDate } from "@/lib/format";
 import { ContractWizard } from "@/components/contract-wizard";
 import { downloadContractPDF, type ContractPDFData, type OwnerProfile, type SignatureFooter } from "@/lib/contract-pdf";
+import { baixarDistrato, type DistratoData } from "@/lib/contract-templates";
 
 export const Route = createFileRoute("/_authenticated/contracts")({
   head: () => ({ meta: [{ title: "Contratos — AlugaFlow" }] }),
@@ -36,19 +42,38 @@ type Contract = Omit<ContractPDFData, "guarantor"> & {
 };
 
 function displayStatus(c: Contract) {
-  if (c.signature_status === "assinado") return { label: "Assinado", className: "bg-green-700 hover:bg-green-700 text-white" };
-  if (c.signature_status === "parcial") return { label: "Assinatura parcial", className: "bg-amber-500 hover:bg-amber-500 text-white" };
-  if (c.status !== "ativo") return { label: c.status, className: "" };
+  if (c.signature_status === "assinado" && c.signature_mode === "eletronica")
+    return { label: "Assinado digitalmente", className: "bg-blue-600 hover:bg-blue-600 text-white" };
+  if (c.signature_status === "assinado")
+    return { label: "Assinado", className: "bg-green-700 hover:bg-green-700 text-white" };
+  if (c.signature_status === "parcial")
+    return { label: "Assinatura parcial", className: "bg-amber-500 hover:bg-amber-500 text-white" };
+  if (c.status !== "ativo")
+    return { label: "Encerrado", className: "bg-gray-500 hover:bg-gray-500 text-white" };
   const end = new Date(c.end_date + "T00:00:00");
   const days = Math.ceil((end.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
-  if (days < 0) return { label: "Encerrado", className: "" };
+  if (days < 0) return { label: "Encerrado", className: "bg-gray-500 hover:bg-gray-500 text-white" };
   if (days <= 30) return { label: "A vencer em 30 dias", className: "bg-orange-500 hover:bg-orange-500 text-white" };
   return { label: "Ativo", className: "bg-green-600 hover:bg-green-600 text-white" };
+}
+
+function monthsBetween(s: string, e: string): number {
+  const a = new Date(s + "T00:00:00"), b = new Date(e + "T00:00:00");
+  if (isNaN(a.getTime()) || isNaN(b.getTime())) return 0;
+  return Math.max(1, (b.getFullYear() - a.getFullYear()) * 12 + (b.getMonth() - a.getMonth()) + 1);
+}
+function monthsRemaining(endISO: string): number {
+  const e = new Date(endISO + "T00:00:00");
+  const now = new Date();
+  if (isNaN(e.getTime())) return 0;
+  const diff = (e.getFullYear() - now.getFullYear()) * 12 + (e.getMonth() - now.getMonth());
+  return Math.max(0, diff);
 }
 
 function ContractsPage() {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
+  const [distratoFor, setDistratoFor] = useState<Contract | null>(null);
 
   const { data = [], isLoading } = useQuery({
     queryKey: ["contracts"],
@@ -75,11 +100,30 @@ function ContractsPage() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  async function loadOwner(): Promise<OwnerProfile & { email: string }> {
+    const { data: u } = await supabase.auth.getUser();
+    const { data: profile } = await supabase.from("profiles").select("*").eq("id", u.user!.id).maybeSingle();
+    return { ...(profile ?? {}), email: u.user?.email ?? "—" } as OwnerProfile & { email: string };
+  }
+
+  function toPayload(c: Contract): ContractPDFData {
+    return {
+      contract_type: c.contract_type, property: c.property, tenant: c.tenant,
+      guarantor: c.guarantor_name ? {
+        name: c.guarantor_name, cpf: c.guarantor_cpf, rg: c.guarantor_rg,
+        email: c.guarantor_email, phone: c.guarantor_phone, address: c.guarantor_address,
+      } : null,
+      start_date: c.start_date, end_date: c.end_date,
+      rent_amount: c.rent_amount, due_day: c.due_day, deposit_amount: c.deposit_amount,
+      adjustment_index: c.adjustment_index, adjustment_frequency_months: c.adjustment_frequency_months,
+      guarantee_type: c.guarantee_type, guarantee_months: c.guarantee_months,
+      extra_charges: c.extra_charges, notes: c.notes,
+    };
+  }
+
   async function downloadPDF(c: Contract) {
     try {
-      const { data: u } = await supabase.auth.getUser();
-      const { data: profile } = await supabase.from("profiles").select("*").eq("id", u.user!.id).maybeSingle();
-      const owner: OwnerProfile = { ...(profile ?? {}), email: u.user?.email ?? "—" };
+      const owner = await loadOwner();
       let signatures: SignatureFooter[] | undefined;
       if (c.signature_status === "assinado" || c.signature_status === "parcial") {
         const { data: sigs } = await supabase
@@ -95,19 +139,7 @@ function ContractsPage() {
           ip: s.signer_ip,
         }));
       }
-      const payload: ContractPDFData = {
-        contract_type: c.contract_type, property: c.property, tenant: c.tenant,
-        guarantor: c.guarantor_name ? {
-          name: c.guarantor_name, cpf: c.guarantor_cpf, rg: c.guarantor_rg,
-          email: c.guarantor_email, phone: c.guarantor_phone, address: c.guarantor_address,
-        } : null,
-        start_date: c.start_date, end_date: c.end_date,
-        rent_amount: c.rent_amount, due_day: c.due_day, deposit_amount: c.deposit_amount,
-        adjustment_index: c.adjustment_index, adjustment_frequency_months: c.adjustment_frequency_months,
-        guarantee_type: c.guarantee_type, guarantee_months: c.guarantee_months,
-        extra_charges: c.extra_charges, notes: c.notes,
-      };
-      downloadContractPDF(c.property?.nickname ?? "contrato", payload, owner, signatures);
+      downloadContractPDF(c.property?.nickname ?? "contrato", toPayload(c), owner, signatures);
     } catch (e) { toast.error((e as Error).message); }
   }
 
@@ -141,11 +173,12 @@ function ContractsPage() {
               <TableHeader><TableRow>
                 <TableHead>Imóvel</TableHead><TableHead>Inquilino</TableHead>
                 <TableHead>Vigência</TableHead><TableHead>Aluguel</TableHead>
-                <TableHead>Status</TableHead><TableHead className="w-[160px]">Ações</TableHead>
+                <TableHead>Status</TableHead><TableHead className="w-[200px]">Ações</TableHead>
               </TableRow></TableHeader>
               <TableBody>
                 {data.map((c) => {
                   const s = displayStatus(c);
+                  const isActive = c.status === "ativo" && new Date(c.end_date + "T00:00:00").getTime() >= Date.now();
                   return (
                     <TableRow key={c.id}>
                       <TableCell className="font-medium">{c.property?.nickname ?? "—"}</TableCell>
@@ -162,8 +195,11 @@ function ContractsPage() {
                       </TableCell>
                       <TableCell>
                         <div className="flex gap-1">
-                          <Button size="icon" variant="ghost" title="Baixar PDF do contrato" onClick={() => downloadPDF(c)}><FileDown className="h-4 w-4" /></Button>
+                          <Button size="icon" variant="ghost" title="Ver contrato PDF" onClick={() => downloadPDF(c)}><FileDown className="h-4 w-4" /></Button>
                           <Button size="icon" variant="ghost" title="Gerar cobranças ASAAS" onClick={() => sendCharges.mutate(c.id)} disabled={sendCharges.isPending}><Send className="h-4 w-4" /></Button>
+                          {isActive && (
+                            <Button size="icon" variant="ghost" title="Gerar distrato" onClick={() => setDistratoFor(c)}><FileMinus className="h-4 w-4" /></Button>
+                          )}
                           <AlertDialog>
                             <AlertDialogTrigger asChild><Button size="icon" variant="ghost"><Trash2 className="h-4 w-4 text-destructive" /></Button></AlertDialogTrigger>
                             <AlertDialogContent>
@@ -185,6 +221,97 @@ function ContractsPage() {
       </Card>
 
       <ContractWizard open={open} onOpenChange={setOpen} />
+      {distratoFor && (
+        <DistratoDialog
+          contract={distratoFor}
+          onClose={() => setDistratoFor(null)}
+          loadOwner={loadOwner}
+          toPayload={toPayload}
+        />
+      )}
     </div>
+  );
+}
+
+function DistratoDialog({
+  contract, onClose, loadOwner, toPayload,
+}: {
+  contract: Contract;
+  onClose: () => void;
+  loadOwner: () => Promise<OwnerProfile & { email: string }>;
+  toPayload: (c: Contract) => ContractPDFData;
+}) {
+  const totalMeses = monthsBetween(contract.start_date, contract.end_date);
+  const restantes = monthsRemaining(contract.end_date);
+  const [endDate, setEndDate] = useState(new Date().toISOString().slice(0, 10));
+  const [aplicarMulta, setAplicarMulta] = useState(restantes > 0);
+  const [devolverCaucao, setDevolverCaucao] = useState((contract.deposit_amount ?? 0) > 0);
+  const [caucaoValor, setCaucaoValor] = useState(contract.deposit_amount ?? 0);
+  const [obs, setObs] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const multaPreview = aplicarMulta && totalMeses > 0
+    ? (contract.rent_amount / totalMeses) * restantes
+    : 0;
+
+  async function gerar() {
+    setLoading(true);
+    try {
+      const owner = await loadOwner();
+      const dist: DistratoData = {
+        end_date: endDate,
+        meses_restantes: restantes,
+        aplicar_multa: aplicarMulta,
+        devolver_caucao: devolverCaucao,
+        caucao_valor: caucaoValor,
+        observacoes: obs,
+      };
+      baixarDistrato(contract.property?.nickname ?? "contrato", toPayload(contract), owner, dist);
+      toast.success("Distrato gerado");
+      onClose();
+    } catch (e) { toast.error((e as Error).message); }
+    finally { setLoading(false); }
+  }
+
+  return (
+    <Dialog open onOpenChange={(b) => !b && onClose()}>
+      <DialogContent className="sm:max-w-lg">
+        <DialogHeader><DialogTitle>Gerar distrato</DialogTitle></DialogHeader>
+        <div className="space-y-3">
+          <div className="rounded-md bg-muted/40 p-3 text-sm">
+            <p><b>Contrato:</b> {contract.property?.nickname} · {contract.tenant?.full_name}</p>
+            <p className="text-muted-foreground text-xs mt-1">
+              Vigência original: {formatDate(contract.start_date)} → {formatDate(contract.end_date)} ({totalMeses} meses) · {restantes} mês(es) restantes
+            </p>
+          </div>
+          <div className="space-y-1">
+            <Label>Data de encerramento</Label>
+            <Input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+          </div>
+          <label className="flex items-start gap-2 text-sm">
+            <Checkbox checked={aplicarMulta} onCheckedChange={(b) => setAplicarMulta(Boolean(b))} />
+            <span>Aplicar multa por rescisão antecipada — proporcional: <b>{formatBRL(multaPreview)}</b></span>
+          </label>
+          <label className="flex items-start gap-2 text-sm">
+            <Checkbox checked={devolverCaucao} onCheckedChange={(b) => setDevolverCaucao(Boolean(b))} />
+            <span>Devolver caução ao inquilino</span>
+          </label>
+          {devolverCaucao && (
+            <div className="space-y-1">
+              <Label>Valor da caução (R$)</Label>
+              <Input type="number" step="0.01" value={caucaoValor} onChange={(e) => setCaucaoValor(Number(e.target.value) || 0)} />
+            </div>
+          )}
+          <div className="space-y-1">
+            <Label>Observações</Label>
+            <Textarea rows={3} value={obs} onChange={(e) => setObs(e.target.value)} placeholder="Ex.: vistoria de saída realizada, sem pendências." />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>Cancelar</Button>
+          <Button onClick={gerar} disabled={loading}><FileDown className="h-4 w-4" /> Baixar distrato</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
