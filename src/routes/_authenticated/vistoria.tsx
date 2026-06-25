@@ -343,8 +343,8 @@ function InspectionRow({ ins, propertyName, propertyAddress }: { ins: Inspection
       doc.text(`Data: ${formatDate(ins.inspection_date)}`, margin, y); y += 20;
 
       if (ins.general_notes) {
-        doc.setFont(undefined, "bold"); doc.text("Observações gerais:", margin, y); y += 14;
-        doc.setFont(undefined, "normal");
+        doc.setFont("helvetica", "bold"); doc.text("Observações gerais:", margin, y); y += 14;
+        doc.setFont("helvetica", "normal");
         const lines = doc.splitTextToSize(ins.general_notes, pageWidth - margin * 2);
         doc.text(lines, margin, y); y += lines.length * 12 + 8;
       }
@@ -355,9 +355,9 @@ function InspectionRow({ ins, propertyName, propertyAddress }: { ins: Inspection
 
       for (const cat of Object.keys(groups)) {
         if (y > pageHeight - 200) { doc.addPage(); y = margin; }
-        doc.setFont(undefined, "bold"); doc.setFontSize(13);
+        doc.setFont("helvetica", "bold"); doc.setFontSize(13);
         doc.text(CATEGORY_LABEL[cat as PhotoCategory] ?? cat, margin, y); y += 16;
-        doc.setFont(undefined, "normal"); doc.setFontSize(10);
+        doc.setFont("helvetica", "normal"); doc.setFontSize(10);
 
         for (const ph of groups[cat]) {
           if (y > pageHeight - 200) { doc.addPage(); y = margin; }
