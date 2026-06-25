@@ -14,20 +14,82 @@ export type Database = {
   }
   public: {
     Tables: {
+      contract_signatures: {
+        Row: {
+          contract_id: string
+          created_at: string
+          email: string
+          id: string
+          name: string
+          role: string
+          signed_at: string | null
+          signed_cpf: string | null
+          signed_name: string | null
+          signer_ip: string | null
+          token: string
+        }
+        Insert: {
+          contract_id: string
+          created_at?: string
+          email: string
+          id?: string
+          name: string
+          role: string
+          signed_at?: string | null
+          signed_cpf?: string | null
+          signed_name?: string | null
+          signer_ip?: string | null
+          token?: string
+        }
+        Update: {
+          contract_id?: string
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string
+          role?: string
+          signed_at?: string | null
+          signed_cpf?: string | null
+          signed_name?: string | null
+          signer_ip?: string | null
+          token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contract_signatures_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contracts: {
         Row: {
           adjustment_frequency_months: number
           adjustment_index: Database["public"]["Enums"]["adjustment_index"]
+          contract_type: string
           created_at: string
           deposit_amount: number | null
           due_day: number
           end_date: string
+          extra_charges: Json
           guarantee_months: number | null
           guarantee_type: Database["public"]["Enums"]["guarantee_type"]
+          guarantor_address: string | null
+          guarantor_cpf: string | null
+          guarantor_email: string | null
+          guarantor_name: string | null
+          guarantor_phone: string | null
+          guarantor_rg: string | null
           id: string
           notes: string | null
           property_id: string
           rent_amount: number
+          signature_mode: string
+          signature_status: string
+          signed_at: string | null
+          signed_pdf_path: string | null
           start_date: string
           status: Database["public"]["Enums"]["contract_status"]
           tenant_id: string
@@ -37,16 +99,28 @@ export type Database = {
         Insert: {
           adjustment_frequency_months?: number
           adjustment_index?: Database["public"]["Enums"]["adjustment_index"]
+          contract_type?: string
           created_at?: string
           deposit_amount?: number | null
           due_day?: number
           end_date: string
+          extra_charges?: Json
           guarantee_months?: number | null
           guarantee_type?: Database["public"]["Enums"]["guarantee_type"]
+          guarantor_address?: string | null
+          guarantor_cpf?: string | null
+          guarantor_email?: string | null
+          guarantor_name?: string | null
+          guarantor_phone?: string | null
+          guarantor_rg?: string | null
           id?: string
           notes?: string | null
           property_id: string
           rent_amount: number
+          signature_mode?: string
+          signature_status?: string
+          signed_at?: string | null
+          signed_pdf_path?: string | null
           start_date: string
           status?: Database["public"]["Enums"]["contract_status"]
           tenant_id: string
@@ -56,16 +130,28 @@ export type Database = {
         Update: {
           adjustment_frequency_months?: number
           adjustment_index?: Database["public"]["Enums"]["adjustment_index"]
+          contract_type?: string
           created_at?: string
           deposit_amount?: number | null
           due_day?: number
           end_date?: string
+          extra_charges?: Json
           guarantee_months?: number | null
           guarantee_type?: Database["public"]["Enums"]["guarantee_type"]
+          guarantor_address?: string | null
+          guarantor_cpf?: string | null
+          guarantor_email?: string | null
+          guarantor_name?: string | null
+          guarantor_phone?: string | null
+          guarantor_rg?: string | null
           id?: string
           notes?: string | null
           property_id?: string
           rent_amount?: number
+          signature_mode?: string
+          signature_status?: string
+          signed_at?: string | null
+          signed_pdf_path?: string | null
           start_date?: string
           status?: Database["public"]["Enums"]["contract_status"]
           tenant_id?: string
