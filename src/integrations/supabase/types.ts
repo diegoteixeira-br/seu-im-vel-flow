@@ -16,10 +16,14 @@ export type Database = {
     Tables: {
       contracts: {
         Row: {
+          adjustment_frequency_months: number
+          adjustment_index: Database["public"]["Enums"]["adjustment_index"]
           created_at: string
           deposit_amount: number | null
           due_day: number
           end_date: string
+          guarantee_months: number | null
+          guarantee_type: Database["public"]["Enums"]["guarantee_type"]
           id: string
           notes: string | null
           property_id: string
@@ -31,10 +35,14 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          adjustment_frequency_months?: number
+          adjustment_index?: Database["public"]["Enums"]["adjustment_index"]
           created_at?: string
           deposit_amount?: number | null
           due_day?: number
           end_date: string
+          guarantee_months?: number | null
+          guarantee_type?: Database["public"]["Enums"]["guarantee_type"]
           id?: string
           notes?: string | null
           property_id: string
@@ -46,10 +54,14 @@ export type Database = {
           user_id: string
         }
         Update: {
+          adjustment_frequency_months?: number
+          adjustment_index?: Database["public"]["Enums"]["adjustment_index"]
           created_at?: string
           deposit_amount?: number | null
           due_day?: number
           end_date?: string
+          guarantee_months?: number | null
+          guarantee_type?: Database["public"]["Enums"]["guarantee_type"]
           id?: string
           notes?: string | null
           property_id?: string
@@ -518,6 +530,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
+      adjustment_index: "nenhum" | "igpm" | "ipca"
       contract_status: "ativo" | "encerrado" | "cancelado" | "pendente"
       expense_category:
         | "manutencao"
@@ -527,6 +540,7 @@ export type Database = {
         | "reforma"
         | "administracao"
         | "outro"
+      guarantee_type: "sem_garantia" | "fiador" | "caucao" | "seguro_fianca"
       inspection_type: "entrada" | "saida"
       payment_method:
         | "pix"
@@ -680,6 +694,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      adjustment_index: ["nenhum", "igpm", "ipca"],
       contract_status: ["ativo", "encerrado", "cancelado", "pendente"],
       expense_category: [
         "manutencao",
@@ -690,6 +705,7 @@ export const Constants = {
         "administracao",
         "outro",
       ],
+      guarantee_type: ["sem_garantia", "fiador", "caucao", "seguro_fianca"],
       inspection_type: ["entrada", "saida"],
       payment_method: [
         "pix",
