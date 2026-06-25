@@ -147,7 +147,8 @@ function ContractsPage() {
                       <TableCell><Badge variant={s.variant} className={s.className}>{s.label}</Badge></TableCell>
                       <TableCell>
                         <div className="flex gap-1">
-                          <Button size="icon" variant="ghost" title="Baixar contrato" onClick={() => downloadPDF(c)}><FileDown className="h-4 w-4" /></Button>
+                          <Button size="icon" variant="ghost" title="Baixar contrato (PDF)" onClick={() => downloadPDF(c)}><FileDown className="h-4 w-4" /></Button>
+                          <Button size="icon" variant="ghost" title="Gerar cobranças ASAAS" onClick={() => sendCharges.mutate(c.id)} disabled={sendCharges.isPending}><Send className="h-4 w-4" /></Button>
                           <Button size="icon" variant="ghost" onClick={() => { setEditing(c); setOpen(true); }}><Pencil className="h-4 w-4" /></Button>
                           <AlertDialog>
                             <AlertDialogTrigger asChild><Button size="icon" variant="ghost"><Trash2 className="h-4 w-4 text-destructive" /></Button></AlertDialogTrigger>
