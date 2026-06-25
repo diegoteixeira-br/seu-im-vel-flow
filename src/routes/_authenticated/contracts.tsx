@@ -237,11 +237,20 @@ function ContractDialog({ open, onOpenChange, editing }: { open: boolean; onOpen
       }
       return { id: ins.id, created: true, count: payments.length };
     },
-    onSuccess: (r) => {
+    onSuccess: async (r) => {
       qc.invalidateQueries({ queryKey: ["contracts"] });
       qc.invalidateQueries({ queryKey: ["payments"] });
-      toast.success(editing ? "Contrato atualizado" : `Contrato criado — ${r.count} pagamentos gerados`);
+      toast.success(editing ? "Contrato atualizado" : `Contrato criado — ${r.count ?? 0} pagamentos gerados`);
       onOpenChange(false);
+      if (r.created && r.id) {
+        try {
+          const res = await createAsaasChargesForContract({ data: { contractId: r.id } });
+          if (res.created > 0) toast.success(`${res.created} cobrança(s) criada(s) no ASAAS`);
+          if (res.failed > 0) toast.error(`ASAAS: ${res.errors.join(" | ")}`);
+        } catch (e) {
+          toast.message("Cobranças ASAAS não geradas: " + (e as Error).message);
+        }
+      }
     },
     onError: (e: Error) => toast.error(e.message),
   });
