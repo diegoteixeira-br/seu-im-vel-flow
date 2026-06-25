@@ -19,7 +19,7 @@ export const Route = createFileRoute("/_authenticated/contracts")({
   component: ContractsPage,
 });
 
-type Contract = ContractPDFData & {
+type Contract = Omit<ContractPDFData, "guarantor"> & {
   id: string;
   property_id: string;
   tenant_id: string;
@@ -27,8 +27,12 @@ type Contract = ContractPDFData & {
   signature_mode: string;
   signature_status: string;
   signed_at: string | null;
-  property?: ContractPDFData["property"] & { nickname: string };
-  tenant?: ContractPDFData["tenant"];
+  guarantor_name: string | null;
+  guarantor_cpf: string | null;
+  guarantor_rg: string | null;
+  guarantor_email: string | null;
+  guarantor_phone: string | null;
+  guarantor_address: string | null;
 };
 
 function displayStatus(c: Contract) {
