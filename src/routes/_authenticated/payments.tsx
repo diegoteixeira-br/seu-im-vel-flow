@@ -95,6 +95,16 @@ function PaymentsPage() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const sendCharge = useMutation({
+    mutationFn: async (id: string) => createAsaasChargeForPayment({ data: { paymentId: id } }),
+    onSuccess: (r) => {
+      qc.invalidateQueries({ queryKey: ["payments"] });
+      toast.success(r.reused ? "Cobrança já existente no ASAAS" : "Cobrança gerada no ASAAS");
+      if (r.invoiceUrl) window.open(r.invoiceUrl, "_blank", "noopener");
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
