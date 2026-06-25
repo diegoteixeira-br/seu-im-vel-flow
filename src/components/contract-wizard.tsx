@@ -454,6 +454,21 @@ function StepDetails({ state, patch }: { state: WizardState; patch: <K extends k
       </div>
 
       <div className="space-y-2 pt-2">
+        <Label className="text-base">Forma de cobrança</Label>
+        <RadioGroup value={state.payment_method} onValueChange={(v) => patch("payment_method", v as WizardState["payment_method"])} className="grid gap-2 sm:grid-cols-2">
+          <label className={`flex items-start gap-3 rounded-lg border p-3 cursor-pointer hover:bg-accent ${state.payment_method === "pix" ? "border-primary ring-2 ring-primary/30" : ""}`}>
+            <RadioGroupItem value="pix" className="mt-1" />
+            <div><p className="font-medium text-sm">PIX / Transferência</p><p className="text-xs text-muted-foreground">Cobrança manual. Você marca cada pagamento como pago.</p></div>
+          </label>
+          <label className={`flex items-start gap-3 rounded-lg border p-3 cursor-pointer hover:bg-accent ${state.payment_method === "asaas" ? "border-primary ring-2 ring-primary/30" : ""}`}>
+            <RadioGroupItem value="asaas" className="mt-1" />
+            <div><p className="font-medium text-sm">Boleto ASAAS (automático)</p><p className="text-xs text-muted-foreground">Ao salvar, cria cliente e gera cobranças para todo o período. Boleto enviado ao e-mail do inquilino.</p></div>
+          </label>
+        </RadioGroup>
+      </div>
+
+
+      <div className="space-y-2 pt-2">
         <div className="flex items-center justify-between">
           <Label className="text-base">Cobranças adicionais mensais</Label>
           <Button type="button" size="sm" variant="outline" onClick={addExtra}><Plus className="h-3 w-3" /> Adicionar</Button>
