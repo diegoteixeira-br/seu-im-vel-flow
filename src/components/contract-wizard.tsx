@@ -17,12 +17,15 @@ import { Badge } from "@/components/ui/badge";
 import { PropertyCover } from "@/components/property-cover";
 import { downloadContractPDF, type ContractPDFData, type OwnerProfile, type ExtraCharge } from "@/lib/contract-pdf";
 import { gerarContratoResidencial, gerarContratoLocacaoCompleto } from "@/lib/contract-templates";
+import { TEMPLATE_LOCACAO_DINAMICO } from "@/lib/contract-tokens";
+import { ContractEditor } from "@/components/contract-editor";
 import { formatBRL, formatDate } from "@/lib/format";
 import { createSignatureInvites } from "@/lib/signatures.functions";
 import { createAsaasChargesForContract } from "@/lib/asaas.functions";
 
-type TemplateId = "padrao_11" | "completo_20" | "residencial_20";
+type TemplateId = "editor_dinamico" | "padrao_11" | "completo_20" | "residencial_20";
 const TEMPLATES: Array<{ id: TemplateId; label: string; desc: string }> = [
+  { id: "editor_dinamico", label: "Editor com campos dinâmicos", desc: "Edite o texto livremente, insira variáveis [token] e pré-visualize com os dados preenchidos." },
   { id: "padrao_11", label: "Padrão (11 cláusulas, Lei 8.245/91)", desc: "Modelo enxuto, cobre obrigações essenciais." },
   { id: "completo_20", label: "Locação completo (20 cláusulas) — Residencial/Comercial", desc: "Modelo robusto com LGPD, sinistros, sublocação, alienação e foro." },
   { id: "residencial_20", label: "Locação Residencial (20 cláusulas)", desc: "Modelo específico residencial com cláusulas estendidas." },
@@ -80,14 +83,17 @@ function addMonths(iso: string, months: number): string {
 export function ContractWizard({ open, onOpenChange }: { open: boolean; onOpenChange: (b: boolean) => void }) {
   const [step, setStep] = useState(0);
   const [state, setState] = useState<WizardState>(initialState);
-  const [templateId, setTemplateId] = useState<TemplateId>("completo_20");
+  const [templateId, setTemplateId] = useState<TemplateId>("editor_dinamico");
+  const [editorText, setEditorText] = useState<string>(TEMPLATE_LOCACAO_DINAMICO);
   const [createdContractId, setCreatedContractId] = useState<string | null>(null);
   const [signatureLinks, setSignatureLinks] = useState<Array<{ role: string; name: string; email: string; url: string }>>([]);
   const qc = useQueryClient();
 
   useEffect(() => {
     if (open) {
-      setStep(0); setState(initialState); setTemplateId("completo_20"); setCreatedContractId(null); setSignatureLinks([]);
+      setStep(0); setState(initialState); setTemplateId("editor_dinamico");
+      setEditorText(TEMPLATE_LOCACAO_DINAMICO);
+      setCreatedContractId(null); setSignatureLinks([]);
     }
   }, [open]);
 
@@ -334,7 +340,7 @@ export function ContractWizard({ open, onOpenChange }: { open: boolean; onOpenCh
           {step === 1 && <StepDetails state={state} patch={patch} />}
           {step === 2 && <StepParticipants state={state} patch={patch} tenants={tenants} owner={ownerProfile ?? null} />}
           {step === 3 && <StepGuarantee state={state} patch={patch} />}
-          {step === 4 && <StepDocument payload={contractPayload} onPreview={previewPDF} templateId={templateId} onTemplateChange={setTemplateId} />}
+          {step === 4 && <StepDocument payload={contractPayload} owner={ownerProfile ?? null} onPreview={previewPDF} templateId={templateId} onTemplateChange={setTemplateId} editorText={editorText} onEditorTextChange={setEditorText} />}
           {step === 5 && (
             <StepSignature
               state={state}
@@ -585,7 +591,17 @@ function StepGuarantee({ state, patch }: { state: WizardState; patch: <K extends
   );
 }
 
-function StepDocument({ payload, onPreview, templateId, onTemplateChange }: { payload: ContractPDFData; onPreview: () => void; templateId: TemplateId; onTemplateChange: (id: TemplateId) => void }) {
+function StepDocument({
+  payload, owner, onPreview, templateId, onTemplateChange, editorText, onEditorTextChange,
+}: {
+  payload: ContractPDFData;
+  owner: OwnerProfile | null;
+  onPreview: () => void;
+  templateId: TemplateId;
+  onTemplateChange: (id: TemplateId) => void;
+  editorText: string;
+  onEditorTextChange: (v: string) => void;
+}) {
   const tpl = TEMPLATES.find((t) => t.id === templateId);
   return (
     <div className="space-y-4">
@@ -605,20 +621,26 @@ function StepDocument({ payload, onPreview, templateId, onTemplateChange }: { pa
         {tpl && <p className="text-xs text-muted-foreground">{tpl.desc}</p>}
       </div>
 
-      <Card><CardContent className="p-4 text-sm space-y-1">
-        <p><b>Imóvel:</b> {payload.property?.nickname} — {payload.property?.address}</p>
-        <p><b>Inquilino:</b> {payload.tenant?.full_name}</p>
-        {payload.guarantor?.name && <p><b>Fiador:</b> {payload.guarantor.name}</p>}
-        <p><b>Vigência:</b> {formatDate(payload.start_date)} a {formatDate(payload.end_date)}</p>
-        <p><b>Aluguel:</b> {formatBRL(payload.rent_amount)} — venc. dia {payload.due_day}</p>
-        {payload.extra_charges && payload.extra_charges.length > 0 && (
-          <p><b>Cobranças extras:</b> {payload.extra_charges.map((e) => `${e.label} (${formatBRL(e.amount)})`).join(", ")}</p>
-        )}
-        <p><b>Garantia:</b> {payload.guarantee_type}</p>
-      </CardContent></Card>
-      <Button type="button" variant="outline" onClick={onPreview}>
-        <FileDown className="h-4 w-4" /> Visualizar PDF
-      </Button>
+      {templateId === "editor_dinamico" ? (
+        <ContractEditor payload={payload} owner={owner} value={editorText} onChange={onEditorTextChange} />
+      ) : (
+        <>
+          <Card><CardContent className="p-4 text-sm space-y-1">
+            <p><b>Imóvel:</b> {payload.property?.nickname} — {payload.property?.address}</p>
+            <p><b>Inquilino:</b> {payload.tenant?.full_name}</p>
+            {payload.guarantor?.name && <p><b>Fiador:</b> {payload.guarantor.name}</p>}
+            <p><b>Vigência:</b> {formatDate(payload.start_date)} a {formatDate(payload.end_date)}</p>
+            <p><b>Aluguel:</b> {formatBRL(payload.rent_amount)} — venc. dia {payload.due_day}</p>
+            {payload.extra_charges && payload.extra_charges.length > 0 && (
+              <p><b>Cobranças extras:</b> {payload.extra_charges.map((e) => `${e.label} (${formatBRL(e.amount)})`).join(", ")}</p>
+            )}
+            <p><b>Garantia:</b> {payload.guarantee_type}</p>
+          </CardContent></Card>
+          <Button type="button" variant="outline" onClick={onPreview}>
+            <FileDown className="h-4 w-4" /> Visualizar PDF
+          </Button>
+        </>
+      )}
     </div>
   );
 }
