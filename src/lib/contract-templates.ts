@@ -459,3 +459,9 @@ export function baixarConfissaoDivida(name: string, c: ContractPDFData, o: Owner
 export function baixarTermoVistoria(name: string, c: ContractPDFData, o: OwnerProfile, v: VistoriaData) {
   gerarTermoVistoria(c, o, v).save(`vistoria-${slug(name)}.pdf`);
 }
+export function baixarContratoLocacaoCompleto(name: string, c: ContractPDFData, o: OwnerProfile) {
+  gerarContratoLocacaoCompleto(c, o).save(`contrato-locacao-${slug(name)}.pdf`);
+}
+export function baixarCorretagem(name: string, c: ContractPDFData, o: OwnerProfile, k: CorretagemData) {
+  gerarCorretagemImobiliaria(c, o, k).save(`corretagem-${slug(name)}.pdf`);
+}
