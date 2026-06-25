@@ -230,6 +230,7 @@ export type Database = {
           amount: number
           asaas_invoice_url: string | null
           asaas_payment_id: string | null
+          charge_sent_at: string | null
           contract_id: string
           created_at: string
           due_date: string
@@ -247,6 +248,7 @@ export type Database = {
           amount: number
           asaas_invoice_url?: string | null
           asaas_payment_id?: string | null
+          charge_sent_at?: string | null
           contract_id: string
           created_at?: string
           due_date: string
@@ -264,6 +266,7 @@ export type Database = {
           amount?: number
           asaas_invoice_url?: string | null
           asaas_payment_id?: string | null
+          charge_sent_at?: string | null
           contract_id?: string
           created_at?: string
           due_date?: string
@@ -297,6 +300,9 @@ export type Database = {
           address_zip: string | null
           asaas_api_key: string | null
           asaas_environment: string
+          auto_charge_days_before: number
+          auto_charge_enabled: boolean
+          auto_charge_message: string | null
           bank_account: string | null
           bank_agency: string | null
           bank_name: string | null
@@ -318,6 +324,9 @@ export type Database = {
           address_zip?: string | null
           asaas_api_key?: string | null
           asaas_environment?: string
+          auto_charge_days_before?: number
+          auto_charge_enabled?: boolean
+          auto_charge_message?: string | null
           bank_account?: string | null
           bank_agency?: string | null
           bank_name?: string | null
@@ -339,6 +348,9 @@ export type Database = {
           address_zip?: string | null
           asaas_api_key?: string | null
           asaas_environment?: string
+          auto_charge_days_before?: number
+          auto_charge_enabled?: boolean
+          auto_charge_message?: string | null
           bank_account?: string | null
           bank_agency?: string | null
           bank_name?: string | null
