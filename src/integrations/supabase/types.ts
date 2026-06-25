@@ -228,6 +228,8 @@ export type Database = {
       payments: {
         Row: {
           amount: number
+          asaas_invoice_url: string | null
+          asaas_payment_id: string | null
           contract_id: string
           created_at: string
           due_date: string
@@ -243,6 +245,8 @@ export type Database = {
         }
         Insert: {
           amount: number
+          asaas_invoice_url?: string | null
+          asaas_payment_id?: string | null
           contract_id: string
           created_at?: string
           due_date: string
@@ -258,6 +262,8 @@ export type Database = {
         }
         Update: {
           amount?: number
+          asaas_invoice_url?: string | null
+          asaas_payment_id?: string | null
           contract_id?: string
           created_at?: string
           due_date?: string
@@ -283,24 +289,66 @@ export type Database = {
       }
       profiles: {
         Row: {
+          address_city: string | null
+          address_neighborhood: string | null
+          address_number: string | null
+          address_street: string | null
+          address_uf: string | null
+          address_zip: string | null
+          asaas_api_key: string | null
+          asaas_environment: string
+          bank_account: string | null
+          bank_agency: string | null
+          bank_name: string | null
+          cpf: string | null
           created_at: string
+          email: string | null
           full_name: string | null
           id: string
           phone: string | null
+          pix_key: string | null
           updated_at: string
         }
         Insert: {
+          address_city?: string | null
+          address_neighborhood?: string | null
+          address_number?: string | null
+          address_street?: string | null
+          address_uf?: string | null
+          address_zip?: string | null
+          asaas_api_key?: string | null
+          asaas_environment?: string
+          bank_account?: string | null
+          bank_agency?: string | null
+          bank_name?: string | null
+          cpf?: string | null
           created_at?: string
+          email?: string | null
           full_name?: string | null
           id: string
           phone?: string | null
+          pix_key?: string | null
           updated_at?: string
         }
         Update: {
+          address_city?: string | null
+          address_neighborhood?: string | null
+          address_number?: string | null
+          address_street?: string | null
+          address_uf?: string | null
+          address_zip?: string | null
+          asaas_api_key?: string | null
+          asaas_environment?: string
+          bank_account?: string | null
+          bank_agency?: string | null
+          bank_name?: string | null
+          cpf?: string | null
           created_at?: string
+          email?: string | null
           full_name?: string | null
           id?: string
           phone?: string | null
+          pix_key?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -452,6 +500,7 @@ export type Database = {
           address_state: string | null
           address_street: string | null
           address_zip: string | null
+          asaas_customer_id: string | null
           birth_date: string | null
           cpf: string | null
           created_at: string
@@ -477,6 +526,7 @@ export type Database = {
           address_state?: string | null
           address_street?: string | null
           address_zip?: string | null
+          asaas_customer_id?: string | null
           birth_date?: string | null
           cpf?: string | null
           created_at?: string
@@ -502,6 +552,7 @@ export type Database = {
           address_state?: string | null
           address_street?: string | null
           address_zip?: string | null
+          asaas_customer_id?: string | null
           birth_date?: string | null
           cpf?: string | null
           created_at?: string

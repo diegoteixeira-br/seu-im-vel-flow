@@ -5,8 +5,9 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, CheckCircle2 } from "lucide-react";
+import { Plus, Pencil, Trash2, CheckCircle2, Send, ExternalLink } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { createAsaasChargeForPayment } from "@/lib/asaas.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -41,6 +42,8 @@ const schema = z.object({
 type FormValues = z.infer<typeof schema>;
 type Payment = FormValues & {
   id: string;
+  asaas_payment_id?: string | null;
+  asaas_invoice_url?: string | null;
   contract?: { property?: { nickname: string }; tenant?: { full_name: string } };
 };
 
@@ -92,6 +95,16 @@ function PaymentsPage() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const sendCharge = useMutation({
+    mutationFn: async (id: string) => createAsaasChargeForPayment({ data: { paymentId: id } }),
+    onSuccess: (r) => {
+      qc.invalidateQueries({ queryKey: ["payments"] });
+      toast.success(r.reused ? "Cobrança já existente no ASAAS" : "Cobrança gerada no ASAAS");
+      if (r.invoiceUrl) window.open(r.invoiceUrl, "_blank", "noopener");
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -134,6 +147,17 @@ function PaymentsPage() {
                             <Button size="icon" variant="ghost" onClick={() => markPaid.mutate(p)} title="Marcar como pago">
                               <CheckCircle2 className="h-4 w-4 text-success" />
                             </Button>
+                          )}
+                          {s !== "pago" && s !== "cancelado" && (
+                            p.asaas_invoice_url ? (
+                              <Button size="icon" variant="ghost" asChild title="Abrir cobrança ASAAS">
+                                <a href={p.asaas_invoice_url} target="_blank" rel="noopener noreferrer"><ExternalLink className="h-4 w-4 text-primary" /></a>
+                              </Button>
+                            ) : (
+                              <Button size="icon" variant="ghost" onClick={() => sendCharge.mutate(p.id)} disabled={sendCharge.isPending} title="Enviar cobrança no ASAAS">
+                                <Send className="h-4 w-4 text-primary" />
+                              </Button>
+                            )
                           )}
                           <Button size="icon" variant="ghost" onClick={() => { setEditing(p); setOpen(true); }}><Pencil className="h-4 w-4" /></Button>
                           <AlertDialog>
