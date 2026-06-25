@@ -226,7 +226,6 @@ export function ContractWizard({ open, onOpenChange }: { open: boolean; onOpenCh
       };
       const { data: ins, error } = await supabase.from("contracts").insert(payload).select("id").single();
       if (error) throw error;
-      if (error) throw error;
 
       // payments
       const payments = buildMonthlyPayments({
@@ -235,13 +234,24 @@ export function ContractWizard({ open, onOpenChange }: { open: boolean; onOpenCh
         due_day: state.due_day, amount: state.rent_amount,
       });
       if (payments.length > 0) await supabase.from("payments").insert(payments);
-      return { id: ins.id, count: payments.length };
+
+      // Auto-criar cobranças ASAAS para todo o período do contrato
+      let asaasCreated = 0; let asaasFailed = 0; let asaasErr = "";
+      if (state.payment_method === "asaas" && payments.length > 0) {
+        try {
+          const r = await createAsaasChargesForContract({ data: { contractId: ins.id } });
+          asaasCreated = r.created; asaasFailed = r.failed; asaasErr = r.errors.join(" | ");
+        } catch (e) { asaasErr = (e as Error).message; asaasFailed = payments.length; }
+      }
+      return { id: ins.id, count: payments.length, asaasCreated, asaasFailed, asaasErr };
     },
     onSuccess: (r) => {
       setCreatedContractId(r.id);
       qc.invalidateQueries({ queryKey: ["contracts"] });
       qc.invalidateQueries({ queryKey: ["payments"] });
       toast.success(`Contrato criado — ${r.count} pagamentos gerados`);
+      if (r.asaasCreated > 0) toast.success(`${r.asaasCreated} cobrança(s) criadas no ASAAS`);
+      if (r.asaasFailed > 0) toast.error(`ASAAS: ${r.asaasFailed} falha(s) — ${r.asaasErr}`);
     },
     onError: (e: Error) => toast.error(e.message),
   });
