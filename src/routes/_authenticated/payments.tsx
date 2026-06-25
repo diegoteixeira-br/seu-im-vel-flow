@@ -5,8 +5,9 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, CheckCircle2 } from "lucide-react";
+import { Plus, Pencil, Trash2, CheckCircle2, Send, ExternalLink } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { createAsaasChargeForPayment } from "@/lib/asaas.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -41,6 +42,8 @@ const schema = z.object({
 type FormValues = z.infer<typeof schema>;
 type Payment = FormValues & {
   id: string;
+  asaas_payment_id?: string | null;
+  asaas_invoice_url?: string | null;
   contract?: { property?: { nickname: string }; tenant?: { full_name: string } };
 };
 
