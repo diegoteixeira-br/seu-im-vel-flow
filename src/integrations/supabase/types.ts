@@ -84,6 +84,7 @@ export type Database = {
           guarantor_rg: string | null
           id: string
           notes: string | null
+          payment_method: string
           property_id: string
           rent_amount: number
           signature_mode: string
@@ -115,6 +116,7 @@ export type Database = {
           guarantor_rg?: string | null
           id?: string
           notes?: string | null
+          payment_method?: string
           property_id: string
           rent_amount: number
           signature_mode?: string
@@ -146,6 +148,7 @@ export type Database = {
           guarantor_rg?: string | null
           id?: string
           notes?: string | null
+          payment_method?: string
           property_id?: string
           rent_amount?: number
           signature_mode?: string
