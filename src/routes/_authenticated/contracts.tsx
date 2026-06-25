@@ -340,24 +340,27 @@ function buildMonthlyPayments(args: {
   return out;
 }
 
-function generateContractPDF(c: Contract, owner: { full_name: string; phone: string; email: string }) {
+type OwnerProfile = {
+  full_name?: string | null; cpf?: string | null; phone?: string | null; email?: string | null;
+  address_street?: string | null; address_number?: string | null; address_neighborhood?: string | null;
+  address_city?: string | null; address_uf?: string | null; address_zip?: string | null;
+  bank_name?: string | null; bank_agency?: string | null; bank_account?: string | null; pix_key?: string | null;
+};
+
+function generateContractPDF(c: Contract, owner: OwnerProfile) {
   const doc = new jsPDF({ unit: "pt", format: "a4" });
   const W = doc.internal.pageSize.getWidth();
   const M = 48;
   let y = M;
+  const dash = (v: string | null | undefined) => (v && String(v).trim() ? String(v) : "—");
 
   // Header
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(18);
-  doc.setTextColor(26, 74, 107);
+  doc.setFont("helvetica", "bold"); doc.setFontSize(18); doc.setTextColor(26, 74, 107);
   doc.text("AlugaFlow", M, y);
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(10);
-  doc.setTextColor(120);
+  doc.setFont("helvetica", "normal"); doc.setFontSize(10); doc.setTextColor(120);
   doc.text(`Emitido em ${new Date().toLocaleDateString("pt-BR")}`, W - M, y, { align: "right" });
   y += 10;
-  doc.setDrawColor(26, 74, 107);
-  doc.line(M, y, W - M, y);
+  doc.setDrawColor(26, 74, 107); doc.line(M, y, W - M, y);
   y += 24;
 
   doc.setTextColor(20);
@@ -380,25 +383,27 @@ function generateContractPDF(c: Contract, owner: { full_name: string; phone: str
   };
 
   section("LOCADOR (Proprietário)");
-  line(`Nome: ${owner.full_name}`);
-  line(`E-mail: ${owner.email}`);
-  line(`Telefone: ${owner.phone}`);
+  line(`Nome: ${dash(owner.full_name)}`);
+  line(`CPF: ${dash(owner.cpf)}`);
+  line(`E-mail: ${dash(owner.email)}   Telefone: ${dash(owner.phone)}`);
+  const oAddr = [owner.address_street, owner.address_number, owner.address_neighborhood, owner.address_city, owner.address_uf].filter(Boolean).join(", ");
+  if (oAddr) line(`Endereço: ${oAddr}${owner.address_zip ? ` - CEP ${owner.address_zip}` : ""}`);
   y += 8;
 
   section("LOCATÁRIO (Inquilino)");
   const t = c.tenant;
-  line(`Nome: ${t?.full_name ?? "—"}`);
-  line(`CPF: ${t?.cpf ?? "—"}   RG: ${t?.rg ?? "—"}`);
-  line(`E-mail: ${t?.email ?? "—"}   Telefone: ${t?.phone ?? "—"}`);
+  line(`Nome: ${dash(t?.full_name)}`);
+  line(`CPF: ${dash(t?.cpf)}   RG: ${dash(t?.rg)}`);
+  line(`E-mail: ${dash(t?.email)}   Telefone: ${dash(t?.phone)}`);
   const tAddr = [t?.address_street, t?.address_number, t?.address_neighborhood, t?.address_city, t?.address_state].filter(Boolean).join(", ");
   if (tAddr) line(`Endereço: ${tAddr}`);
   y += 8;
 
   section("IMÓVEL LOCADO");
   const p = c.property;
-  line(`Identificação: ${p?.nickname ?? "—"}`);
-  line(`Endereço: ${p?.address ?? "—"}${p?.city ? ` - ${p.city}/${p.state ?? ""}` : ""}${p?.zip_code ? ` - CEP ${p.zip_code}` : ""}`);
-  line(`Tipo: ${p?.type ?? "—"}${p?.bedrooms ? ` | ${p.bedrooms} dorm.` : ""}${p?.area_m2 ? ` | ${p.area_m2} m²` : ""}`);
+  line(`Identificação: ${dash(p?.nickname)}`);
+  line(`Endereço: ${dash(p?.address)}${p?.city ? ` - ${p.city}/${p.state ?? ""}` : ""}${p?.zip_code ? ` - CEP ${p.zip_code}` : ""}`);
+  line(`Tipo: ${dash(p?.type)}${p?.bedrooms ? ` | ${p.bedrooms} dorm.` : ""}${p?.area_m2 ? ` | ${p.area_m2} m²` : ""}`);
   y += 8;
 
   section("CONDIÇÕES DA LOCAÇÃO");
@@ -414,15 +419,42 @@ function generateContractPDF(c: Contract, owner: { full_name: string; phone: str
   if (c.deposit_amount && c.deposit_amount > 0) line(`Depósito: ${formatBRL(c.deposit_amount)}`);
   y += 8;
 
+  if (owner.bank_name || owner.pix_key) {
+    section("DADOS PARA PAGAMENTO");
+    if (owner.bank_name) line(`Banco: ${owner.bank_name}   Agência: ${dash(owner.bank_agency)}   Conta: ${dash(owner.bank_account)}`);
+    if (owner.pix_key) line(`Chave PIX: ${owner.pix_key}`);
+    y += 8;
+  }
+
+  section("CLÁUSULAS GERAIS");
+  const clauses = [
+    "1. O presente contrato é regido pela Lei nº 8.245/91 (Lei do Inquilinato) e demais normas aplicáveis às locações residenciais urbanas.",
+    "2. O LOCATÁRIO se obriga a pagar pontualmente o aluguel e demais encargos (IPTU, condomínio, água, luz, gás), no vencimento estipulado.",
+    "3. O atraso no pagamento implicará multa de 2% (dois por cento) sobre o valor devido, juros de mora de 1% (um por cento) ao mês e correção monetária pelo IGP-M, sem prejuízo das demais cominações legais.",
+    "4. O imóvel destina-se exclusivamente ao uso residencial do LOCATÁRIO e de seu núcleo familiar, sendo vedada cessão, sublocação ou empréstimo, total ou parcial, sem prévia e expressa autorização escrita do LOCADOR.",
+    "5. O LOCATÁRIO recebe o imóvel em perfeitas condições de uso e conservação, obrigando-se a devolvê-lo no mesmo estado ao final da locação, sob pena de arcar com os reparos necessários.",
+    "6. Quaisquer benfeitorias úteis ou voluptuárias realizadas pelo LOCATÁRIO não serão indenizáveis e poderão ser retiradas, desde que não causem dano ao imóvel, ou incorporar-se-ão a este, a critério do LOCADOR.",
+    "7. O reajuste do aluguel observará o índice e a periodicidade descritos nas condições da locação, respeitada a legislação vigente.",
+    "8. A rescisão antecipada por iniciativa do LOCATÁRIO sujeita-o ao pagamento de multa proporcional, nos termos do art. 4º da Lei nº 8.245/91.",
+    "9. Fica eleito o foro da comarca de situação do imóvel para dirimir quaisquer questões oriundas do presente contrato, com renúncia a qualquer outro, por mais privilegiado que seja.",
+  ];
+  for (const cl of clauses) { line(cl); y += 2; }
+  y += 8;
+
   if (c.notes) {
     section("OBSERVAÇÕES / CLÁUSULAS ADICIONAIS");
     line(c.notes);
     y += 8;
   }
 
-  // Assinaturas
+  // Signatures
   if (y > 640) { doc.addPage(); y = M; }
   y = Math.max(y + 40, 700);
+  const cityLine = [owner.address_city, owner.address_uf].filter(Boolean).join("/") || "________________";
+  doc.setFontSize(10); doc.setTextColor(20);
+  doc.text(`${cityLine}, ${new Date().toLocaleDateString("pt-BR")}.`, M, y);
+  y += 36;
+
   const colW = (W - 2 * M - 40) / 2;
   doc.setDrawColor(20);
   doc.line(M, y, M + colW, y);
@@ -432,9 +464,12 @@ function generateContractPDF(c: Contract, owner: { full_name: string; phone: str
   doc.text("LOCADOR", M + colW / 2, y, { align: "center" });
   doc.text("LOCATÁRIO", M + colW + 40 + colW / 2, y, { align: "center" });
   y += 12;
-  doc.setTextColor(100);
-  doc.text(owner.full_name, M + colW / 2, y, { align: "center" });
-  doc.text(t?.full_name ?? "—", M + colW + 40 + colW / 2, y, { align: "center" });
+  doc.setTextColor(80);
+  doc.text(dash(owner.full_name), M + colW / 2, y, { align: "center" });
+  doc.text(dash(t?.full_name), M + colW + 40 + colW / 2, y, { align: "center" });
+  y += 12;
+  doc.text(`CPF: ${dash(owner.cpf)}`, M + colW / 2, y, { align: "center" });
+  doc.text(`CPF: ${dash(t?.cpf)}`, M + colW + 40 + colW / 2, y, { align: "center" });
 
-  doc.save(`contrato-${(p?.nickname ?? "alugaflow").replace(/\s+/g, "-").toLowerCase()}.pdf`);
+  doc.save(`contrato-${(c.property?.nickname ?? "alugaflow").replace(/\s+/g, "-").toLowerCase()}.pdf`);
 }
