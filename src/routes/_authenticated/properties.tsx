@@ -18,6 +18,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { formatBRL } from "@/lib/format";
+import { PropertyPhotos } from "@/components/property-photos";
+import { PropertyCover } from "@/components/property-cover";
 
 export const Route = createFileRoute("/_authenticated/properties")({
   head: () => ({ meta: [{ title: "Imóveis — AlugaFlow" }] }),
@@ -92,6 +94,7 @@ function PropertiesPage() {
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead className="w-[80px]">Foto</TableHead>
                   <TableHead>Apelido</TableHead>
                   <TableHead>Endereço</TableHead>
                   <TableHead>Tipo</TableHead>
@@ -103,6 +106,7 @@ function PropertiesPage() {
               <TableBody>
                 {data.map((p) => (
                   <TableRow key={p.id}>
+                    <TableCell><PropertyCover propertyId={p.id} /></TableCell>
                     <TableCell className="font-medium">{p.nickname}</TableCell>
                     <TableCell className="text-sm">{p.address}</TableCell>
                     <TableCell className="capitalize">{p.type}</TableCell>
