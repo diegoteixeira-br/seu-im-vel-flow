@@ -16,9 +16,17 @@ import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { PropertyCover } from "@/components/property-cover";
 import { downloadContractPDF, type ContractPDFData, type OwnerProfile, type ExtraCharge } from "@/lib/contract-pdf";
+import { gerarContratoResidencial, gerarContratoLocacaoCompleto } from "@/lib/contract-templates";
 import { formatBRL, formatDate } from "@/lib/format";
 import { createSignatureInvites } from "@/lib/signatures.functions";
 import { createAsaasChargesForContract } from "@/lib/asaas.functions";
+
+type TemplateId = "padrao_11" | "completo_20" | "residencial_20";
+const TEMPLATES: Array<{ id: TemplateId; label: string; desc: string }> = [
+  { id: "padrao_11", label: "Padrão (11 cláusulas, Lei 8.245/91)", desc: "Modelo enxuto, cobre obrigações essenciais." },
+  { id: "completo_20", label: "Locação completo (20 cláusulas) — Residencial/Comercial", desc: "Modelo robusto com LGPD, sinistros, sublocação, alienação e foro." },
+  { id: "residencial_20", label: "Locação Residencial (20 cláusulas)", desc: "Modelo específico residencial com cláusulas estendidas." },
+];
 
 const STEPS = ["Imóvel", "Detalhes", "Participantes", "Garantia", "Documento", "Assinatura"] as const;
 
@@ -72,13 +80,14 @@ function addMonths(iso: string, months: number): string {
 export function ContractWizard({ open, onOpenChange }: { open: boolean; onOpenChange: (b: boolean) => void }) {
   const [step, setStep] = useState(0);
   const [state, setState] = useState<WizardState>(initialState);
+  const [templateId, setTemplateId] = useState<TemplateId>("completo_20");
   const [createdContractId, setCreatedContractId] = useState<string | null>(null);
   const [signatureLinks, setSignatureLinks] = useState<Array<{ role: string; name: string; email: string; url: string }>>([]);
   const qc = useQueryClient();
 
   useEffect(() => {
     if (open) {
-      setStep(0); setState(initialState); setCreatedContractId(null); setSignatureLinks([]);
+      setStep(0); setState(initialState); setTemplateId("completo_20"); setCreatedContractId(null); setSignatureLinks([]);
     }
   }, [open]);
 
@@ -185,11 +194,14 @@ export function ContractWizard({ open, onOpenChange }: { open: boolean; onOpenCh
 
   function previewPDF() {
     if (!ownerProfile) return;
-    downloadContractPDF(
-      selectedProperty?.nickname ?? "contrato",
-      contractPayload,
-      ownerProfile,
-    );
+    const name = selectedProperty?.nickname ?? "contrato";
+    if (templateId === "completo_20") {
+      gerarContratoLocacaoCompleto(contractPayload, ownerProfile).save(`contrato-${name.replace(/\s+/g, "-").toLowerCase()}.pdf`);
+    } else if (templateId === "residencial_20") {
+      gerarContratoResidencial(contractPayload, ownerProfile).save(`contrato-${name.replace(/\s+/g, "-").toLowerCase()}.pdf`);
+    } else {
+      downloadContractPDF(name, contractPayload, ownerProfile);
+    }
   }
 
   // Save contract (creates payments via existing buildMonthlyPayments logic inline)
@@ -322,7 +334,7 @@ export function ContractWizard({ open, onOpenChange }: { open: boolean; onOpenCh
           {step === 1 && <StepDetails state={state} patch={patch} />}
           {step === 2 && <StepParticipants state={state} patch={patch} tenants={tenants} owner={ownerProfile ?? null} />}
           {step === 3 && <StepGuarantee state={state} patch={patch} />}
-          {step === 4 && <StepDocument payload={contractPayload} onPreview={previewPDF} />}
+          {step === 4 && <StepDocument payload={contractPayload} onPreview={previewPDF} templateId={templateId} onTemplateChange={setTemplateId} />}
           {step === 5 && (
             <StepSignature
               state={state}
@@ -573,11 +585,26 @@ function StepGuarantee({ state, patch }: { state: WizardState; patch: <K extends
   );
 }
 
-function StepDocument({ payload, onPreview }: { payload: ContractPDFData; onPreview: () => void }) {
+function StepDocument({ payload, onPreview, templateId, onTemplateChange }: { payload: ContractPDFData; onPreview: () => void; templateId: TemplateId; onTemplateChange: (id: TemplateId) => void }) {
+  const tpl = TEMPLATES.find((t) => t.id === templateId);
   return (
     <div className="space-y-4">
       <h3 className="font-semibold">Documento</h3>
-      <p className="text-sm text-muted-foreground">Revise os dados abaixo. O PDF inclui as 11 cláusulas da Lei 8.245/91 preenchidas automaticamente.</p>
+      <p className="text-sm text-muted-foreground">Escolha o modelo de contrato. As variáveis serão preenchidas automaticamente com os dados das etapas anteriores.</p>
+
+      <div className="space-y-2">
+        <Label>Modelo de contrato</Label>
+        <Select value={templateId} onValueChange={(v) => onTemplateChange(v as TemplateId)}>
+          <SelectTrigger><SelectValue /></SelectTrigger>
+          <SelectContent>
+            {TEMPLATES.map((t) => (
+              <SelectItem key={t.id} value={t.id}>{t.label}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        {tpl && <p className="text-xs text-muted-foreground">{tpl.desc}</p>}
+      </div>
+
       <Card><CardContent className="p-4 text-sm space-y-1">
         <p><b>Imóvel:</b> {payload.property?.nickname} — {payload.property?.address}</p>
         <p><b>Inquilino:</b> {payload.tenant?.full_name}</p>
