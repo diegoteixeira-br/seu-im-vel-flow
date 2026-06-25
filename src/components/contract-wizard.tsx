@@ -221,9 +221,11 @@ export function ContractWizard({ open, onOpenChange }: { open: boolean; onOpenCh
         guarantor_address: state.add_guarantor ? state.guarantor_address : null,
         signature_mode: state.signature_mode,
         signature_status: state.signature_mode === "manual" ? "pendente" : "pendente",
+        payment_method: state.payment_method,
         notes: state.notes || null,
       };
       const { data: ins, error } = await supabase.from("contracts").insert(payload).select("id").single();
+      if (error) throw error;
       if (error) throw error;
 
       // payments
