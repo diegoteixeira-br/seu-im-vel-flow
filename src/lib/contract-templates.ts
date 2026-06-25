@@ -304,6 +304,146 @@ export function gerarTermoVistoria(c: ContractPDFData, owner: OwnerProfile, v: V
   return d.doc;
 }
 
+// ===================================================================
+// MODELO 5 — Locação Residencial/Comercial (20 cláusulas, completo)
+// ===================================================================
+export function gerarContratoLocacaoCompleto(c: ContractPDFData, owner: OwnerProfile): jsPDF {
+  const d = newDoc();
+  const tipo = (c.contract_type ?? "residencial").toUpperCase();
+  header(d, `CONTRATO DE LOCAÇÃO DE IMÓVEL ${tipo}`);
+  d.doc.setFontSize(9); d.doc.setTextColor(120);
+  d.doc.text("Regido pela Lei nº 8.245/91 (Lei do Inquilinato) e LGPD (Lei 13.709/18)", d.W/2, d.y, { align: "center" });
+  d.y += 18; d.doc.setTextColor(20); d.doc.setFontSize(10);
+
+  const meses = monthsBetween(c.start_date, c.end_date);
+  const valorExt = valorPorExtenso(c.rent_amount);
+  const cidade = c.property?.city ?? owner.address_city ?? "—";
+  const estado = c.property?.state ?? owner.address_uf ?? "—";
+  const objeto = `${c.property?.address ?? "—"}${c.property?.city ? `, ${c.property.city}/${c.property.state ?? ""}` : ""}`;
+  const tipoLower = (c.contract_type ?? "residencial").toLowerCase();
+  const formaPag = owner.pix_key ? `PIX (${owner.pix_key}) ou transferência bancária` : "Boleto, transferência ou PIX";
+
+  section(d, "DAS PARTES");
+  p(d, `LOCADOR: ${qualificacaoOwner(owner)}.`);
+  p(d, `LOCATÁRIO: ${qualificacaoTenant(c.tenant)}.`);
+  if (c.guarantor?.name) p(d, `FIADOR: ${qualificacaoFiador(c.guarantor)}.`);
+  d.y += 6;
+
+  const garantiaClausula = c.guarantee_type === "caucao"
+    ? `Como garantia de fiança, o LOCATÁRIO depositará caução no valor de ${formatBRL((c.guarantee_months ?? 1) * c.rent_amount)}, equivalente a ${c.guarantee_months ?? 1} mês(es) de aluguel. A caução servirá como garantia de eventuais inadimplementos, não impedindo a ação de cobrança e despejo cabíveis. Não acionada ao término da locação, será devolvida em até 5 dias úteis, devidamente atualizada.`
+    : c.guarantee_type === "fiador"
+      ? `O FIADOR, principal pagador do LOCATÁRIO, responde solidariamente por todos os pagamentos descritos neste contrato, até a efetiva entrega das chaves ao LOCADOR e termo de vistoria do imóvel.`
+      : c.guarantee_type === "seguro_fianca"
+        ? "A garantia desta locação será prestada mediante seguro fiança locatícia contratado pelo LOCATÁRIO em seguradora idônea, com vigência mínima igual ao prazo deste contrato."
+        : "As partes ajustam a presente locação sem exigência de garantia, nos termos do art. 37 da Lei 8.245/91.";
+
+  const clauses: Array<[string, string]> = [
+    ["CLÁUSULA PRIMEIRA — DO OBJETO DA LOCAÇÃO", `1.1 O objeto deste contrato de locação é o imóvel situado em ${objeto}, no exato estado do termo de vistoria e fotos em anexo.`],
+    ["CLÁUSULA SEGUNDA — DO PRAZO DE VIGÊNCIA", `2.1 O prazo da locação é de ${meses} meses, iniciando-se em ${formatDate(c.start_date)} com término em ${formatDate(c.end_date)}, independentemente de aviso, notificação ou interpelação judicial ou extrajudicial.\n2.2 Findo o prazo ajustado, se o locatário continuar na posse do imóvel por mais de 30 dias sem oposição do locador, presumir-se-á prorrogada a locação por prazo indeterminado, mantidas as demais cláusulas e condições do contrato.`],
+    ["CLÁUSULA TERCEIRA — DA FORMA DE PAGAMENTO", `3.1 O aluguel mensal deverá ser pago até o dia ${c.due_day} do mês subsequente ao vencido, por meio de ${formaPag}, no valor de ${formatBRL(c.rent_amount)} (${valorExt}), reajustados anualmente pelo índice ${ADJ[c.adjustment_index] ?? c.adjustment_index}, incidente sobre o último aluguel pago no mês anterior. Sendo extinto tal índice, será utilizado, sucessivamente, o IPC/FIPE ou IGP/FGV.`],
+    ["CLÁUSULA QUARTA — DAS TAXAS E TRIBUTOS", "4.1 Todas as taxas e tributos incidentes sobre o imóvel, tais como condomínio, IPTU, bem como despesas ordinárias de condomínio e quaisquer outras que recaírem sobre o imóvel, serão de responsabilidade do LOCATÁRIO, o qual arcará também com as despesas de luz, força, água e gás, pagas diretamente às concessionárias, independentemente da troca de titularidade."],
+    ["CLÁUSULA QUINTA — DA MULTA E JUROS DE MORA", "5.1 Em caso de mora no pagamento do aluguel, o valor será corrigido pelo IGP-M até o dia do efetivo pagamento e acrescido de multa moratória de 10% e juros de 1% ao mês, ensejando cobrança por advogado, fixados desde já os honorários em 10% se amigável e 20% se judicial."],
+    ["CLÁUSULA SEXTA — DA CONSERVAÇÃO, REFORMAS E BENFEITORIAS", "6.1 Ao LOCATÁRIO recai a responsabilidade por zelar pela conservação, limpeza e segurança do imóvel.\n6.2 Benfeitorias necessárias serão indenizáveis; úteis somente se previamente autorizadas; voluptuárias não são indenizáveis e poderão ser levantadas se sua retirada não afetar a estrutura.\n6.3 O LOCATÁRIO obriga-se a devolver o imóvel em perfeitas condições de limpeza, conservação e pintura, conforme termo de vistoria em anexo.\n6.4 Obras que alterem a estrutura dependem de autorização escrita do LOCADOR; quando autorizadas, incorporam-se ao imóvel sem direito a indenização.\n6.5 É responsabilidade do LOCATÁRIO verificar a voltagem e a capacidade da instalação elétrica, respondendo por danos a equipamentos por inadequação."],
+    ["CLÁUSULA SÉTIMA — DA DESTINAÇÃO DO IMÓVEL", `7.1 O LOCATÁRIO declara que o imóvel destina-se exclusivamente para uso ${tipoLower}.\n7.2 O LOCATÁRIO obriga-se, por si e seus dependentes, a cumprir as disposições legais sobre o Condomínio, sua Convenção e Regulamento Interno.`],
+    ["CLÁUSULA OITAVA — DOS SINISTROS", "8.1 No caso de sinistro do prédio, parcial ou total, que impossibilite a habitação do imóvel locado, o presente contrato estará rescindido, independentemente de aviso ou interpelação.\n8.2 No caso de incêndio parcial, o contrato terá sua vigência suspensa, sendo devolvido ao LOCATÁRIO após a reconstrução, prorrogado pelo mesmo tempo das obras."],
+    ["CLÁUSULA NONA — DA SUBLOCAÇÃO", "9.1 É vedado ao LOCATÁRIO sublocar, transferir ou ceder o imóvel, sendo nulo qualquer ato praticado sem consentimento prévio e por escrito do LOCADOR."],
+    ["CLÁUSULA DÉCIMA — DA DESAPROPRIAÇÃO", "10.1 Em caso de desapropriação total ou parcial do imóvel, ficará rescindido de pleno direito o presente contrato, sendo passíveis de indenização as perdas e danos efetivamente demonstradas."],
+    ["CLÁUSULA DÉCIMA PRIMEIRA — DOS CASOS DE FALECIMENTO", "11.1 Falecendo o FIADOR, deve o LOCATÁRIO, no prazo de 30 dias, indicar substituto idôneo nas mesmas condições ou prestar seguro fiança de empresa idônea."],
+    ["CLÁUSULA DÉCIMA SEGUNDA — DA GARANTIA", `12.1 ${garantiaClausula}`],
+    ["CLÁUSULA DÉCIMA TERCEIRA — DA ALIENAÇÃO DO IMÓVEL", "13.1 No caso de alienação do imóvel, o LOCATÁRIO terá direito de preferência; não utilizada formalmente, o LOCADOR poderá dispor livremente do imóvel."],
+    ["CLÁUSULA DÉCIMA QUARTA — DAS VISTORIAS", "14.1 É facultado ao LOCADOR, mediante aviso prévio, vistoriar o imóvel, por si ou seus procuradores, sempre que achar conveniente, para certificar o cumprimento das obrigações."],
+    ["CLÁUSULA DÉCIMA QUINTA — DAS INFRAÇÕES AO CONTRATO", `15.1 A não observância de qualquer das cláusulas do presente contrato sujeita o infrator à multa de 3 (três) aluguéis vigentes, tomando-se por base o último aluguel vencido (referência: ${formatBRL(c.rent_amount * 3)}).`],
+    ["CLÁUSULA DÉCIMA SEXTA — DA SUCESSÃO", "16.1 As partes contratantes obrigam-se por si, herdeiros e/ou sucessores."],
+    ["CLÁUSULA DÉCIMA SÉTIMA — DA RESCISÃO DO CONTRATO", `17.1 A rescisão antecipada culmina em multa contratual proporcional, calculada por: valor da multa (3 aluguéis) / ${meses} meses × meses faltantes para o término.\n17.2 Após o prazo de vigência, podem as partes rescindir o contrato mediante aviso prévio de 30 dias.`],
+    ["CLÁUSULA DÉCIMA OITAVA — DA OBSERVÂNCIA À LGPD", "18.1 O LOCATÁRIO declara expresso CONSENTIMENTO para que o LOCADOR colete, trate e compartilhe os dados necessários ao cumprimento do contrato (art. 7º, V, LGPD), ao cumprimento de obrigações legais (art. 7º, II) e à proteção ao crédito (art. 7º, V)."],
+    ["CLÁUSULA DÉCIMA NONA — TERMOS GERAIS", "19.1 O LOCATÁRIO obriga-se a respeitar os direitos de vizinhança e a Convenção/Regulamento Interno do condomínio, respondendo por multas decorrentes de infrações.\n19.2 A colocação de placas, letreiros, aparelhos de ar-condicionado, antenas e similares depende de observância da legislação municipal e, quando em condomínio, de prévia autorização do síndico."],
+    ["CLÁUSULA VIGÉSIMA — DO FORO", `20.1 As partes elegem o foro de ${cidade}/${estado} para dirimirem qualquer litígio decorrente do presente termo.`],
+  ];
+
+  for (const [title, body] of clauses) { section(d, title); for (const part of body.split("\n")) p(d, part); d.y += 2; }
+
+  ensure(d, 30);
+  d.doc.setFont("helvetica","italic"); d.doc.setFontSize(9); d.doc.setTextColor(100);
+  d.doc.text(`${cidade}, ${dataPorExtenso()}.`, d.M, d.y); d.y += 16;
+  d.doc.setFont("helvetica","normal"); d.doc.setFontSize(10); d.doc.setTextColor(20);
+
+  const signers = [
+    { role: "LOCADOR", name: owner.full_name ?? "—", cpf: owner.cpf },
+    { role: "LOCATÁRIO", name: c.tenant?.full_name ?? "—", cpf: c.tenant?.cpf },
+  ];
+  if (c.guarantor?.name) signers.push({ role: "FIADOR", name: c.guarantor.name, cpf: c.guarantor.cpf });
+  assinaturas(d, signers, `${cidade}/${estado}`);
+
+  // Testemunhas
+  ensure(d, 60); d.y += 10;
+  d.doc.setFont("helvetica","bold"); d.doc.text("TESTEMUNHAS:", d.M, d.y); d.y += 18;
+  d.doc.setFont("helvetica","normal");
+  d.doc.line(d.M, d.y, d.M + 220, d.y);
+  d.doc.line(d.W - d.M - 220, d.y, d.W - d.M, d.y); d.y += 12;
+  d.doc.setFontSize(9); d.doc.text("Nome / RG", d.M, d.y); d.doc.text("Nome / RG", d.W - d.M - 220, d.y);
+
+  return d.doc;
+}
+
+// ===================================================================
+// MODELO 6 — Corretagem Imobiliária
+// ===================================================================
+export type CorretagemData = {
+  corretor_nome: string;
+  corretor_cpf: string;
+  corretor_creci?: string;
+  corretor_endereco?: string;
+  valor_imovel: number;
+  comissao_percent: number; // ex: 6
+  prazo_dias: number;
+  cidade_foro: string;
+};
+
+export function gerarCorretagemImobiliaria(c: ContractPDFData, owner: OwnerProfile, k: CorretagemData): jsPDF {
+  const d = newDoc();
+  header(d, "CONTRATO DE PRESTAÇÃO DE SERVIÇOS DE CORRETAGEM IMOBILIÁRIA");
+
+  section(d, "IDENTIFICAÇÃO DAS PARTES");
+  p(d, `CONTRATANTE (PROPRIETÁRIO): ${qualificacaoOwner(owner)}.`);
+  p(d, `CORRETOR: ${k.corretor_nome}, portador(a) do CPF nº ${k.corretor_cpf}${k.corretor_creci ? `, CRECI nº ${k.corretor_creci}` : ""}${k.corretor_endereco ? `, residente em ${k.corretor_endereco}` : ""}.`);
+  d.y += 4;
+
+  section(d, "CLÁUSULA 1ª — DO OBJETO");
+  p(d, `O presente contrato tem como objeto a prestação de serviços de corretagem para o oferecimento e negociação da venda do imóvel situado em ${c.property?.address ?? "—"}${c.property?.city ? `, ${c.property.city}/${c.property.state ?? ""}` : ""}.`);
+
+  section(d, "CLÁUSULA 2ª — DO IMÓVEL");
+  p(d, "O imóvel encontra-se livre de quaisquer ônus ou dívidas que possam impedir transações. O CONTRATANTE compromete-se a fornecer todas as certidões pessoais e do imóvel necessárias.");
+
+  section(d, "CLÁUSULA 3ª — DEVERES DO CONTRATANTE");
+  p(d, "3.1 O CONTRATANTE compromete-se a não negociar e/ou vender o imóvel diretamente durante a vigência deste contrato; caso o faça, será devido o pagamento integral da comissão ajustada.");
+  p(d, "3.2 Todo o trâmite de transferência do imóvel ao novo comprador será de exclusiva responsabilidade do CONTRATANTE.");
+
+  section(d, "CLÁUSULA 4ª — DA PRESTAÇÃO DE SERVIÇOS");
+  p(d, "O CORRETOR compromete-se a realizar o trabalho de corretagem de forma criteriosa e com a máxima honestidade, empregando todos os meios pessoais para concretizar a venda do imóvel, sem utilizar intermediários sem autorização expressa do CONTRATANTE.");
+
+  section(d, "CLÁUSULA 5ª — DO VALOR DO IMÓVEL E DA COMISSÃO");
+  p(d, `5.1 O imóvel é ofertado pelo valor total de ${formatBRL(k.valor_imovel)} (${valorPorExtenso(k.valor_imovel)}).`);
+  p(d, `5.2 Concretizada a venda, o CONTRATANTE pagará ao CORRETOR comissão equivalente a ${k.comissao_percent}% sobre o valor efetivo da venda, totalizando, no preço base, ${formatBRL((k.valor_imovel * k.comissao_percent) / 100)}.`);
+  p(d, "5.3 Vendido o imóvel a preço superior ao ofertado, o CORRETOR receberá a diferença, limitada a 10% sobre o preço base.");
+  p(d, "5.4 É vedado ao CORRETOR ofertar o imóvel a preço menor sem autorização expressa.");
+
+  section(d, "CLÁUSULA 6ª — DO PRAZO");
+  p(d, `6.1 O CORRETOR terá o prazo de ${k.prazo_dias} dias, contados da assinatura deste, para concretizar a venda do imóvel.`);
+  p(d, "6.2 Ultrapassado o prazo, o CORRETOR fará jus à comissão se a venda ocorrer dentro de 90 dias após o término, desde que as negociações já estivessem iniciadas e formalmente comunicadas ao CONTRATANTE.");
+
+  section(d, "CLÁUSULA 7ª — CONDIÇÕES GERAIS");
+  p(d, "O CORRETOR intermediará a operação até a inicialização da venda, restando os demais trâmites por conta e risco do CONTRATANTE. Findo o prazo, o CORRETOR devolverá ao CONTRATANTE todos os documentos e chaves em seu poder.");
+
+  section(d, "CLÁUSULA 8ª — DO FORO");
+  p(d, `Fica eleito o foro da comarca de ${k.cidade_foro} para dirimir quaisquer controvérsias oriundas deste contrato.`);
+
+  assinaturas(d, [
+    { role: "CONTRATANTE", name: owner.full_name ?? "—", cpf: owner.cpf },
+    { role: "CORRETOR", name: k.corretor_nome, cpf: k.corretor_cpf },
+  ], k.cidade_foro);
+  return d.doc;
+}
+
 // ---------- Download helpers ----------
 function slug(s: string) { return s.replace(/\s+/g, "-").toLowerCase(); }
 
