@@ -5,9 +5,10 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, FileDown } from "lucide-react";
+import { Plus, Pencil, Trash2, FileDown, Send } from "lucide-react";
 import jsPDF from "jspdf";
 import { supabase } from "@/integrations/supabase/client";
+import { createAsaasChargesForContract } from "@/lib/asaas.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -93,12 +94,23 @@ function ContractsPage() {
   async function downloadPDF(c: Contract) {
     try {
       const { data: u } = await supabase.auth.getUser();
-      const { data: profile } = await supabase.from("profiles").select("full_name, phone").eq("id", u.user!.id).maybeSingle();
-      generateContractPDF(c, { full_name: profile?.full_name ?? "—", phone: profile?.phone ?? "—", email: u.user?.email ?? "—" });
+      const { data: profile } = await supabase.from("profiles").select("*").eq("id", u.user!.id).maybeSingle();
+      generateContractPDF(c, { ...(profile ?? {}), email: u.user?.email ?? "—" });
     } catch (e) {
       toast.error((e as Error).message);
     }
   }
+
+  const sendCharges = useMutation({
+    mutationFn: async (id: string) => createAsaasChargesForContract({ data: { contractId: id } }),
+    onSuccess: (r) => {
+      qc.invalidateQueries({ queryKey: ["payments"] });
+      if (r.created > 0) toast.success(`${r.created} cobrança(s) gerada(s) no ASAAS`);
+      if (r.failed > 0) toast.error(`${r.failed} cobrança(s) falharam: ${r.errors.join(" | ")}`);
+      if (r.created === 0 && r.failed === 0) toast.message("Nenhuma cobrança pendente para gerar.");
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
 
   return (
     <div className="space-y-4">
