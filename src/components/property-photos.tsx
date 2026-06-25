@@ -134,8 +134,18 @@ export function PropertyPhotos({ propertyId }: { propertyId: string }) {
           multiple
           className="hidden"
           onChange={(e) => {
-            if (e.target.files?.length) upload.mutate(e.target.files);
+            const picked = Array.from(e.target.files ?? []);
             e.target.value = "";
+            if (picked.length === 0) return;
+            const toUpload = picked.slice(0, remaining);
+            if (toUpload.length === 0) {
+              toast.error(`Limite de ${MAX_PHOTOS_PER_PROPERTY} fotos atingido`);
+              return;
+            }
+            if (picked.length > toUpload.length) {
+              toast.info(`Apenas ${toUpload.length} foto(s) serão enviadas (limite ${MAX_PHOTOS_PER_PROPERTY})`);
+            }
+            upload.mutate(toUpload);
           }}
         />
       </div>
