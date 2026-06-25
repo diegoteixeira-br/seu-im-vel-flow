@@ -223,6 +223,15 @@ function PropertyDialog({ open, onOpenChange, editing }: { open: boolean; onOpen
             <Label>Observações</Label>
             <Textarea rows={3} {...form.register("notes")} />
           </div>
+          <div className="sm:col-span-2">
+            {editing ? (
+              <PropertyPhotos propertyId={editing.id} />
+            ) : (
+              <p className="rounded-md border border-dashed p-3 text-center text-xs text-muted-foreground">
+                Salve o imóvel para adicionar fotos.
+              </p>
+            )}
+          </div>
           <DialogFooter className="sm:col-span-2">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
             <Button type="submit" disabled={save.isPending}>{save.isPending ? "Salvando..." : "Salvar"}</Button>
