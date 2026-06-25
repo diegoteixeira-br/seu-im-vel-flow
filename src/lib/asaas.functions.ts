@@ -34,8 +34,11 @@ async function asaasFetch(env: string, key: string, path: string, init?: Request
   return body as Record<string, unknown>;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type SB = any;
+
 async function ensureAsaasCustomer(
-  ctx: { supabase: ReturnType<typeof requireSupabaseAuth.use> extends never ? never : any }, // typing fallback
+  supabase: SB,
   env: string,
   apiKey: string,
   tenant: { id: string; full_name: string; cpf: string | null; email: string | null; phone: string | null; asaas_customer_id: string | null },
@@ -54,11 +57,11 @@ async function ensureAsaasCustomer(
     }),
   });
   const customerId = String(created.id);
-  await ctx.supabase.from("tenants").update({ asaas_customer_id: customerId }).eq("id", tenant.id);
+  await supabase.from("tenants").update({ asaas_customer_id: customerId }).eq("id", tenant.id);
   return customerId;
 }
 
-async function loadProfile(supabase: any, userId: string) {
+async function loadProfile(supabase: SB, userId: string) {
   const { data, error } = await supabase
     .from("profiles")
     .select("asaas_api_key, asaas_environment")
