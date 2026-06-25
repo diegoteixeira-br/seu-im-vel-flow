@@ -585,11 +585,26 @@ function StepGuarantee({ state, patch }: { state: WizardState; patch: <K extends
   );
 }
 
-function StepDocument({ payload, onPreview }: { payload: ContractPDFData; onPreview: () => void }) {
+function StepDocument({ payload, onPreview, templateId, onTemplateChange }: { payload: ContractPDFData; onPreview: () => void; templateId: TemplateId; onTemplateChange: (id: TemplateId) => void }) {
+  const tpl = TEMPLATES.find((t) => t.id === templateId);
   return (
     <div className="space-y-4">
       <h3 className="font-semibold">Documento</h3>
-      <p className="text-sm text-muted-foreground">Revise os dados abaixo. O PDF inclui as 11 cláusulas da Lei 8.245/91 preenchidas automaticamente.</p>
+      <p className="text-sm text-muted-foreground">Escolha o modelo de contrato. As variáveis serão preenchidas automaticamente com os dados das etapas anteriores.</p>
+
+      <div className="space-y-2">
+        <Label>Modelo de contrato</Label>
+        <Select value={templateId} onValueChange={(v) => onTemplateChange(v as TemplateId)}>
+          <SelectTrigger><SelectValue /></SelectTrigger>
+          <SelectContent>
+            {TEMPLATES.map((t) => (
+              <SelectItem key={t.id} value={t.id}>{t.label}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        {tpl && <p className="text-xs text-muted-foreground">{tpl.desc}</p>}
+      </div>
+
       <Card><CardContent className="p-4 text-sm space-y-1">
         <p><b>Imóvel:</b> {payload.property?.nickname} — {payload.property?.address}</p>
         <p><b>Inquilino:</b> {payload.tenant?.full_name}</p>
