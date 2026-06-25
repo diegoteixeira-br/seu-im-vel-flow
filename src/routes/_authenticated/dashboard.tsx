@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { Building2, Users, Wallet, AlertTriangle, TrendingUp, CalendarClock, Target } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import { Building2, Users, Wallet, AlertTriangle, TrendingUp, CalendarClock, Target, AlertCircle, Info } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from "recharts";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,25 +15,32 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
 
 function monthKey(d: Date) { return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`; }
 function monthLabel(d: Date) { return d.toLocaleDateString("pt-BR", { month: "short" }).replace(".", ""); }
+function addDaysISO(days: number): string {
+  const d = new Date();
+  d.setDate(d.getDate() + days);
+  return d.toISOString().slice(0, 10);
+}
 
 function Dashboard() {
   const { data, isLoading } = useQuery({
     queryKey: ["dashboard"],
     queryFn: async () => {
       const today = todayISO();
-      const [properties, tenants, contracts, payments, expenses] = await Promise.all([
+      const [properties, tenants, contracts, payments, expenses, profile] = await Promise.all([
         supabase.from("properties").select("id,status,rent_amount"),
         supabase.from("tenants").select("id"),
-        supabase.from("contracts").select("id,status,rent_amount"),
-        supabase.from("payments").select("id,amount,paid_amount,status,due_date,reference_month,paid_date, contract:contracts(property:properties(nickname), tenant:tenants(full_name))"),
+        supabase.from("contracts").select("id,status,rent_amount,end_date, property:properties(nickname), tenant:tenants(full_name)"),
+        supabase.from("payments").select("id,amount,paid_amount,status,due_date,reference_month,paid_date,charge_sent_at,asaas_payment_id, contract:contracts(property:properties(nickname), tenant:tenants(full_name))"),
         supabase.from("expenses").select("id,amount,expense_date"),
+        supabase.from("profiles").select("auto_charge_enabled, auto_charge_days_before").maybeSingle(),
       ]);
       return {
         properties: properties.data ?? [],
         tenants: tenants.data ?? [],
-        contracts: contracts.data ?? [],
-        payments: (payments.data ?? []) as Array<{ id: string; amount: number; paid_amount: number | null; status: string; due_date: string; reference_month: string; paid_date: string | null; contract?: { property?: { nickname: string }; tenant?: { full_name: string } } }>,
+        contracts: (contracts.data ?? []) as Array<{ id: string; status: string; rent_amount: number; end_date: string | null; property?: { nickname?: string }; tenant?: { full_name?: string } }>,
+        payments: (payments.data ?? []) as Array<{ id: string; amount: number; paid_amount: number | null; status: string; due_date: string; reference_month: string; paid_date: string | null; charge_sent_at: string | null; asaas_payment_id: string | null; contract?: { property?: { nickname: string }; tenant?: { full_name: string } } }>,
         expenses: expenses.data ?? [],
+        profile: profile.data as { auto_charge_enabled?: boolean; auto_charge_days_before?: number } | null,
         today,
       };
     },
@@ -60,6 +68,27 @@ function Dashboard() {
   const overdue = data.payments.filter((p) => p.status !== "pago" && p.status !== "cancelado" && p.due_date < data.today);
   const overdueTotal = overdue.reduce((s, p) => s + Number(p.amount || 0), 0);
 
+  // ====== Alertas ======
+  const cutoff5 = addDaysISO(-5);
+  const severelyOverdue = overdue.filter((p) => p.due_date < cutoff5);
+
+  const in30 = addDaysISO(30);
+  const expiringContracts = data.contracts.filter((c) =>
+    c.status === "ativo" && c.end_date && c.end_date >= data.today && c.end_date <= in30,
+  );
+
+  const autoEnabled = Boolean(data.profile?.auto_charge_enabled);
+  const daysBefore = Number(data.profile?.auto_charge_days_before ?? 3);
+  const targetSendDate = addDaysISO(daysBefore);
+  const pendingChargesToday = autoEnabled
+    ? data.payments.filter((p) =>
+        p.status === "pendente" &&
+        p.due_date === targetSendDate &&
+        !p.charge_sent_at &&
+        !p.asaas_payment_id,
+      )
+    : [];
+
   const upcoming = data.payments
     .filter((p) => p.status !== "pago" && p.status !== "cancelado" && p.due_date >= data.today)
     .sort((a, b) => a.due_date.localeCompare(b.due_date))
@@ -84,12 +113,45 @@ function Dashboard() {
     if (i != null) months[i].despesas += Number(e.amount || 0);
   }
 
+  const hasAlerts = severelyOverdue.length > 0 || expiringContracts.length > 0 || pendingChargesToday.length > 0;
+
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
         <p className="text-sm text-muted-foreground">Visão geral da sua operação.</p>
       </div>
+
+      {hasAlerts && (
+        <div className="grid gap-3 md:grid-cols-3">
+          {severelyOverdue.length > 0 && (
+            <Alert color="red" icon={<AlertTriangle className="h-4 w-4" />} title={`${severelyOverdue.length} pagamento(s) vencido(s) há mais de 5 dias`}
+              to="/payments">
+              <ul className="mt-1 space-y-0.5">
+                {severelyOverdue.slice(0, 3).map((p) => (
+                  <li key={p.id} className="truncate">{p.contract?.property?.nickname ?? "Imóvel"} — venceu {formatDate(p.due_date)}</li>
+                ))}
+              </ul>
+            </Alert>
+          )}
+          {expiringContracts.length > 0 && (
+            <Alert color="orange" icon={<AlertCircle className="h-4 w-4" />} title={`${expiringContracts.length} contrato(s) vencendo em até 30 dias`}
+              to="/contracts">
+              <ul className="mt-1 space-y-0.5">
+                {expiringContracts.slice(0, 3).map((c) => (
+                  <li key={c.id} className="truncate">{c.property?.nickname ?? "Imóvel"} — {c.tenant?.full_name ?? "—"} ({formatDate(c.end_date!)})</li>
+                ))}
+              </ul>
+            </Alert>
+          )}
+          {pendingChargesToday.length > 0 && (
+            <Alert color="blue" icon={<Info className="h-4 w-4" />} title={`${pendingChargesToday.length} cobrança(s) deveriam ter sido enviadas hoje`}
+              to="/payments">
+              <p className="mt-1 text-xs">Automação está ativada mas estas cobranças ainda não foram disparadas.</p>
+            </Alert>
+          )}
+        </div>
+      )}
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card>
@@ -111,7 +173,7 @@ function Dashboard() {
           </CardContent>
         </Card>
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Em atraso</CardTitle><AlertTriangle className="h-4 w-4 text-destructive" /></CardHeader>
+          <CardHeader className="flex flex-row items-center justify-between pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Em atraso</CardTitle><Wallet className="h-4 w-4 text-destructive" /></CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-destructive">{formatBRL(overdueTotal)}</div>
             <p className="text-xs text-muted-foreground">{overdue.length} pagamento(s)</p>
@@ -184,5 +246,25 @@ function Dashboard() {
         </Card>
       )}
     </div>
+  );
+}
+
+function Alert({ color, icon, title, to, children }: {
+  color: "red" | "orange" | "blue";
+  icon: React.ReactNode;
+  title: string;
+  to: "/payments" | "/contracts";
+  children: React.ReactNode;
+}) {
+  const styles: Record<typeof color, string> = {
+    red: "border-destructive/40 bg-destructive/10 text-destructive",
+    orange: "border-orange-500/40 bg-orange-500/10 text-orange-700 dark:text-orange-300",
+    blue: "border-primary/40 bg-primary/10 text-primary",
+  };
+  return (
+    <Link to={to} className={`block rounded-md border p-3 text-sm transition-opacity hover:opacity-90 ${styles[color]}`}>
+      <div className="flex items-center gap-2 font-medium">{icon}{title}</div>
+      <div className="text-xs opacity-90">{children}</div>
+    </Link>
   );
 }
