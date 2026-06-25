@@ -1,66 +1,92 @@
-## Escopo
 
-Atualização única cobrindo Pagamentos, Automação ASAAS, Relatórios, Vistoria e Notificações no Dashboard.
+## Escopo
+Refatorar o módulo de Contratos para um wizard de 6 etapas, adicionar cobranças extras, fiador, template completo da Lei 8.245/91 e assinatura eletrônica via link único enviado por email.
 
 ---
 
 ### 1. Migration (schema)
 
-Tabela `profiles` — novos campos:
-- `auto_charge_enabled boolean default false`
-- `auto_charge_days_before int default 3` (1/2/3/5/7)
-- `auto_charge_message text`
+**`contracts` — novos campos:**
+- `contract_type text default 'residencial'` (residencial/comercial)
+- `extra_charges jsonb default '[]'` (lista `{label, amount}` — IPTU, condomínio, água, luz)
+- `guarantor_name text`, `guarantor_cpf text`, `guarantor_rg text`, `guarantor_phone text`, `guarantor_email text`, `guarantor_address text` (fiador opcional)
+- `signature_mode text default 'manual'` (manual/eletronica)
+- `signature_status text default 'pendente'` (pendente/parcial/assinado)
+- `signed_at timestamptz`
+- `signed_pdf_path text` (PDF final no storage)
 
-Tabela `payments` — novo campo:
-- `charge_sent_at timestamptz` (preenchido quando cobrança ASAAS é criada)
+**Nova tabela `contract_signatures`:**
+- `id`, `contract_id` (FK), `role` (locador/locatario/fiador), `name`, `email`, `token` (uuid único), `signed_name`, `signed_cpf`, `signed_at`, `signer_ip`, `created_at`
+- RLS: dono do contrato pode ler; INSERT/UPDATE via service_role pelo endpoint público.
 
-### 2. Página de Pagamentos (`src/routes/_authenticated/payments.tsx`)
+**Novo bucket privado `signed-contracts`** para PDFs finais.
 
-- Topo: cards de resumo (Previsto / Recebido / Atrasado) calculados sobre o filtro ativo.
-- Filtros: mês/ano (select), status (pendente/pago/atrasado/todos), imóvel (select).
-- Ação "Marcar como pago" em linhas pendentes → atualiza `status=pago`, `paid_date=hoje`, `paid_amount=amount`.
-- Ação "Enviar cobrança ASAAS" → chama `createAsaasChargeForPayment`, registra `charge_sent_at`, abre invoice em nova aba.
-- Badge "Cobrança enviada" quando `asaas_payment_id` ou `charge_sent_at` presentes.
+### 2. Wizard de Contratos (`src/routes/_authenticated/contracts.tsx`)
 
-### 3. Automação de cobranças
+Substitui o `ContractDialog` atual por wizard com `Stepper` (barra de progresso) e 6 passos:
 
-**Configurações** (`configuracoes.tsx`):
-- Nova seção "Automação de cobranças": toggle, select de dias (1/2/3/5/7), textarea de mensagem.
-- Botão "Testar envio agora" → invoca a edge function manualmente.
+1. **Imóvel** — grid de cards com foto/capa (reusar `PropertyCover`) e seleção.
+2. **Detalhes** — tipo, prazo (meses), data início, valor, dia vencimento (1-28), reajuste (IGP-M/IPCA/Nenhum), lista dinâmica de cobranças extras.
+3. **Participantes** — proprietário (read-only do profile), inquilino (select), toggle "Adicionar fiador" + campos.
+4. **Garantia** — radio: Sem garantia / Fiador (link com etapa 3) / Caução em dinheiro (input N meses) / Seguro fiança.
+5. **Documento** — preview HTML do contrato + botão "Visualizar PDF" usando `generateContractPDF` atualizado.
+6. **Assinatura** — radio Manual vs Eletrônica. Manual = baixar PDF e salvar contrato. Eletrônica = salva contrato, cria registros em `contract_signatures` (um por signatário com email) e dispara envio de email com link.
 
-**Edge Function `send-charges`** (Supabase):
-- Roda diariamente via `pg_cron` (08:00 BRT = 11:00 UTC).
-- Para cada profile com `auto_charge_enabled=true`: busca `payments` com `status='pendente'`, `due_date = hoje + auto_charge_days_before`, `charge_sent_at IS NULL`.
-- Para cada um: cria cobrança ASAAS (cliente + payment com `billingType=BOLETO`), atualiza `asaas_payment_id`, `asaas_invoice_url`, `charge_sent_at=now()`.
-- ASAAS envia o boleto por email ao inquilino automaticamente.
-- Retorna `{ processed, created, failed, errors }`.
+Cada etapa valida com Zod antes de avançar. Dados acumulados em estado local.
 
-`pg_cron` agendado para chamar a function via `pg_net` (anon key como `apikey`).
+### 3. Template do contrato (PDF)
 
-### 4. Relatórios (`relatorios.tsx`)
+Reescrever `generateContractPDF` para incluir as 10 cláusulas com texto completo da Lei 8.245/91, dados reais (proprietário, inquilino, fiador, endereço do imóvel, valor por extenso via helper), cobranças adicionais listadas, e bloco de assinaturas (locador/locatário/fiador) com linha, nome, CPF e data.
 
-- Já existe filtro de período (datas). Manter, mas adicionar atalhos "Mês atual / Mês anterior / Ano".
-- Tabela e exportação CSV já existem — só consolidar rótulos: "Receita bruta", "Despesas", "Lucro líquido".
+Helper `numeroPorExtenso(valor)` em `src/lib/extenso.ts` (implementação simples para reais).
 
-### 5. Vistoria (`vistoria.tsx`)
+### 4. Assinatura eletrônica
 
-- Ao selecionar imóvel: carregar `property_photos` e mostrar como referência (galeria collapsible "Fotos do imóvel").
-- Garantir campo `observations` por cômodo no formulário (já existe coluna `inspections.notes` por foto; adicionar `room_notes` no fluxo).
-- "Gerar PDF" já existe — revisar para incluir observações por cômodo.
+**Server function `src/lib/signatures.functions.ts`:**
+- `sendSignatureInvites(contractId)` — autenticado, lê signatures pendentes, envia email via Resend connector (ou Lovable Emails se já configurado) com link `https://<host>/assinar/{token}`.
+- `finalizeSignedContract(contractId)` — quando todas assinadas: gera PDF com rodapé de assinaturas usando `pdf-lib` ou via `jspdf` no server (usar jsPDF que já existe — invocar em server fn), salva em bucket `signed-contracts`, atualiza `contracts.signed_pdf_path`, `signature_status='assinado'`, `signed_at=now()`, envia email ao proprietário.
 
-### 6. Dashboard — alertas (`dashboard.tsx`)
+**Rota pública `src/routes/api/public/sign-contract.ts`:**
+- `GET ?token=...` retorna dados do contrato + signatário (nome, role, contrato resumido).
+- `POST {token, signed_name, signed_cpf}` valida CPF, registra IP (`x-forwarded-for`), `signed_at`, e chama `finalizeSignedContract` se todas assinadas.
 
-Nova seção "Avisos" no topo (acima dos cards):
-- 🔴 Vermelho: nº de pagamentos com `due_date < hoje - 5 dias` e `status='pendente'`.
-- 🟠 Laranja: nº de contratos com `end_date entre hoje e hoje+30`.
-- 🔵 Azul: nº de pagamentos onde `due_date = hoje + auto_charge_days_before` e `charge_sent_at IS NULL` e auto-charge habilitado.
+Usa `supabaseAdmin` (carregado dentro do handler).
+
+**Página pública `src/routes/assinar.$token.tsx`:**
+- Busca dados via fetch para `/api/public/sign-contract?token=...`.
+- Mostra preview do contrato (iframe do PDF), formulário (nome completo, CPF com máscara), checkbox "Li e concordo", botão "Assinar".
+- Após sucesso, tela de confirmação.
+
+### 5. Email
+
+Usar **Lovable Emails** (built-in). Templates React Email em `src/lib/email-templates/`:
+- `signature-invite.tsx` — convite para assinar com link.
+- `signature-complete.tsx` — notifica proprietário.
+
+Disparo via helper `src/lib/email/send.ts` (rota `/lovable/email/transactional/send`).
+
+Pré-requisito: domínio de email configurado. Se não estiver, mostro o dialog de setup antes.
+
+### 6. Detalhes técnicos
+
+- Wizard como componente novo `src/components/contract-wizard.tsx` para isolar do arquivo principal.
+- CPF mask: reusar helpers de `tenant-docs.ts`.
+- Geração de PDF no servidor: usar `jspdf` (já instalado) dentro de `*.server.ts` chamado pela function; salvar buffer no Storage via `supabaseAdmin`.
+- IP do signatário: `request.headers.get('x-forwarded-for')?.split(',')[0]`.
+- Validação Zod em cada etapa; estado mantido em `useState` no wizard.
+- Contratos existentes continuam funcionando (campos novos têm defaults).
+
+### Ordem de execução
+
+1. Migration (schema + bucket + RLS).
+2. Verificar/instalar Lovable Emails infra + scaffold transactional + templates.
+3. Helpers (`extenso.ts`, atualizar `generateContractPDF`).
+4. Wizard component + integrar em `contracts.tsx`.
+5. Server functions de assinatura + rota pública + página `/assinar/$token`.
+6. Build check.
 
 ---
 
-## Detalhes técnicos
-
-- A Edge Function usa `SUPABASE_SERVICE_ROLE_KEY` para ler profiles/payments/tenants de todos os usuários e atualizar pagamentos.
-- A chave ASAAS de cada proprietário fica em `profiles.asaas_api_key` (já existe). A function usa a chave do dono do contrato.
-- O agendamento `pg_cron` é criado via `supabase--insert` (contém URL do projeto e anon key).
-- Botão "Testar envio agora" invoca a function via `supabase.functions.invoke('send-charges')` no client autenticado.
-- Não vou adicionar nova UI de email custom — o ASAAS já dispara email do boleto. A "mensagem personalizada" é incluída como `description` do payment ASAAS.
+**Pontos a confirmar antes de implementar:**
+- Email: ok usar Lovable Emails built-in? (precisa configurar domínio se ainda não houver)
+- "Seguro fiança" — apenas registro do tipo, sem integração com seguradora?
