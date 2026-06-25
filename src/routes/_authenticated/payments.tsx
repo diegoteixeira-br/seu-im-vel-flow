@@ -148,6 +148,17 @@ function PaymentsPage() {
                               <CheckCircle2 className="h-4 w-4 text-success" />
                             </Button>
                           )}
+                          {s !== "pago" && s !== "cancelado" && (
+                            p.asaas_invoice_url ? (
+                              <Button size="icon" variant="ghost" asChild title="Abrir cobrança ASAAS">
+                                <a href={p.asaas_invoice_url} target="_blank" rel="noopener noreferrer"><ExternalLink className="h-4 w-4 text-primary" /></a>
+                              </Button>
+                            ) : (
+                              <Button size="icon" variant="ghost" onClick={() => sendCharge.mutate(p.id)} disabled={sendCharge.isPending} title="Enviar cobrança no ASAAS">
+                                <Send className="h-4 w-4 text-primary" />
+                              </Button>
+                            )
+                          )}
                           <Button size="icon" variant="ghost" onClick={() => { setEditing(p); setOpen(true); }}><Pencil className="h-4 w-4" /></Button>
                           <AlertDialog>
                             <AlertDialogTrigger asChild><Button size="icon" variant="ghost"><Trash2 className="h-4 w-4 text-destructive" /></Button></AlertDialogTrigger>
