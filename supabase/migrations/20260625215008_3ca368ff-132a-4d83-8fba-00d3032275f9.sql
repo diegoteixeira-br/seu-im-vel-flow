@@ -1,0 +1,1 @@
+ALTER TABLE public.contracts ADD COLUMN IF NOT EXISTS payment_method TEXT NOT NULL DEFAULT 'pix';

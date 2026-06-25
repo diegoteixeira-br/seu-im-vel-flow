@@ -18,6 +18,7 @@ import { PropertyCover } from "@/components/property-cover";
 import { downloadContractPDF, type ContractPDFData, type OwnerProfile, type ExtraCharge } from "@/lib/contract-pdf";
 import { formatBRL, formatDate } from "@/lib/format";
 import { createSignatureInvites } from "@/lib/signatures.functions";
+import { createAsaasChargesForContract } from "@/lib/asaas.functions";
 
 const STEPS = ["Imóvel", "Detalhes", "Participantes", "Garantia", "Documento", "Assinatura"] as const;
 
@@ -43,6 +44,7 @@ type WizardState = {
   guarantee_type: "sem_garantia" | "fiador" | "caucao" | "seguro_fianca";
   guarantee_months: number;
   signature_mode: "manual" | "eletronica";
+  payment_method: "pix" | "asaas";
   deposit_amount: number;
   notes: string;
 };
@@ -55,7 +57,7 @@ const initialState: WizardState = {
   tenant_id: "", add_guarantor: false,
   guarantor_name: "", guarantor_cpf: "", guarantor_rg: "", guarantor_email: "", guarantor_phone: "", guarantor_address: "",
   guarantee_type: "sem_garantia", guarantee_months: 1,
-  signature_mode: "manual", deposit_amount: 0, notes: "",
+  signature_mode: "manual", payment_method: "pix", deposit_amount: 0, notes: "",
 };
 
 function addMonths(iso: string, months: number): string {
@@ -219,6 +221,7 @@ export function ContractWizard({ open, onOpenChange }: { open: boolean; onOpenCh
         guarantor_address: state.add_guarantor ? state.guarantor_address : null,
         signature_mode: state.signature_mode,
         signature_status: state.signature_mode === "manual" ? "pendente" : "pendente",
+        payment_method: state.payment_method,
         notes: state.notes || null,
       };
       const { data: ins, error } = await supabase.from("contracts").insert(payload).select("id").single();
@@ -231,13 +234,24 @@ export function ContractWizard({ open, onOpenChange }: { open: boolean; onOpenCh
         due_day: state.due_day, amount: state.rent_amount,
       });
       if (payments.length > 0) await supabase.from("payments").insert(payments);
-      return { id: ins.id, count: payments.length };
+
+      // Auto-criar cobranças ASAAS para todo o período do contrato
+      let asaasCreated = 0; let asaasFailed = 0; let asaasErr = "";
+      if (state.payment_method === "asaas" && payments.length > 0) {
+        try {
+          const r = await createAsaasChargesForContract({ data: { contractId: ins.id } });
+          asaasCreated = r.created; asaasFailed = r.failed; asaasErr = r.errors.join(" | ");
+        } catch (e) { asaasErr = (e as Error).message; asaasFailed = payments.length; }
+      }
+      return { id: ins.id, count: payments.length, asaasCreated, asaasFailed, asaasErr };
     },
     onSuccess: (r) => {
       setCreatedContractId(r.id);
       qc.invalidateQueries({ queryKey: ["contracts"] });
       qc.invalidateQueries({ queryKey: ["payments"] });
       toast.success(`Contrato criado — ${r.count} pagamentos gerados`);
+      if (r.asaasCreated > 0) toast.success(`${r.asaasCreated} cobrança(s) criadas no ASAAS`);
+      if (r.asaasFailed > 0) toast.error(`ASAAS: ${r.asaasFailed} falha(s) — ${r.asaasErr}`);
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -438,6 +452,21 @@ function StepDetails({ state, patch }: { state: WizardState; patch: <K extends k
           <Input type="number" step="0.01" value={state.deposit_amount} onChange={(e) => patch("deposit_amount", Number(e.target.value) || 0)} />
         </div>
       </div>
+
+      <div className="space-y-2 pt-2">
+        <Label className="text-base">Forma de cobrança</Label>
+        <RadioGroup value={state.payment_method} onValueChange={(v) => patch("payment_method", v as WizardState["payment_method"])} className="grid gap-2 sm:grid-cols-2">
+          <label className={`flex items-start gap-3 rounded-lg border p-3 cursor-pointer hover:bg-accent ${state.payment_method === "pix" ? "border-primary ring-2 ring-primary/30" : ""}`}>
+            <RadioGroupItem value="pix" className="mt-1" />
+            <div><p className="font-medium text-sm">PIX / Transferência</p><p className="text-xs text-muted-foreground">Cobrança manual. Você marca cada pagamento como pago.</p></div>
+          </label>
+          <label className={`flex items-start gap-3 rounded-lg border p-3 cursor-pointer hover:bg-accent ${state.payment_method === "asaas" ? "border-primary ring-2 ring-primary/30" : ""}`}>
+            <RadioGroupItem value="asaas" className="mt-1" />
+            <div><p className="font-medium text-sm">Boleto ASAAS (automático)</p><p className="text-xs text-muted-foreground">Ao salvar, cria cliente e gera cobranças para todo o período. Boleto enviado ao e-mail do inquilino.</p></div>
+          </label>
+        </RadioGroup>
+      </div>
+
 
       <div className="space-y-2 pt-2">
         <div className="flex items-center justify-between">
