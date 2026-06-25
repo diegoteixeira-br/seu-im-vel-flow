@@ -18,6 +18,7 @@ import { PropertyCover } from "@/components/property-cover";
 import { downloadContractPDF, type ContractPDFData, type OwnerProfile, type ExtraCharge } from "@/lib/contract-pdf";
 import { formatBRL, formatDate } from "@/lib/format";
 import { createSignatureInvites } from "@/lib/signatures.functions";
+import { createAsaasChargesForContract } from "@/lib/asaas.functions";
 
 const STEPS = ["Imóvel", "Detalhes", "Participantes", "Garantia", "Documento", "Assinatura"] as const;
 
@@ -43,6 +44,7 @@ type WizardState = {
   guarantee_type: "sem_garantia" | "fiador" | "caucao" | "seguro_fianca";
   guarantee_months: number;
   signature_mode: "manual" | "eletronica";
+  payment_method: "pix" | "asaas";
   deposit_amount: number;
   notes: string;
 };
@@ -55,7 +57,7 @@ const initialState: WizardState = {
   tenant_id: "", add_guarantor: false,
   guarantor_name: "", guarantor_cpf: "", guarantor_rg: "", guarantor_email: "", guarantor_phone: "", guarantor_address: "",
   guarantee_type: "sem_garantia", guarantee_months: 1,
-  signature_mode: "manual", deposit_amount: 0, notes: "",
+  signature_mode: "manual", payment_method: "pix", deposit_amount: 0, notes: "",
 };
 
 function addMonths(iso: string, months: number): string {
