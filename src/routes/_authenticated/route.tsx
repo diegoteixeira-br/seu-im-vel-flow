@@ -1,7 +1,7 @@
 import { createFileRoute, Outlet, Link, useNavigate, useRouterState, redirect } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import {
-  LayoutDashboard, Building2, Users, FileText, Wallet, Receipt, LogOut, Menu,
+  LayoutDashboard, Building2, Users, FileText, Wallet, Receipt, LogOut, Menu, ClipboardCheck,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
@@ -30,6 +30,7 @@ const navItems = [
   { to: "/contracts", label: "Contratos", icon: FileText },
   { to: "/payments", label: "Pagamentos", icon: Wallet },
   { to: "/expenses", label: "Despesas", icon: Receipt },
+  { to: "/vistoria", label: "Vistoria", icon: ClipboardCheck },
 ] as const;
 
 function AuthLayout() {

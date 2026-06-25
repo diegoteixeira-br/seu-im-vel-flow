@@ -124,6 +124,95 @@ export type Database = {
           },
         ]
       }
+      inspection_photos: {
+        Row: {
+          category: Database["public"]["Enums"]["photo_category"]
+          created_at: string
+          id: string
+          inspection_id: string
+          notes: string | null
+          storage_path: string
+          user_id: string
+        }
+        Insert: {
+          category?: Database["public"]["Enums"]["photo_category"]
+          created_at?: string
+          id?: string
+          inspection_id: string
+          notes?: string | null
+          storage_path: string
+          user_id: string
+        }
+        Update: {
+          category?: Database["public"]["Enums"]["photo_category"]
+          created_at?: string
+          id?: string
+          inspection_id?: string
+          notes?: string | null
+          storage_path?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inspection_photos_inspection_id_fkey"
+            columns: ["inspection_id"]
+            isOneToOne: false
+            referencedRelation: "inspections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      inspections: {
+        Row: {
+          contract_id: string | null
+          created_at: string
+          general_notes: string | null
+          id: string
+          inspection_date: string
+          property_id: string
+          type: Database["public"]["Enums"]["inspection_type"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          contract_id?: string | null
+          created_at?: string
+          general_notes?: string | null
+          id?: string
+          inspection_date?: string
+          property_id: string
+          type: Database["public"]["Enums"]["inspection_type"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          contract_id?: string | null
+          created_at?: string
+          general_notes?: string | null
+          id?: string
+          inspection_date?: string
+          property_id?: string
+          type?: Database["public"]["Enums"]["inspection_type"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inspections_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inspections_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       payments: {
         Row: {
           amount: number
@@ -261,6 +350,47 @@ export type Database = {
         }
         Relationships: []
       }
+      property_photos: {
+        Row: {
+          caption: string | null
+          category: Database["public"]["Enums"]["photo_category"]
+          created_at: string
+          id: string
+          property_id: string
+          sort_order: number
+          storage_path: string
+          user_id: string
+        }
+        Insert: {
+          caption?: string | null
+          category?: Database["public"]["Enums"]["photo_category"]
+          created_at?: string
+          id?: string
+          property_id: string
+          sort_order?: number
+          storage_path: string
+          user_id: string
+        }
+        Update: {
+          caption?: string | null
+          category?: Database["public"]["Enums"]["photo_category"]
+          created_at?: string
+          id?: string
+          property_id?: string
+          sort_order?: number
+          storage_path?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "property_photos_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tenants: {
         Row: {
           birth_date: string | null
@@ -317,6 +447,7 @@ export type Database = {
         | "reforma"
         | "administracao"
         | "outro"
+      inspection_type: "entrada" | "saida"
       payment_method:
         | "pix"
         | "boleto"
@@ -325,6 +456,15 @@ export type Database = {
         | "cartao"
         | "outro"
       payment_status: "pendente" | "pago" | "atrasado" | "cancelado"
+      photo_category:
+        | "fachada"
+        | "sala"
+        | "quarto"
+        | "cozinha"
+        | "banheiro"
+        | "area_externa"
+        | "vistoria_entrada"
+        | "vistoria_saida"
       property_status: "disponivel" | "alugado" | "manutencao" | "inativo"
       property_type:
         | "apartamento"
@@ -470,6 +610,7 @@ export const Constants = {
         "administracao",
         "outro",
       ],
+      inspection_type: ["entrada", "saida"],
       payment_method: [
         "pix",
         "boleto",
@@ -479,6 +620,16 @@ export const Constants = {
         "outro",
       ],
       payment_status: ["pendente", "pago", "atrasado", "cancelado"],
+      photo_category: [
+        "fachada",
+        "sala",
+        "quarto",
+        "cozinha",
+        "banheiro",
+        "area_externa",
+        "vistoria_entrada",
+        "vistoria_saida",
+      ],
       property_status: ["disponivel", "alugado", "manutencao", "inativo"],
       property_type: [
         "apartamento",
