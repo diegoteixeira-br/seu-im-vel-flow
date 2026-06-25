@@ -17,6 +17,8 @@ import { Badge } from "@/components/ui/badge";
 import { PropertyCover } from "@/components/property-cover";
 import { downloadContractPDF, type ContractPDFData, type OwnerProfile, type ExtraCharge } from "@/lib/contract-pdf";
 import { gerarContratoResidencial, gerarContratoLocacaoCompleto } from "@/lib/contract-templates";
+import { TEMPLATE_LOCACAO_DINAMICO } from "@/lib/contract-tokens";
+import { ContractEditor } from "@/components/contract-editor";
 import { formatBRL, formatDate } from "@/lib/format";
 import { createSignatureInvites } from "@/lib/signatures.functions";
 import { createAsaasChargesForContract } from "@/lib/asaas.functions";
