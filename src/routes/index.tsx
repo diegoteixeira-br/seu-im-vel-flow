@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
-import { Building2, Users, FileText, Wallet, TrendingUp, Shield } from "lucide-react";
+import { Building2, Users, FileText, Wallet, TrendingUp, Shield, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
 
@@ -68,8 +68,63 @@ function Landing() {
         ))}
       </section>
 
-      <footer className="border-t py-8 text-center text-sm text-muted-foreground">
-        © {new Date().getFullYear()} AlugaFlow
+      <section className="bg-muted/30 py-20">
+        <div className="mx-auto max-w-6xl px-6">
+          <div className="text-center">
+            <h2 className="text-3xl font-bold tracking-tight md:text-4xl">Como funciona</h2>
+            <p className="mx-auto mt-3 max-w-xl text-muted-foreground">Comece em minutos e organize sua carteira de aluguéis.</p>
+          </div>
+          <div className="mt-12 grid gap-6 md:grid-cols-3">
+            {[
+              { n: "1", title: "Cadastre seus imóveis", desc: "Adicione cada propriedade com endereço, valor e características." },
+              { n: "2", title: "Vincule inquilinos e contratos", desc: "Registre inquilinos e gere contratos com vigência e vencimento." },
+              { n: "3", title: "Acompanhe pagamentos automaticamente", desc: "Veja recebimentos, atrasos e despesas em tempo real." },
+            ].map((s) => (
+              <div key={s.n} className="rounded-lg border bg-card p-6">
+                <div className="grid h-10 w-10 place-items-center rounded-full bg-primary text-primary-foreground font-bold">{s.n}</div>
+                <h3 className="mt-4 font-semibold">{s.title}</h3>
+                <p className="mt-1 text-sm text-muted-foreground">{s.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-6xl px-6 py-20">
+        <div className="text-center">
+          <h2 className="text-3xl font-bold tracking-tight md:text-4xl">Planos para cada momento</h2>
+          <p className="mx-auto mt-3 max-w-xl text-muted-foreground">Comece grátis. Evolua quando precisar.</p>
+        </div>
+        <div className="mt-12 grid gap-6 md:grid-cols-3">
+          {[
+            { name: "Gratuito", price: "R$ 0", period: "para sempre", highlight: false, features: ["Até 2 imóveis", "Inquilinos e contratos", "Controle de pagamentos"], cta: "Começar grátis" },
+            { name: "Investidor", price: "R$ 49,90", period: "/mês", highlight: true, features: ["Imóveis ilimitados", "Relatórios completos", "Suporte prioritário"], cta: "Assinar Investidor" },
+            { name: "Imobiliária", price: "R$ 197", period: "/mês", highlight: false, features: ["Múltiplos usuários", "Permissões por equipe", "Suporte dedicado"], cta: "Falar com vendas" },
+          ].map((p) => (
+            <div key={p.name} className={`rounded-lg border bg-card p-6 ${p.highlight ? "border-primary shadow-lg ring-1 ring-primary" : ""}`}>
+              {p.highlight && <div className="mb-3 inline-block rounded-full bg-primary px-3 py-1 text-xs font-semibold text-primary-foreground">Mais popular</div>}
+              <h3 className="text-xl font-semibold">{p.name}</h3>
+              <div className="mt-3 flex items-baseline gap-1">
+                <span className="text-3xl font-bold">{p.price}</span>
+                <span className="text-sm text-muted-foreground">{p.period}</span>
+              </div>
+              <ul className="mt-6 space-y-2 text-sm">
+                {p.features.map((f) => (
+                  <li key={f} className="flex items-center gap-2"><Check className="h-4 w-4 text-[hsl(var(--success,142_71%_45%))] text-green-600" />{f}</li>
+                ))}
+              </ul>
+              <Button asChild className="mt-6 w-full" variant={p.highlight ? "default" : "outline"}>
+                <Link to="/auth" search={{ mode: "signup" }}>{p.cta}</Link>
+              </Button>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <footer className="border-t bg-muted/30">
+        <div className="mx-auto max-w-6xl px-6 py-8 text-center text-sm text-muted-foreground">
+          © 2025 AlugaFlow. Todos os direitos reservados.
+        </div>
       </footer>
     </div>
   );
