@@ -48,14 +48,14 @@ export function PropertyPhotos({ propertyId }: { propertyId: string }) {
     enabled: photos.length > 0,
   });
 
+  const remaining = Math.max(0, MAX_PHOTOS_PER_PROPERTY - photos.length);
+
   const upload = useMutation({
-    mutationFn: async (files: FileList) => {
+    mutationFn: async (files: File[]) => {
       const { data: u } = await supabase.auth.getUser();
       if (!u.user) throw new Error("Sessão expirada");
-      const remaining = MAX_PHOTOS_PER_PROPERTY - photos.length;
-      const toUpload = Array.from(files).slice(0, remaining);
-      if (toUpload.length === 0) throw new Error(`Limite de ${MAX_PHOTOS_PER_PROPERTY} fotos atingido`);
-      for (const f of toUpload) {
+      let uploaded = 0;
+      for (const f of files) {
         const path = await uploadPropertyPhoto({ userId: u.user.id, propertyId, file: f });
         const { error } = await supabase.from("property_photos").insert({
           user_id: u.user.id,
@@ -63,16 +63,24 @@ export function PropertyPhotos({ propertyId }: { propertyId: string }) {
           storage_path: path,
           category: "fachada" as PhotoCategory,
         });
-        if (error) throw error;
+        if (error) {
+          await deletePhotoFile(path).catch(() => {});
+          throw error;
+        }
+        uploaded++;
       }
+      return uploaded;
     },
-    onSuccess: () => {
+    onSuccess: (n) => {
       qc.invalidateQueries({ queryKey: ["property-photos", propertyId] });
       qc.invalidateQueries({ queryKey: ["properties"] });
       qc.invalidateQueries({ queryKey: ["property-cover"] });
-      toast.success("Foto(s) enviada(s)");
+      toast.success(`${n} foto(s) enviada(s)`);
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => {
+      console.error("[property-photos] upload error", e);
+      toast.error(e.message || "Falha ao enviar foto");
+    },
   });
 
   const setCategory = useMutation({
