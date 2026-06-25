@@ -391,42 +391,122 @@ export type Database = {
           },
         ]
       }
+      tenant_documents: {
+        Row: {
+          created_at: string
+          doc_type: string
+          file_name: string | null
+          file_path: string
+          id: string
+          tenant_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          doc_type: string
+          file_name?: string | null
+          file_path: string
+          id?: string
+          tenant_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          doc_type?: string
+          file_name?: string | null
+          file_path?: string
+          id?: string
+          tenant_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tenant_documents_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tenants: {
         Row: {
+          address_city: string | null
+          address_neighborhood: string | null
+          address_number: string | null
+          address_state: string | null
+          address_street: string | null
+          address_zip: string | null
           birth_date: string | null
           cpf: string | null
           created_at: string
           email: string | null
           full_name: string
+          guarantor_cpf: string | null
+          guarantor_name: string | null
+          guarantor_phone: string | null
           id: string
+          marital_status: string | null
           notes: string | null
+          occupation: string | null
           phone: string | null
+          rg: string | null
           updated_at: string
           user_id: string
+          whatsapp: string | null
         }
         Insert: {
+          address_city?: string | null
+          address_neighborhood?: string | null
+          address_number?: string | null
+          address_state?: string | null
+          address_street?: string | null
+          address_zip?: string | null
           birth_date?: string | null
           cpf?: string | null
           created_at?: string
           email?: string | null
           full_name: string
+          guarantor_cpf?: string | null
+          guarantor_name?: string | null
+          guarantor_phone?: string | null
           id?: string
+          marital_status?: string | null
           notes?: string | null
+          occupation?: string | null
           phone?: string | null
+          rg?: string | null
           updated_at?: string
           user_id: string
+          whatsapp?: string | null
         }
         Update: {
+          address_city?: string | null
+          address_neighborhood?: string | null
+          address_number?: string | null
+          address_state?: string | null
+          address_street?: string | null
+          address_zip?: string | null
           birth_date?: string | null
           cpf?: string | null
           created_at?: string
           email?: string | null
           full_name?: string
+          guarantor_cpf?: string | null
+          guarantor_name?: string | null
+          guarantor_phone?: string | null
           id?: string
+          marital_status?: string | null
           notes?: string | null
+          occupation?: string | null
           phone?: string | null
+          rg?: string | null
           updated_at?: string
           user_id?: string
+          whatsapp?: string | null
         }
         Relationships: []
       }
