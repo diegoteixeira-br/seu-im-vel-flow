@@ -140,7 +140,7 @@ export const createAsaasChargesForContract = createServerFn({ method: "POST" })
     if (cErr) throw cErr;
     if (!contract?.tenant) throw new Error("Contrato/inquilino não encontrado");
 
-    const customerId = await ensureAsaasCustomer({ supabase }, env, key, contract.tenant);
+    const customerId = await ensureAsaasCustomer(supabase, env, key, contract.tenant);
 
     const { data: payments, error: pErr } = await supabase
       .from("payments")
