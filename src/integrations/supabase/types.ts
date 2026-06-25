@@ -14,7 +14,292 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      contracts: {
+        Row: {
+          created_at: string
+          deposit_amount: number | null
+          due_day: number
+          end_date: string
+          id: string
+          notes: string | null
+          property_id: string
+          rent_amount: number
+          start_date: string
+          status: Database["public"]["Enums"]["contract_status"]
+          tenant_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          deposit_amount?: number | null
+          due_day?: number
+          end_date: string
+          id?: string
+          notes?: string | null
+          property_id: string
+          rent_amount: number
+          start_date: string
+          status?: Database["public"]["Enums"]["contract_status"]
+          tenant_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          deposit_amount?: number | null
+          due_day?: number
+          end_date?: string
+          id?: string
+          notes?: string | null
+          property_id?: string
+          rent_amount?: number
+          start_date?: string
+          status?: Database["public"]["Enums"]["contract_status"]
+          tenant_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contracts_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contracts_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      expenses: {
+        Row: {
+          amount: number
+          category: Database["public"]["Enums"]["expense_category"]
+          created_at: string
+          description: string
+          expense_date: string
+          id: string
+          notes: string | null
+          property_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          category?: Database["public"]["Enums"]["expense_category"]
+          created_at?: string
+          description: string
+          expense_date?: string
+          id?: string
+          notes?: string | null
+          property_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          category?: Database["public"]["Enums"]["expense_category"]
+          created_at?: string
+          description?: string
+          expense_date?: string
+          id?: string
+          notes?: string | null
+          property_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "expenses_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payments: {
+        Row: {
+          amount: number
+          contract_id: string
+          created_at: string
+          due_date: string
+          id: string
+          method: Database["public"]["Enums"]["payment_method"] | null
+          notes: string | null
+          paid_amount: number | null
+          paid_date: string | null
+          reference_month: string
+          status: Database["public"]["Enums"]["payment_status"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          contract_id: string
+          created_at?: string
+          due_date: string
+          id?: string
+          method?: Database["public"]["Enums"]["payment_method"] | null
+          notes?: string | null
+          paid_amount?: number | null
+          paid_date?: string | null
+          reference_month: string
+          status?: Database["public"]["Enums"]["payment_status"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          contract_id?: string
+          created_at?: string
+          due_date?: string
+          id?: string
+          method?: Database["public"]["Enums"]["payment_method"] | null
+          notes?: string | null
+          paid_amount?: number | null
+          paid_date?: string | null
+          reference_month?: string
+          status?: Database["public"]["Enums"]["payment_status"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          full_name: string | null
+          id: string
+          phone: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          full_name?: string | null
+          id: string
+          phone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          phone?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      properties: {
+        Row: {
+          address: string
+          area_m2: number | null
+          bathrooms: number | null
+          bedrooms: number | null
+          city: string | null
+          created_at: string
+          id: string
+          nickname: string
+          notes: string | null
+          rent_amount: number
+          state: string | null
+          status: Database["public"]["Enums"]["property_status"]
+          type: Database["public"]["Enums"]["property_type"]
+          updated_at: string
+          user_id: string
+          zip_code: string | null
+        }
+        Insert: {
+          address: string
+          area_m2?: number | null
+          bathrooms?: number | null
+          bedrooms?: number | null
+          city?: string | null
+          created_at?: string
+          id?: string
+          nickname: string
+          notes?: string | null
+          rent_amount?: number
+          state?: string | null
+          status?: Database["public"]["Enums"]["property_status"]
+          type?: Database["public"]["Enums"]["property_type"]
+          updated_at?: string
+          user_id: string
+          zip_code?: string | null
+        }
+        Update: {
+          address?: string
+          area_m2?: number | null
+          bathrooms?: number | null
+          bedrooms?: number | null
+          city?: string | null
+          created_at?: string
+          id?: string
+          nickname?: string
+          notes?: string | null
+          rent_amount?: number
+          state?: string | null
+          status?: Database["public"]["Enums"]["property_status"]
+          type?: Database["public"]["Enums"]["property_type"]
+          updated_at?: string
+          user_id?: string
+          zip_code?: string | null
+        }
+        Relationships: []
+      }
+      tenants: {
+        Row: {
+          birth_date: string | null
+          cpf: string | null
+          created_at: string
+          email: string | null
+          full_name: string
+          id: string
+          notes: string | null
+          phone: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          birth_date?: string | null
+          cpf?: string | null
+          created_at?: string
+          email?: string | null
+          full_name: string
+          id?: string
+          notes?: string | null
+          phone?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          birth_date?: string | null
+          cpf?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string
+          id?: string
+          notes?: string | null
+          phone?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +308,31 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      contract_status: "ativo" | "encerrado" | "cancelado" | "pendente"
+      expense_category:
+        | "manutencao"
+        | "iptu"
+        | "condominio"
+        | "seguro"
+        | "reforma"
+        | "administracao"
+        | "outro"
+      payment_method:
+        | "pix"
+        | "boleto"
+        | "transferencia"
+        | "dinheiro"
+        | "cartao"
+        | "outro"
+      payment_status: "pendente" | "pago" | "atrasado" | "cancelado"
+      property_status: "disponivel" | "alugado" | "manutencao" | "inativo"
+      property_type:
+        | "apartamento"
+        | "casa"
+        | "comercial"
+        | "kitnet"
+        | "terreno"
+        | "outro"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +459,35 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      contract_status: ["ativo", "encerrado", "cancelado", "pendente"],
+      expense_category: [
+        "manutencao",
+        "iptu",
+        "condominio",
+        "seguro",
+        "reforma",
+        "administracao",
+        "outro",
+      ],
+      payment_method: [
+        "pix",
+        "boleto",
+        "transferencia",
+        "dinheiro",
+        "cartao",
+        "outro",
+      ],
+      payment_status: ["pendente", "pago", "atrasado", "cancelado"],
+      property_status: ["disponivel", "alugado", "manutencao", "inativo"],
+      property_type: [
+        "apartamento",
+        "casa",
+        "comercial",
+        "kitnet",
+        "terreno",
+        "outro",
+      ],
+    },
   },
 } as const
