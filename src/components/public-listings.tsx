@@ -208,38 +208,27 @@ export function PublicListings({ variant = "page" }: PublicListingsProps) {
           </p>
         )}
 
-        {pageItems.length === 0 && !isLoading ? (
+        {isLoading ? (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <Card key={i} className="h-full overflow-hidden">
+                <Skeleton className="aspect-[4/3] w-full rounded-none" />
+                <CardContent className="space-y-2 p-4">
+                  <Skeleton className="h-5 w-24" />
+                  <Skeleton className="h-4 w-3/4" />
+                  <Skeleton className="h-3 w-full" />
+                  <Skeleton className="h-3 w-1/2" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : pageItems.length === 0 ? (
           <div className="rounded-lg border border-dashed p-10 text-center text-muted-foreground">
             Nenhum imóvel encontrado com esses filtros.
           </div>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {pageItems.map((p) => (
-              <Link key={p.id} to="/anuncios/$id" params={{ id: p.id }} className="group block">
-                <Card className="h-full overflow-hidden transition hover:shadow-md">
-                  <div className="aspect-[4/3] w-full overflow-hidden bg-muted">
-                    {p.cover_url ? (
-                      <img src={p.cover_url} alt={p.ad_title ?? p.nickname} className="h-full w-full object-cover transition group-hover:scale-105" />
-                    ) : (
-                      <div className="grid h-full place-items-center text-muted-foreground">Sem foto</div>
-                    )}
-                  </div>
-                  <CardContent className="p-4">
-                    <div className="text-lg font-bold text-primary">{formatBRL(p.rent_amount)}<span className="text-xs font-normal text-muted-foreground">/mês</span></div>
-                    <h3 className="mt-1 line-clamp-1 font-semibold">{p.ad_title ?? p.nickname}</h3>
-                    <p className="mt-1 line-clamp-1 text-xs text-muted-foreground">
-                      <MapPin className="mr-1 inline h-3 w-3" />
-                      {[p.neighborhood, p.city, p.state].filter(Boolean).join(", ") || p.address}
-                    </p>
-                    <div className="mt-3 flex gap-4 text-xs text-muted-foreground">
-                      <span className="flex items-center gap-1"><Bed className="h-3.5 w-3.5" /> {p.bedrooms ?? 0}</span>
-                      <span className="flex items-center gap-1"><Bath className="h-3.5 w-3.5" /> {p.bathrooms ?? 0}</span>
-                      {p.area_m2 ? <span className="flex items-center gap-1"><Maximize className="h-3.5 w-3.5" /> {p.area_m2} m²</span> : null}
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
-            ))}
+            {pageItems.map((p) => <ListingCard key={p.id} item={p} />)}
           </div>
         )}
 
