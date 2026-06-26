@@ -21,6 +21,7 @@ export function PublicHeader() {
         <Link to="/"><BrandLogo size={32} /></Link>
         <nav className="flex items-center gap-2">
           <Button asChild variant="ghost" size="sm"><Link to="/anuncios">Anúncios</Link></Button>
+          <Button asChild variant="ghost" size="sm"><Link to="/blog">Blog</Link></Button>
           <Button asChild variant="outline" size="sm"><Link to="/para-proprietarios">Anunciar meu imóvel</Link></Button>
           <Button asChild size="sm"><Link to="/auth">Entrar</Link></Button>
         </nav>
@@ -42,6 +43,7 @@ export function PublicFooter() {
           <ul className="mt-2 space-y-1 text-sm text-muted-foreground">
             <li><Link to="/">Início</Link></li>
             <li><Link to="/anuncios">Anúncios</Link></li>
+            <li><Link to="/blog">Blog</Link></li>
             <li><Link to="/sobre">Sobre</Link></li>
           </ul>
         </div>
