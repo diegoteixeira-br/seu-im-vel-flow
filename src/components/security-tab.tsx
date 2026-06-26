@@ -25,9 +25,12 @@ import {
 import { deleteAccount } from "@/lib/account.functions";
 
 const schema = z.object({
+  currentPassword: z.string().min(1, "Informe sua senha atual"),
   newPassword: z.string().min(8, "Mínimo de 8 caracteres"),
   confirm: z.string().min(8, "Mínimo de 8 caracteres"),
-}).refine((v) => v.newPassword === v.confirm, { path: ["confirm"], message: "As senhas não conferem" });
+})
+  .refine((v) => v.newPassword === v.confirm, { path: ["confirm"], message: "As senhas não conferem" })
+  .refine((v) => v.newPassword !== v.currentPassword, { path: ["newPassword"], message: "A nova senha deve ser diferente da atual" });
 
 type Values = z.infer<typeof schema>;
 
@@ -35,12 +38,22 @@ export function SecurityTab() {
   const [submitting, setSubmitting] = useState(false);
   const form = useForm<Values>({
     resolver: zodResolver(schema),
-    defaultValues: { newPassword: "", confirm: "" },
+    defaultValues: { currentPassword: "", newPassword: "", confirm: "" },
   });
 
   const onSubmit = async (v: Values) => {
     setSubmitting(true);
     try {
+      const { data: userData, error: userErr } = await supabase.auth.getUser();
+      if (userErr || !userData.user?.email) throw new Error("Sessão inválida. Faça login novamente.");
+
+      // Reautenticação: confirma a senha atual antes de alterar
+      const { error: signInErr } = await supabase.auth.signInWithPassword({
+        email: userData.user.email,
+        password: v.currentPassword,
+      });
+      if (signInErr) throw new Error("Senha atual incorreta.");
+
       const { error } = await supabase.auth.updateUser({ password: v.newPassword });
       if (error) throw error;
       toast.success("Senha alterada com sucesso");
@@ -59,10 +72,20 @@ export function SecurityTab() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2"><KeyRound className="h-4 w-4" />Alterar senha</CardTitle>
-          <CardDescription>Atualize sua senha de acesso. Recomendamos uma senha forte e única.</CardDescription>
+          <CardDescription>
+            Para sua segurança, confirme sua senha atual antes de definir uma nova.
+            Se esqueceu, saia e use "Esqueci minha senha" na tela de login.
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-1 sm:col-span-2">
+              <Label>Senha atual</Label>
+              <Input type="password" autoComplete="current-password" {...form.register("currentPassword")} />
+              {form.formState.errors.currentPassword ? (
+                <p className="text-xs text-destructive">{form.formState.errors.currentPassword.message}</p>
+              ) : null}
+            </div>
             <div className="space-y-1 sm:col-span-2">
               <Label>Nova senha</Label>
               <Input type="password" autoComplete="new-password" {...form.register("newPassword")} />
@@ -83,6 +106,7 @@ export function SecurityTab() {
           </form>
         </CardContent>
       </Card>
+
 
       <Card>
         <CardHeader>
