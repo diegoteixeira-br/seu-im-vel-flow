@@ -259,7 +259,7 @@ function Landing() {
             <p className="text-sm font-semibold">Institucional</p>
             <ul className="mt-2 space-y-1 text-sm text-muted-foreground">
               <li><Link to="/sobre" className="hover:text-foreground">Sobre</Link></li>
-              <li><Link to="/planos" className="hover:text-foreground">Planos</Link></li>
+              
             </ul>
           </div>
 
