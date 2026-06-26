@@ -95,7 +95,7 @@ export function BrandingTab() {
     mutationFn: async (kind: "logo" | "watermark") => {
       const { data: u } = await supabase.auth.getUser();
       if (!u.user) throw new Error("Sem sessão");
-      const column = kind === "logo" ? "logo_url" : "watermark_url";
+      
       const path = kind === "logo" ? profile?.logo_url : profile?.watermark_url;
       if (path) await supabase.storage.from("branding").remove([path]);
       const patch = (kind === "logo" ? { logo_url: null } : { watermark_url: null }) as never;
