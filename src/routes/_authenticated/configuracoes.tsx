@@ -150,14 +150,14 @@ function ConfigPage() {
 
       <form onSubmit={form.handleSubmit((v) => save.mutate(v))} className="space-y-6">
         <Tabs defaultValue="pessoal" className="space-y-4">
-          <TabsList className="flex flex-wrap h-auto">
-            <TabsTrigger value="pessoal"><User className="h-4 w-4" />Dados pessoais</TabsTrigger>
-            <TabsTrigger value="endereco"><MapPin className="h-4 w-4" />Endereço</TabsTrigger>
-            <TabsTrigger value="bancario"><Landmark className="h-4 w-4" />Dados bancários</TabsTrigger>
-            <TabsTrigger value="asaas"><Zap className="h-4 w-4" />Integração ASAAS</TabsTrigger>
-            <TabsTrigger value="automacao"><Bell className="h-4 w-4" />Automação</TabsTrigger>
-            <TabsTrigger value="identidade"><Palette className="h-4 w-4" />Identidade visual</TabsTrigger>
-            <TabsTrigger value="seguranca"><ShieldCheck className="h-4 w-4" />Segurança</TabsTrigger>
+          <TabsList className="flex flex-wrap justify-center h-auto gap-1 w-full">
+            <TabsTrigger value="pessoal" className="gap-1.5"><User className="h-4 w-4" />Dados pessoais</TabsTrigger>
+            <TabsTrigger value="endereco" className="gap-1.5"><MapPin className="h-4 w-4" />Endereço</TabsTrigger>
+            <TabsTrigger value="bancario" className="gap-1.5"><Landmark className="h-4 w-4" />Dados bancários</TabsTrigger>
+            <TabsTrigger value="asaas" className="gap-1.5"><Zap className="h-4 w-4" />Integração ASAAS</TabsTrigger>
+            <TabsTrigger value="automacao" className="gap-1.5"><Bell className="h-4 w-4" />Automação</TabsTrigger>
+            <TabsTrigger value="identidade" className="gap-1.5"><Palette className="h-4 w-4" />Identidade visual</TabsTrigger>
+            <TabsTrigger value="seguranca" className="gap-1.5"><ShieldCheck className="h-4 w-4" />Segurança</TabsTrigger>
           </TabsList>
 
           <TabsContent value="pessoal">
