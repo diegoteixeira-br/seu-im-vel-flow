@@ -1,44 +1,36 @@
-import logoSrc from "@/assets/alugaflow-logo.png";
+import symbolSrc from "@/assets/alugaflow-symbol.png";
 import { cn } from "@/lib/utils";
 
 type Props = {
-  /** Show the wordmark next to the symbol. Defaults to true. */
+  /** Show the "AlugaFlow" wordmark next to the symbol. Defaults to true. */
   withWordmark?: boolean;
-  /** Symbol size in px. */
+  /** Symbol size in px. The wordmark scales relative to it. */
   size?: number;
   className?: string;
 };
 
 /**
- * AlugaFlow logo. The source PNG already contains the "AlugaFlow" wordmark,
- * so when `withWordmark` is false we crop to roughly the top symbol area.
+ * AlugaFlow logo: house-roof "A" symbol + "AlugaFlow" wordmark beside it.
  */
-export function BrandLogo({ withWordmark = true, size = 32, className }: Props) {
-  if (withWordmark) {
-    return (
-      <img
-        src={logoSrc}
-        alt="AlugaFlow"
-        width={size * 4}
-        height={size}
-        style={{ height: size, width: "auto" }}
-        className={cn("object-contain", className)}
-      />
-    );
-  }
-  // Symbol-only: use the top portion of the artwork.
+export function BrandLogo({ withWordmark = true, size = 36, className }: Props) {
   return (
-    <span
-      aria-label="AlugaFlow"
-      role="img"
-      className={cn("inline-block bg-no-repeat bg-contain", className)}
-      style={{
-        width: size,
-        height: size,
-        backgroundImage: `url(${logoSrc})`,
-        backgroundPosition: "center top",
-        backgroundSize: "100% 150%",
-      }}
-    />
+    <span className={cn("inline-flex items-center gap-2", className)}>
+      <img
+        src={symbolSrc}
+        alt="AlugaFlow"
+        width={size}
+        height={size}
+        style={{ height: size, width: size }}
+        className="object-contain shrink-0"
+      />
+      {withWordmark && (
+        <span
+          className="font-bold tracking-tight text-foreground"
+          style={{ fontSize: Math.round(size * 0.6), lineHeight: 1 }}
+        >
+          AlugaFlow
+        </span>
+      )}
+    </span>
   );
 }
