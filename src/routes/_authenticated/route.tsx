@@ -73,6 +73,12 @@ function AuthLayout() {
 
 function AppSidebar({ onSignOut, email }: { onSignOut: () => void; email?: string }) {
   const path = useRouterState({ select: (s) => s.location.pathname });
+  const { user } = useAuth();
+  const [isAdmin, setIsAdmin] = useState(false);
+  useEffect(() => {
+    if (!user) { setIsAdmin(false); return; }
+    supabase.rpc("has_role", { _user_id: user.id, _role: "admin" }).then(({ data }) => setIsAdmin(!!data));
+  }, [user]);
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader>
