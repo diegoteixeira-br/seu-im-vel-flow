@@ -316,31 +316,76 @@ export type Database = {
       }
       leads: {
         Row: {
+          birth_date: string | null
+          cpf: string | null
           created_at: string
+          current_address: string | null
+          current_city: string | null
+          current_state: string | null
+          current_zip: string | null
+          doc_income_path: string | null
+          doc_residence_path: string | null
+          doc_rg_path: string | null
+          email: string | null
           id: string
+          marital_status: string | null
           mensagem: string | null
+          monthly_income: number | null
           nome_interessado: string
+          profession: string | null
           property_id: string
+          rg: string | null
+          status: string
           telefone: string
           user_id: string
           visualizado: boolean
         }
         Insert: {
+          birth_date?: string | null
+          cpf?: string | null
           created_at?: string
+          current_address?: string | null
+          current_city?: string | null
+          current_state?: string | null
+          current_zip?: string | null
+          doc_income_path?: string | null
+          doc_residence_path?: string | null
+          doc_rg_path?: string | null
+          email?: string | null
           id?: string
+          marital_status?: string | null
           mensagem?: string | null
+          monthly_income?: number | null
           nome_interessado: string
+          profession?: string | null
           property_id: string
+          rg?: string | null
+          status?: string
           telefone: string
           user_id: string
           visualizado?: boolean
         }
         Update: {
+          birth_date?: string | null
+          cpf?: string | null
           created_at?: string
+          current_address?: string | null
+          current_city?: string | null
+          current_state?: string | null
+          current_zip?: string | null
+          doc_income_path?: string | null
+          doc_residence_path?: string | null
+          doc_rg_path?: string | null
+          email?: string | null
           id?: string
+          marital_status?: string | null
           mensagem?: string | null
+          monthly_income?: number | null
           nome_interessado?: string
+          profession?: string | null
           property_id?: string
+          rg?: string | null
+          status?: string
           telefone?: string
           user_id?: string
           visualizado?: boolean

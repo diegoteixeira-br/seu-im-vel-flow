@@ -40,9 +40,24 @@ type Lead = {
   property_id: string;
   nome_interessado: string;
   telefone: string;
+  email: string | null;
+  cpf: string | null;
+  rg: string | null;
+  birth_date: string | null;
+  marital_status: string | null;
+  profession: string | null;
+  monthly_income: number | null;
+  current_address: string | null;
+  current_city: string | null;
+  current_state: string | null;
+  current_zip: string | null;
   mensagem: string | null;
   visualizado: boolean;
   created_at: string;
+  status: string;
+  doc_rg_path: string | null;
+  doc_income_path: string | null;
+  doc_residence_path: string | null;
 };
 
 function MyAdsPage() {
@@ -76,7 +91,7 @@ function MyAdsPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("leads")
-        .select("id, property_id, nome_interessado, telefone, mensagem, visualizado, created_at")
+        .select("id, property_id, nome_interessado, telefone, email, cpf, rg, birth_date, marital_status, profession, monthly_income, current_address, current_city, current_state, current_zip, mensagem, visualizado, created_at, status, doc_rg_path, doc_income_path, doc_residence_path")
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data as Lead[];
@@ -105,6 +120,41 @@ function MyAdsPage() {
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["my-leads"] }),
   });
+
+  const convertToTenant = useMutation({
+    mutationFn: async (lead: Lead) => {
+      const { data: u } = await supabase.auth.getUser();
+      if (!u.user) throw new Error("Sessão expirada");
+      const { error: insErr } = await supabase.from("tenants").insert({
+        user_id: u.user.id,
+        full_name: lead.nome_interessado,
+        email: lead.email,
+        phone: lead.telefone,
+        whatsapp: lead.telefone,
+        cpf: lead.cpf,
+        rg: lead.rg,
+        birth_date: lead.birth_date,
+        marital_status: lead.marital_status,
+        occupation: lead.profession,
+        address_street: lead.current_address,
+        address_city: lead.current_city,
+        address_state: lead.current_state,
+        address_zip: lead.current_zip,
+        notes: lead.mensagem,
+      });
+      if (insErr) throw insErr;
+      const { error: upErr } = await supabase.from("leads").update({ status: "convertido", visualizado: true }).eq("id", lead.id);
+      if (upErr) throw upErr;
+    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["my-leads"] }); toast.success("Inquilino criado! Revise os dados em /inquilinos."); },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  async function openDoc(path: string) {
+    const { data, error } = await supabase.storage.from("lead-documents").createSignedUrl(path, 3600);
+    if (error) { toast.error(error.message); return; }
+    window.open(data.signedUrl, "_blank");
+  }
 
   const unread = leads.filter((l) => !l.visualizado).length;
   const propsById = new Map(props.map((p) => [p.id, p]));
@@ -161,27 +211,63 @@ function MyAdsPage() {
             const prop = propsById.get(l.property_id);
             return (
               <Card key={l.id} className={l.visualizado ? "" : "border-primary/50 bg-primary/5"}>
-                <CardContent className="p-4">
+                <CardContent className="space-y-3 p-4">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2">
+                      <div className="flex flex-wrap items-center gap-2">
                         <p className="font-semibold">{l.nome_interessado}</p>
                         {!l.visualizado && <Badge variant="destructive">Novo</Badge>}
+                        {l.status === "convertido" && <Badge variant="default">Convertido em inquilino</Badge>}
                       </div>
                       <p className="text-xs text-muted-foreground">
                         Interesse em: {prop?.ad_title || prop?.nickname || "—"} · {formatDate(l.created_at)}
                       </p>
-                      <div className="mt-2 flex flex-wrap gap-3 text-sm">
-                        <a href={`tel:${l.telefone}`} className="flex items-center gap-1 text-primary hover:underline"><Phone className="h-3.5 w-3.5" /> {l.telefone}</a>
-                        <a href={`https://wa.me/55${l.telefone.replace(/\D/g, "")}`} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-primary hover:underline"><Mail className="h-3.5 w-3.5" /> WhatsApp</a>
-                      </div>
-                      {l.mensagem && <p className="mt-2 rounded-md bg-muted/50 p-2 text-sm">{l.mensagem}</p>}
                     </div>
-                    {!l.visualizado && (
-                      <Button size="sm" variant="ghost" onClick={() => markRead.mutate(l.id)}><Check className="h-4 w-4" /> Marcar lido</Button>
-                    )}
-                    {l.visualizado && <Eye className="h-4 w-4 text-muted-foreground" />}
+                    <div className="flex flex-col items-end gap-1">
+                      {!l.visualizado && (
+                        <Button size="sm" variant="ghost" onClick={() => markRead.mutate(l.id)}><Check className="h-4 w-4" /> Marcar lido</Button>
+                      )}
+                      {l.status !== "convertido" && (
+                        <Button size="sm" onClick={() => convertToTenant.mutate(l)} disabled={convertToTenant.isPending}>
+                          Converter em inquilino
+                        </Button>
+                      )}
+                    </div>
                   </div>
+
+                  <div className="grid gap-2 text-sm sm:grid-cols-2">
+                    <div className="flex flex-wrap gap-3">
+                      <a href={`tel:${l.telefone}`} className="flex items-center gap-1 text-primary hover:underline"><Phone className="h-3.5 w-3.5" /> {l.telefone}</a>
+                      <a href={`https://wa.me/55${l.telefone.replace(/\D/g, "")}`} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-primary hover:underline"><Mail className="h-3.5 w-3.5" /> WhatsApp</a>
+                      {l.email && <a href={`mailto:${l.email}`} className="flex items-center gap-1 text-primary hover:underline"><Mail className="h-3.5 w-3.5" /> {l.email}</a>}
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      {l.cpf && <>CPF: {l.cpf}<br /></>}
+                      {l.rg && <>RG: {l.rg}<br /></>}
+                      {l.birth_date && <>Nasc.: {formatDate(l.birth_date)}<br /></>}
+                      {l.marital_status && <>Estado civil: {l.marital_status}<br /></>}
+                      {l.profession && <>Profissão: {l.profession}<br /></>}
+                      {l.monthly_income != null && <>Renda: {formatBRL(l.monthly_income)}<br /></>}
+                    </div>
+                  </div>
+
+                  {(l.current_address || l.current_city) && (
+                    <p className="text-xs text-muted-foreground">
+                      Endereço atual: {[l.current_address, l.current_city, l.current_state, l.current_zip].filter(Boolean).join(", ")}
+                    </p>
+                  )}
+
+                  {l.mensagem && <p className="rounded-md bg-muted/50 p-2 text-sm">{l.mensagem}</p>}
+
+                  {(l.doc_rg_path || l.doc_income_path || l.doc_residence_path) && (
+                    <div className="flex flex-wrap gap-2 text-xs">
+                      {l.doc_rg_path && <Button size="sm" variant="outline" onClick={() => openDoc(l.doc_rg_path!)}>RG/CNH</Button>}
+                      {l.doc_income_path && <Button size="sm" variant="outline" onClick={() => openDoc(l.doc_income_path!)}>Comprovante de renda</Button>}
+                      {l.doc_residence_path && <Button size="sm" variant="outline" onClick={() => openDoc(l.doc_residence_path!)}>Comprovante de residência</Button>}
+                    </div>
+                  )}
+
+                  {l.visualizado && l.status !== "convertido" && <Eye className="h-4 w-4 text-muted-foreground" />}
                 </CardContent>
               </Card>
             );

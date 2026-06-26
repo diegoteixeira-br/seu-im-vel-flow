@@ -1,18 +1,12 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useState } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
-import { useForm } from "react-hook-form";
+import { useQuery } from "@tanstack/react-query";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { LeadInterestDialog } from "@/components/lead-interest-dialog";
 import { Bed, Bath, Maximize, MapPin, Phone, ArrowLeft, MessageCircle } from "lucide-react";
 import { formatBRL } from "@/lib/format";
 import { getPhotoUrls } from "@/lib/public-photos";
@@ -42,13 +36,6 @@ export const Route = createFileRoute("/anuncios/$id")({
   ),
 });
 
-const leadSchema = z.object({
-  nome_interessado: z.string().trim().min(2, "Informe seu nome").max(120),
-  telefone: z.string().trim().min(8, "Informe um telefone válido").max(20),
-  mensagem: z.string().max(1000).optional().or(z.literal("")),
-});
-type LeadValues = z.infer<typeof leadSchema>;
-
 function AnuncioDetail() {
   const { id } = Route.useParams();
   const [openLead, setOpenLead] = useState(false);
@@ -77,30 +64,6 @@ function AnuncioDetail() {
     },
   });
 
-  const form = useForm<LeadValues>({
-    resolver: zodResolver(leadSchema),
-    defaultValues: { nome_interessado: "", telefone: "", mensagem: "" },
-  });
-
-  const submitLead = useMutation({
-    mutationFn: async (values: LeadValues) => {
-      if (!data?.prop) throw new Error("Anúncio indisponível");
-      const { error } = await supabase.from("leads").insert({
-        property_id: data.prop.id,
-        user_id: data.prop.user_id,
-        nome_interessado: values.nome_interessado.trim(),
-        telefone: values.telefone.trim(),
-        mensagem: values.mensagem?.trim() || null,
-      });
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      toast.success("Mensagem enviada! O proprietário entrará em contato.");
-      setOpenLead(false);
-      form.reset();
-    },
-    onError: (e: Error) => toast.error(e.message),
-  });
 
   if (isLoading) {
     return <div className="min-h-screen bg-background"><PublicHeader /><p className="p-10 text-center">Carregando...</p></div>;
@@ -159,38 +122,21 @@ function AnuncioDetail() {
               <CardContent className="p-5">
                 <p className="text-xs text-muted-foreground">Valor do aluguel</p>
                 <p className="text-3xl font-bold text-primary">{formatBRL(prop.rent_amount)}<span className="text-sm font-normal text-muted-foreground">/mês</span></p>
-                <Dialog open={openLead} onOpenChange={setOpenLead}>
-                  <DialogTrigger asChild>
-                    <Button className="mt-4 w-full" size="lg">Tenho interesse</Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Enviar mensagem ao proprietário</DialogTitle>
-                    </DialogHeader>
-                    <form onSubmit={form.handleSubmit((v) => submitLead.mutate(v))} className="space-y-3">
-                      <div className="space-y-1">
-                        <Label>Seu nome *</Label>
-                        <Input {...form.register("nome_interessado")} />
-                        {form.formState.errors.nome_interessado && <p className="text-xs text-destructive">{form.formState.errors.nome_interessado.message}</p>}
-                      </div>
-                      <div className="space-y-1">
-                        <Label>Telefone / WhatsApp *</Label>
-                        <Input {...form.register("telefone")} placeholder="(65) 99999-9999" />
-                        {form.formState.errors.telefone && <p className="text-xs text-destructive">{form.formState.errors.telefone.message}</p>}
-                      </div>
-                      <div className="space-y-1">
-                        <Label>Mensagem (opcional)</Label>
-                        <Textarea rows={3} {...form.register("mensagem")} placeholder="Olá, gostaria de mais informações sobre este imóvel..." />
-                      </div>
-                      <DialogFooter>
-                        <Button type="button" variant="outline" onClick={() => setOpenLead(false)}>Cancelar</Button>
-                        <Button type="submit" disabled={submitLead.isPending}>{submitLead.isPending ? "Enviando..." : "Enviar"}</Button>
-                      </DialogFooter>
-                    </form>
-                  </DialogContent>
-                </Dialog>
+                <Button className="mt-4 w-full" size="lg" onClick={() => setOpenLead(true)}>Tenho interesse</Button>
+                <p className="mt-2 text-[11px] leading-snug text-muted-foreground">
+                  Preencha seu pré-cadastro (dados pessoais e documentos) para o proprietário avaliar e adiantar o contrato.
+                </p>
               </CardContent>
             </Card>
+
+            <LeadInterestDialog
+              open={openLead}
+              onOpenChange={setOpenLead}
+              propertyId={prop.id}
+              ownerUserId={prop.user_id}
+              propertyTitle={prop.ad_title ?? prop.nickname}
+            />
+
 
             {(() => {
               const phone = (prop.show_contact_public && prop.contact_phone)
@@ -199,12 +145,13 @@ function AnuncioDetail() {
               if (!phone) return null;
               const digits = phone.replace(/\D/g, "");
               const waNumber = digits.length === 11 || digits.length === 10 ? `55${digits}` : digits;
-              const waMsg = encodeURIComponent(`Olá! Tenho interesse no imóvel "${prop.ad_title ?? prop.nickname}" anunciado no AlugaFlow.`);
+              const waMsg = encodeURIComponent(`Olá! Gostaria de agendar uma visita ao imóvel "${prop.ad_title ?? prop.nickname}" anunciado no AlugaFlow.`);
               return (
                 <Card>
                   <CardContent className="p-5">
-                    <p className="text-sm font-semibold">Fale com o proprietário</p>
+                    <p className="text-sm font-semibold">Agendar visita</p>
                     {owner?.full_name && <p className="mt-1 text-sm text-muted-foreground">{owner.full_name}</p>}
+                    <p className="mt-1 text-xs text-muted-foreground">Fale rápido com o proprietário para tirar dúvidas ou marcar uma visita.</p>
                     <a href={`tel:${phone}`} className="mt-3 flex items-center gap-2 text-sm text-primary hover:underline">
                       <Phone className="h-4 w-4" /> {phone}
                     </a>
