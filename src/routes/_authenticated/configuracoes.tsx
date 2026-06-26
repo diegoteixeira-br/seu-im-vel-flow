@@ -142,7 +142,7 @@ function ConfigPage() {
   if (isLoading) return <p className="text-muted-foreground">Carregando...</p>;
 
   return (
-    <div className="space-y-6 max-w-4xl">
+    <div className="space-y-6 w-full max-w-6xl mx-auto">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Configurações</h1>
         <p className="text-sm text-muted-foreground">Dados do proprietário, bancários e integração ASAAS.</p>
