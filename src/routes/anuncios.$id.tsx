@@ -150,6 +150,19 @@ function AnuncioDetail() {
               <h2 className="text-lg font-semibold">Descrição</h2>
               <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-muted-foreground">{description}</p>
             </div>
+
+            {photos.length > 0 && (
+              <div className="mt-8">
+                <h2 className="text-lg font-semibold">Fotos do imóvel ({photos.length})</h2>
+                <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
+                  {photos.map((p, i) => (
+                    <a key={i} href={p.url} target="_blank" rel="noreferrer" className="aspect-square overflow-hidden rounded-lg bg-muted">
+                      {p.url && <img src={p.url} alt="" loading="lazy" className="h-full w-full object-cover transition hover:scale-105" />}
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="space-y-4">
@@ -190,17 +203,21 @@ function AnuncioDetail() {
               </CardContent>
             </Card>
 
-            {owner && owner.show_phone_public && owner.public_phone && (() => {
-              const digits = owner.public_phone.replace(/\D/g, "");
+            {(() => {
+              const phone = (prop.show_contact_public && prop.contact_phone)
+                ? prop.contact_phone
+                : (owner?.show_phone_public && owner?.public_phone) ? owner.public_phone : null;
+              if (!phone) return null;
+              const digits = phone.replace(/\D/g, "");
               const waNumber = digits.length === 11 || digits.length === 10 ? `55${digits}` : digits;
               const waMsg = encodeURIComponent(`Olá! Tenho interesse no imóvel "${prop.ad_title ?? prop.nickname}" anunciado no AlugaFlow.`);
               return (
                 <Card>
                   <CardContent className="p-5">
                     <p className="text-sm font-semibold">Fale com o proprietário</p>
-                    {owner.full_name && <p className="mt-1 text-sm text-muted-foreground">{owner.full_name}</p>}
-                    <a href={`tel:${owner.public_phone}`} className="mt-3 flex items-center gap-2 text-sm text-primary hover:underline">
-                      <Phone className="h-4 w-4" /> {owner.public_phone}
+                    {owner?.full_name && <p className="mt-1 text-sm text-muted-foreground">{owner.full_name}</p>}
+                    <a href={`tel:${phone}`} className="mt-3 flex items-center gap-2 text-sm text-primary hover:underline">
+                      <Phone className="h-4 w-4" /> {phone}
                     </a>
                     <Button asChild className="mt-3 w-full gap-2 bg-[#25D366] text-white hover:bg-[#1ebe5b]">
                       <a href={`https://wa.me/${waNumber}?text=${waMsg}`} target="_blank" rel="noopener noreferrer">
@@ -214,6 +231,7 @@ function AnuncioDetail() {
           </div>
         </div>
       </div>
+
 
       <PublicFooter />
     </div>
