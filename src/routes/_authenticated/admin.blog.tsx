@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { slugify, formatDateBR } from "@/lib/blog-utils";
 import { Pencil, Trash2, Plus } from "lucide-react";
+import { AiCoverGenerator } from "@/components/ai-cover-generator";
 
 export const Route = createFileRoute("/_authenticated/admin/blog")({
   component: AdminBlog,
@@ -140,8 +141,15 @@ function AdminBlog() {
                 <Textarea rows={10} value={editing.content ?? ""} onChange={(e) => setEditing({ ...editing, content: e.target.value })} />
               </div>
               <div>
-                <Label>URL da foto de capa</Label>
-                <Input value={editing.cover_image_url ?? ""} onChange={(e) => setEditing({ ...editing, cover_image_url: e.target.value })} />
+                <Label>Foto de capa</Label>
+                <Input placeholder="Cole uma URL ou gere com IA" value={editing.cover_image_url ?? ""} onChange={(e) => setEditing({ ...editing, cover_image_url: e.target.value })} />
+                <AiCoverGenerator
+                  title={editing.title}
+                  onCoverReady={(url) => setEditing((prev) => ({ ...(prev ?? {}), cover_image_url: url }))}
+                />
+                {editing.cover_image_url && (
+                  <img src={editing.cover_image_url} alt="Prévia da capa" className="mt-2 aspect-[16/9] w-full rounded-md border object-cover" />
+                )}
               </div>
               <div>
                 <Label>Autor</Label>
