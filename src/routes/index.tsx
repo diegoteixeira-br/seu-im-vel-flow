@@ -117,12 +117,12 @@ function Landing() {
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-2 px-4 py-3">
           <Link to="/"><BrandLogo size={32} /></Link>
           <nav className="flex items-center gap-2">
-            <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex"><Link to="/para-proprietarios">Para proprietários</Link></Button>
-            <Button asChild variant="outline" size="sm"><Link to="/auth" search={{ mode: "signup" }}>Anunciar meu imóvel</Link></Button>
+            <Button asChild variant="outline" size="sm"><Link to="/para-proprietarios">Anunciar meu imóvel</Link></Button>
             <Button asChild size="sm">
               <Link to={user ? "/dashboard" : "/auth"}>{user ? "Painel" : "Entrar"}</Link>
             </Button>
           </nav>
+
 
         </div>
       </header>
