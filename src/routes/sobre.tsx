@@ -24,7 +24,7 @@ function Page() {
           <Link to="/"><BrandLogo size={32} /></Link>
           <nav className="flex items-center gap-2">
             <Button asChild variant="ghost" size="sm"><Link to="/">Imóveis</Link></Button>
-            <Button asChild variant="ghost" size="sm"><Link to="/planos">Planos</Link></Button>
+            <Button asChild variant="ghost" size="sm"><Link to="/para-proprietarios">Para proprietários</Link></Button>
             <Button asChild size="sm"><Link to={user ? "/dashboard" : "/auth"}>{user ? "Painel" : "Entrar"}</Link></Button>
           </nav>
         </div>
@@ -50,8 +50,8 @@ function Page() {
         </div>
         <div className="mt-8 flex gap-3">
           <Button asChild><Link to="/para-proprietarios">Conhecer a ferramenta</Link></Button>
-          <Button asChild variant="outline"><Link to="/planos">Ver planos</Link></Button>
         </div>
+
       </section>
     </div>
   );

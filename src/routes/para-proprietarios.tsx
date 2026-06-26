@@ -126,7 +126,7 @@ function Page() {
           <div className="flex gap-4">
             <Link to="/" className="hover:text-foreground">Imóveis</Link>
             <Link to="/sobre" className="hover:text-foreground">Sobre</Link>
-            <Link to="/planos" className="hover:text-foreground">Planos</Link>
+            
           </div>
         </div>
       </footer>
