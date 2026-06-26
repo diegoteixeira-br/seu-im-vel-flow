@@ -235,6 +235,17 @@ function Landing() {
         )}
       </section>
 
+      <section className="border-t bg-gradient-to-br from-primary/10 via-background to-background py-12">
+        <div className="mx-auto max-w-4xl px-4 text-center">
+          <p className="text-xs font-semibold uppercase tracking-wider text-primary">É proprietário ou imobiliária?</p>
+          <h2 className="mt-2 text-2xl font-bold tracking-tight md:text-3xl">Conheça o AlugaFlow por dentro</h2>
+          <p className="mx-auto mt-3 max-w-xl text-muted-foreground">Anuncie grátis, gerencie contratos, cobranças e relatórios em um só lugar.</p>
+          <div className="mt-6">
+            <Button asChild size="lg"><Link to="/para-proprietarios">Conhecer a ferramenta</Link></Button>
+          </div>
+        </div>
+      </section>
+
       <footer className="border-t bg-muted/30">
         <div className="mx-auto grid max-w-6xl gap-6 px-4 py-10 sm:grid-cols-2 md:grid-cols-4">
           <div>
