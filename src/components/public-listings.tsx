@@ -243,3 +243,41 @@ export function PublicListings({ variant = "page" }: PublicListingsProps) {
     </>
   );
 }
+
+const ListingCard = memo(function ListingCard({ item: p }: { item: Listing }) {
+  return (
+    <Link to="/anuncios/$id" params={{ id: p.id }} className="group block">
+      <Card className="h-full overflow-hidden transition hover:shadow-md">
+        <div className="aspect-[4/3] w-full overflow-hidden bg-muted">
+          {p.cover_url ? (
+            <img
+              src={p.cover_url}
+              alt={p.ad_title ?? p.nickname}
+              loading="lazy"
+              decoding="async"
+              className="h-full w-full object-cover transition group-hover:scale-105"
+            />
+          ) : (
+            <div className="grid h-full place-items-center text-muted-foreground">Sem foto</div>
+          )}
+        </div>
+        <CardContent className="p-4">
+          <div className="text-lg font-bold text-primary">
+            {formatBRL(p.rent_amount)}
+            <span className="text-xs font-normal text-muted-foreground">/mês</span>
+          </div>
+          <h3 className="mt-1 line-clamp-1 font-semibold">{p.ad_title ?? p.nickname}</h3>
+          <p className="mt-1 line-clamp-1 text-xs text-muted-foreground">
+            <MapPin className="mr-1 inline h-3 w-3" />
+            {[p.neighborhood, p.city, p.state].filter(Boolean).join(", ") || p.address}
+          </p>
+          <div className="mt-3 flex gap-4 text-xs text-muted-foreground">
+            <span className="flex items-center gap-1"><Bed className="h-3.5 w-3.5" /> {p.bedrooms ?? 0}</span>
+            <span className="flex items-center gap-1"><Bath className="h-3.5 w-3.5" /> {p.bathrooms ?? 0}</span>
+            {p.area_m2 ? <span className="flex items-center gap-1"><Maximize className="h-3.5 w-3.5" /> {p.area_m2} m²</span> : null}
+          </div>
+        </CardContent>
+      </Card>
+    </Link>
+  );
+});
