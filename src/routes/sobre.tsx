@@ -24,7 +24,7 @@ function Page() {
           <Link to="/"><BrandLogo size={32} /></Link>
           <nav className="flex items-center gap-2">
             <Button asChild variant="ghost" size="sm"><Link to="/">Imóveis</Link></Button>
-            <Button asChild variant="ghost" size="sm"><Link to="/planos">Planos</Link></Button>
+            <Button asChild variant="ghost" size="sm"><Link to="/para-proprietarios">Para proprietários</Link></Button>
             <Button asChild size="sm"><Link to={user ? "/dashboard" : "/auth"}>{user ? "Painel" : "Entrar"}</Link></Button>
           </nav>
         </div>
