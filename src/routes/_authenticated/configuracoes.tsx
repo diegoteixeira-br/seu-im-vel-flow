@@ -15,7 +15,9 @@ import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { User, MapPin, Landmark, Zap, Bell } from "lucide-react";
+import { User, MapPin, Landmark, Zap, Bell, Palette, ShieldCheck } from "lucide-react";
+import { BrandingTab } from "@/components/branding-tab";
+import { SecurityTab } from "@/components/security-tab";
 
 
 
@@ -154,6 +156,8 @@ function ConfigPage() {
             <TabsTrigger value="bancario"><Landmark className="h-4 w-4" />Dados bancários</TabsTrigger>
             <TabsTrigger value="asaas"><Zap className="h-4 w-4" />Integração ASAAS</TabsTrigger>
             <TabsTrigger value="automacao"><Bell className="h-4 w-4" />Automação</TabsTrigger>
+            <TabsTrigger value="identidade"><Palette className="h-4 w-4" />Identidade visual</TabsTrigger>
+            <TabsTrigger value="seguranca"><ShieldCheck className="h-4 w-4" />Segurança</TabsTrigger>
           </TabsList>
 
           <TabsContent value="pessoal">
@@ -270,6 +274,14 @@ function ConfigPage() {
                 </div>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="identidade">
+            <BrandingTab />
+          </TabsContent>
+
+          <TabsContent value="seguranca">
+            <SecurityTab />
           </TabsContent>
         </Tabs>
 
