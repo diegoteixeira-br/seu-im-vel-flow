@@ -91,7 +91,7 @@ function MyAdsPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("leads")
-        .select("id, property_id, nome_interessado, telefone, mensagem, visualizado, created_at")
+        .select("id, property_id, nome_interessado, telefone, email, cpf, rg, birth_date, marital_status, profession, monthly_income, current_address, current_city, current_state, current_zip, mensagem, visualizado, created_at, status, doc_rg_path, doc_income_path, doc_residence_path")
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data as Lead[];
