@@ -60,7 +60,7 @@ function AuthLayout() {
         <div className="flex flex-1 flex-col">
           <header className="sticky top-0 z-10 flex h-14 items-center gap-2 border-b bg-background px-4">
             <SidebarTrigger><Menu className="h-5 w-5" /></SidebarTrigger>
-            <span className="ml-2 font-semibold text-primary">AlugaFlow</span>
+            <BrandLogo size={28} className="ml-2" />
           </header>
           <main className="flex-1 p-4 md:p-6"><Outlet /></main>
         </div>
@@ -75,7 +75,7 @@ function AppSidebar({ onSignOut, email }: { onSignOut: () => void; email?: strin
     <Sidebar collapsible="icon">
       <SidebarHeader>
         <div className="flex items-center gap-2 px-2 py-1">
-          <div className="grid h-8 w-8 shrink-0 place-items-center rounded-md bg-primary text-primary-foreground font-bold">A</div>
+          <BrandLogo withWordmark={false} size={32} className="shrink-0" />
           <span className="font-semibold group-data-[collapsible=icon]:hidden">AlugaFlow</span>
         </div>
       </SidebarHeader>
