@@ -1,3 +1,4 @@
+import { BrandLogo } from "@/components/brand-logo";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -41,9 +42,8 @@ function AuthPage() {
   return (
     <div className="grid min-h-screen place-items-center bg-muted/30 p-4">
       <div className="w-full max-w-md">
-        <Link to="/" className="mb-6 flex items-center justify-center gap-2">
-          <div className="grid h-9 w-9 place-items-center rounded-md bg-primary text-primary-foreground font-bold">A</div>
-          <span className="text-xl font-semibold">AlugaFlow</span>
+        <Link to="/" className="mb-6 flex items-center justify-center">
+          <BrandLogo size={48} />
         </Link>
 
         <Card>

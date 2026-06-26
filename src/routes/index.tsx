@@ -1,3 +1,4 @@
+import { BrandLogo } from "@/components/brand-logo";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { Building2, Users, FileText, Wallet, TrendingUp, Shield, Check } from "lucide-react";
@@ -26,10 +27,8 @@ function Landing() {
     <div className="min-h-screen bg-background">
       <header className="border-b">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-          <div className="flex items-center gap-2">
-            <div className="grid h-8 w-8 place-items-center rounded-md bg-primary text-primary-foreground font-bold">A</div>
-            <span className="text-lg font-semibold">AlugaFlow</span>
-          </div>
+          <BrandLogo size={36} />
+
           <div className="flex gap-2">
             <Button asChild variant="ghost"><Link to="/auth">Entrar</Link></Button>
             <Button asChild><Link to="/auth" search={{ mode: "signup" }}>Criar conta</Link></Button>
