@@ -12,7 +12,6 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as TermosRouteImport } from './routes/termos'
 import { Route as SobreRouteImport } from './routes/sobre'
 import { Route as PrivacidadeRouteImport } from './routes/privacidade'
-import { Route as PlanosRouteImport } from './routes/planos'
 import { Route as ParaProprietariosRouteImport } from './routes/para-proprietarios'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AnunciosRouteImport } from './routes/anuncios'
@@ -46,11 +45,6 @@ const SobreRoute = SobreRouteImport.update({
 const PrivacidadeRoute = PrivacidadeRouteImport.update({
   id: '/privacidade',
   path: '/privacidade',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PlanosRoute = PlanosRouteImport.update({
-  id: '/planos',
-  path: '/planos',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ParaProprietariosRoute = ParaProprietariosRouteImport.update({
@@ -155,7 +149,6 @@ export interface FileRoutesByFullPath {
   '/anuncios': typeof AnunciosRouteWithChildren
   '/auth': typeof AuthRoute
   '/para-proprietarios': typeof ParaProprietariosRoute
-  '/planos': typeof PlanosRoute
   '/privacidade': typeof PrivacidadeRoute
   '/sobre': typeof SobreRoute
   '/termos': typeof TermosRoute
@@ -179,7 +172,6 @@ export interface FileRoutesByTo {
   '/anuncios': typeof AnunciosRouteWithChildren
   '/auth': typeof AuthRoute
   '/para-proprietarios': typeof ParaProprietariosRoute
-  '/planos': typeof PlanosRoute
   '/privacidade': typeof PrivacidadeRoute
   '/sobre': typeof SobreRoute
   '/termos': typeof TermosRoute
@@ -205,7 +197,6 @@ export interface FileRoutesById {
   '/anuncios': typeof AnunciosRouteWithChildren
   '/auth': typeof AuthRoute
   '/para-proprietarios': typeof ParaProprietariosRoute
-  '/planos': typeof PlanosRoute
   '/privacidade': typeof PrivacidadeRoute
   '/sobre': typeof SobreRoute
   '/termos': typeof TermosRoute
@@ -231,7 +222,6 @@ export interface FileRouteTypes {
     | '/anuncios'
     | '/auth'
     | '/para-proprietarios'
-    | '/planos'
     | '/privacidade'
     | '/sobre'
     | '/termos'
@@ -255,7 +245,6 @@ export interface FileRouteTypes {
     | '/anuncios'
     | '/auth'
     | '/para-proprietarios'
-    | '/planos'
     | '/privacidade'
     | '/sobre'
     | '/termos'
@@ -280,7 +269,6 @@ export interface FileRouteTypes {
     | '/anuncios'
     | '/auth'
     | '/para-proprietarios'
-    | '/planos'
     | '/privacidade'
     | '/sobre'
     | '/termos'
@@ -306,7 +294,6 @@ export interface RootRouteChildren {
   AnunciosRoute: typeof AnunciosRouteWithChildren
   AuthRoute: typeof AuthRoute
   ParaProprietariosRoute: typeof ParaProprietariosRoute
-  PlanosRoute: typeof PlanosRoute
   PrivacidadeRoute: typeof PrivacidadeRoute
   SobreRoute: typeof SobreRoute
   TermosRoute: typeof TermosRoute
@@ -336,13 +323,6 @@ declare module '@tanstack/react-router' {
       path: '/privacidade'
       fullPath: '/privacidade'
       preLoaderRoute: typeof PrivacidadeRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/planos': {
-      id: '/planos'
-      path: '/planos'
-      fullPath: '/planos'
-      preLoaderRoute: typeof PlanosRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/para-proprietarios': {
@@ -528,7 +508,6 @@ const rootRouteChildren: RootRouteChildren = {
   AnunciosRoute: AnunciosRouteWithChildren,
   AuthRoute: AuthRoute,
   ParaProprietariosRoute: ParaProprietariosRoute,
-  PlanosRoute: PlanosRoute,
   PrivacidadeRoute: PrivacidadeRoute,
   SobreRoute: SobreRoute,
   TermosRoute: TermosRoute,
