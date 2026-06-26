@@ -80,7 +80,6 @@ export function BrandingTab() {
       const { data: u } = await supabase.auth.getUser();
       if (!u.user) throw new Error("Sem sessão");
       const path = await uploadFile(u.user.id, file, kind);
-      const column = kind === "logo" ? "logo_url" : "watermark_url";
       const patch = (kind === "logo" ? { logo_url: path } : { watermark_url: path }) as never;
       const { error } = await supabase.from("profiles").update(patch).eq("id", u.user.id);
       if (error) throw error;
