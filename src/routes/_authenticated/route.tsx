@@ -108,6 +108,23 @@ function AppSidebar({ onSignOut, email }: { onSignOut: () => void; email?: strin
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+        {isAdmin && (
+          <SidebarGroup>
+            <SidebarGroupLabel>Administração</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild isActive={path.startsWith("/admin")} tooltip="Painel admin">
+                    <Link to="/admin" className="flex items-center gap-2">
+                      <Shield className="h-4 w-4" />
+                      <span>Painel Admin</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
       </SidebarContent>
       <SidebarFooter>
         <div className="px-2 pb-2">
