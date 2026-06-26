@@ -57,7 +57,7 @@ function AnuncioDetail() {
     queryFn: async () => {
       const { data: prop, error } = await supabase
         .from("properties")
-        .select("id, user_id, ad_title, nickname, ad_description, notes, address, city, state, neighborhood, zip_code, type, bedrooms, bathrooms, area_m2, rent_amount, listed_public")
+        .select("id, user_id, ad_title, nickname, ad_description, notes, address, city, state, neighborhood, zip_code, type, bedrooms, bathrooms, area_m2, rent_amount, listed_public, contact_phone, show_contact_public")
         .eq("id", id)
         .eq("listed_public", true)
         .maybeSingle();
