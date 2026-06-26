@@ -31,6 +31,8 @@ type Prop = {
   city: string | null;
   neighborhood: string | null;
   listed_public: boolean;
+  contact_phone: string | null;
+  show_contact_public: boolean;
 };
 
 type Lead = {
