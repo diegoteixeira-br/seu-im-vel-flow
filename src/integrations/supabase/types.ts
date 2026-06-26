@@ -14,6 +14,99 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_email_log: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          recipients_count: number
+          sent_by: string | null
+          status: string
+          subject: string
+          target_plan: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          id?: string
+          recipients_count?: number
+          sent_by?: string | null
+          status?: string
+          subject: string
+          target_plan: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          recipients_count?: number
+          sent_by?: string | null
+          status?: string
+          subject?: string
+          target_plan?: string
+        }
+        Relationships: []
+      }
+      admin_finance_entries: {
+        Row: {
+          amount: number
+          category: string | null
+          created_at: string
+          created_by: string | null
+          description: string
+          entry_date: string
+          id: string
+          kind: string
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          category?: string | null
+          created_at?: string
+          created_by?: string | null
+          description: string
+          entry_date?: string
+          id?: string
+          kind: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          category?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          entry_date?: string
+          id?: string
+          kind?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      admin_logs: {
+        Row: {
+          action: string
+          created_at: string
+          details: Json
+          id: string
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          details?: Json
+          id?: string
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          details?: Json
+          id?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       contract_signatures: {
         Row: {
           contract_id: string
@@ -465,6 +558,45 @@ export type Database = {
           },
         ]
       }
+      plans: {
+        Row: {
+          active: boolean
+          benefits: Json
+          created_at: string
+          id: string
+          name: string
+          price: number
+          promo_price: number | null
+          promo_until: string | null
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          benefits?: Json
+          created_at?: string
+          id: string
+          name: string
+          price?: number
+          promo_price?: number | null
+          promo_until?: string | null
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          benefits?: Json
+          created_at?: string
+          id?: string
+          name?: string
+          price?: number
+          promo_price?: number | null
+          promo_until?: string | null
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       posts: {
         Row: {
           author_name: string
@@ -506,6 +638,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          active: boolean
           address_city: string | null
           address_neighborhood: string | null
           address_number: string | null
@@ -540,6 +673,7 @@ export type Database = {
           watermark_url: string | null
         }
         Insert: {
+          active?: boolean
           address_city?: string | null
           address_neighborhood?: string | null
           address_number?: string | null
@@ -574,6 +708,7 @@ export type Database = {
           watermark_url?: string | null
         }
         Update: {
+          active?: boolean
           address_city?: string | null
           address_neighborhood?: string | null
           address_number?: string | null
@@ -873,6 +1008,34 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_dashboard_metrics: { Args: never; Returns: Json }
+      admin_list_users: {
+        Args: never
+        Returns: {
+          active: boolean
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+          is_admin: boolean
+          last_sign_in_at: string
+          phone: string
+          plan: string
+          property_count: number
+        }[]
+      }
+      admin_toggle_admin: {
+        Args: { _make_admin: boolean; _user_id: string }
+        Returns: undefined
+      }
+      admin_toggle_user_active: {
+        Args: { _active: boolean; _user_id: string }
+        Returns: undefined
+      }
+      admin_update_user_plan: {
+        Args: { _plan: string; _user_id: string }
+        Returns: undefined
+      }
       delete_my_account: { Args: never; Returns: undefined }
       has_role: {
         Args: {

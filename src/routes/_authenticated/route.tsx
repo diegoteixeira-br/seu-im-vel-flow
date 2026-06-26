@@ -2,7 +2,7 @@ import { BrandLogo } from "@/components/brand-logo";
 import { createFileRoute, Outlet, Link, useNavigate, useRouterState, redirect } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import {
-  LayoutDashboard, Building2, Users, FileText, Wallet, Receipt, LogOut, Menu, ClipboardCheck, BarChart3, Settings, Megaphone,
+  LayoutDashboard, Building2, Users, FileText, Wallet, Receipt, LogOut, Menu, ClipboardCheck, BarChart3, Settings, Megaphone, Shield,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
@@ -73,6 +73,12 @@ function AuthLayout() {
 
 function AppSidebar({ onSignOut, email }: { onSignOut: () => void; email?: string }) {
   const path = useRouterState({ select: (s) => s.location.pathname });
+  const { user } = useAuth();
+  const [isAdmin, setIsAdmin] = useState(false);
+  useEffect(() => {
+    if (!user) { setIsAdmin(false); return; }
+    supabase.rpc("has_role", { _user_id: user.id, _role: "admin" }).then(({ data }) => setIsAdmin(!!data));
+  }, [user]);
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader>
@@ -102,6 +108,23 @@ function AppSidebar({ onSignOut, email }: { onSignOut: () => void; email?: strin
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+        {isAdmin && (
+          <SidebarGroup>
+            <SidebarGroupLabel>Administração</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild isActive={path.startsWith("/admin")} tooltip="Painel admin">
+                    <Link to="/admin" className="flex items-center gap-2">
+                      <Shield className="h-4 w-4" />
+                      <span>Painel Admin</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
       </SidebarContent>
       <SidebarFooter>
         <div className="px-2 pb-2">
