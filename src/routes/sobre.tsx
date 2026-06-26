@@ -50,8 +50,8 @@ function Page() {
         </div>
         <div className="mt-8 flex gap-3">
           <Button asChild><Link to="/para-proprietarios">Conhecer a ferramenta</Link></Button>
-          <Button asChild variant="outline"><Link to="/planos">Ver planos</Link></Button>
         </div>
+
       </section>
     </div>
   );
