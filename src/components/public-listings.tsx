@@ -51,6 +51,7 @@ export function PublicListings({ variant = "page" }: PublicListingsProps) {
 
   const { data: listings = [], isLoading } = useQuery({
     queryKey: ["public-listings"],
+    staleTime: 5 * 60_000,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("properties")
@@ -73,7 +74,7 @@ export function PublicListings({ variant = "page" }: PublicListingsProps) {
           if (ph.category === "fachada") byProp.set(ph.property_id, ph.storage_path);
         }
         const paths = Array.from(byProp.values());
-        const urls = await getPhotoUrls(paths);
+        const urls = await getPhotoUrls(paths, { width: 480, quality: 75 });
         props.forEach((p) => {
           const path = byProp.get(p.id);
           p.cover_path = path ?? null;
@@ -83,6 +84,11 @@ export function PublicListings({ variant = "page" }: PublicListingsProps) {
       return props;
     },
   });
+
+  const dCity = useDebounce(city, 400);
+  const dNeighborhood = useDebounce(neighborhood, 400);
+  const dMinPrice = useDebounce(minPrice, 400);
+  const dMaxPrice = useDebounce(maxPrice, 400);
 
   const filtered = useMemo(() => {
     return listings.filter((p) => {
