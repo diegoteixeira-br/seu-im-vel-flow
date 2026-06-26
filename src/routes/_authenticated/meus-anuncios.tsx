@@ -40,9 +40,24 @@ type Lead = {
   property_id: string;
   nome_interessado: string;
   telefone: string;
+  email: string | null;
+  cpf: string | null;
+  rg: string | null;
+  birth_date: string | null;
+  marital_status: string | null;
+  profession: string | null;
+  monthly_income: number | null;
+  current_address: string | null;
+  current_city: string | null;
+  current_state: string | null;
+  current_zip: string | null;
   mensagem: string | null;
   visualizado: boolean;
   created_at: string;
+  status: string;
+  doc_rg_path: string | null;
+  doc_income_path: string | null;
+  doc_residence_path: string | null;
 };
 
 function MyAdsPage() {
