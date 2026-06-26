@@ -2,7 +2,7 @@ import { BrandLogo } from "@/components/brand-logo";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Search, Bed, Bath, Maximize, MapPin, Building2, Users, FileText, Wallet, Check } from "lucide-react";
+import { Search, Bed, Bath, Maximize, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
