@@ -62,7 +62,7 @@ function AuthLayout() {
         <div className="flex flex-1 flex-col">
           <header className="sticky top-0 z-10 flex h-14 items-center gap-2 border-b bg-background px-4">
             <SidebarTrigger><Menu className="h-5 w-5" /></SidebarTrigger>
-            <BrandLogo size={28} className="ml-2" />
+            
           </header>
           <main className="flex-1 p-4 md:p-6"><Outlet /></main>
         </div>
