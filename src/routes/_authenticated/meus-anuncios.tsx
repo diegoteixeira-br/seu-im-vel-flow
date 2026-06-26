@@ -64,7 +64,7 @@ function MyAdsPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("properties")
-        .select("id, nickname, ad_title, ad_description, rent_amount, city, neighborhood, listed_public")
+        .select("id, nickname, ad_title, ad_description, rent_amount, city, neighborhood, listed_public, contact_phone, show_contact_public")
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data as Prop[];
