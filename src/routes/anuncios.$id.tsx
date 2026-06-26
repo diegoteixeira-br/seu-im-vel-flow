@@ -110,7 +110,6 @@ function AnuncioDetail() {
   }
 
   const { prop, photos, owner } = data;
-  const mainPhoto = photos[0]?.url;
   const description = prop.ad_description || prop.notes || "Entre em contato com o proprietário para mais informações.";
 
   return (
