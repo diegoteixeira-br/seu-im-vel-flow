@@ -40,6 +40,8 @@ export function SecurityTab() {
 
   return (
     <div className="space-y-6">
+      <EmailCard />
+
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2"><KeyRound className="h-4 w-4" />Alterar senha</CardTitle>
