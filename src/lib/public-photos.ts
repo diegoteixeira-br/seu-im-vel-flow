@@ -2,11 +2,16 @@ import { supabase } from "@/integrations/supabase/client";
 
 const BUCKET = "property-photos";
 
+type Transform = { width?: number; height?: number; quality?: number };
+
 /**
- * Get URLs for property photos. Uses signed URLs which work for both
- * authenticated and anonymous users (storage policy allows public SELECT).
+ * Get signed URLs for property photos. Optional transform appends Supabase
+ * image-render query params to deliver smaller, resized thumbnails.
  */
-export async function getPhotoUrls(paths: string[]): Promise<Record<string, string>> {
+export async function getPhotoUrls(
+  paths: string[],
+  transform?: Transform,
+): Promise<Record<string, string>> {
   if (!paths.length) return {};
   const { data, error } = await supabase.storage.from(BUCKET).createSignedUrls(paths, 3600);
   if (error) {
@@ -15,7 +20,17 @@ export async function getPhotoUrls(paths: string[]): Promise<Record<string, stri
   }
   const map: Record<string, string> = {};
   data?.forEach((d) => {
-    if (d.signedUrl && d.path) map[d.path] = d.signedUrl;
+    if (d.signedUrl && d.path) {
+      let url = d.signedUrl;
+      if (transform) {
+        const params: string[] = [];
+        if (transform.width) params.push(`width=${transform.width}`);
+        if (transform.height) params.push(`height=${transform.height}`);
+        if (transform.quality) params.push(`quality=${transform.quality}`);
+        if (params.length) url += (url.includes("?") ? "&" : "?") + params.join("&");
+      }
+      map[d.path] = url;
+    }
   });
   return map;
 }

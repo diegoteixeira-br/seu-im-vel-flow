@@ -1,15 +1,17 @@
 import { Link } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { memo, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Bed, Bath, Maximize, MapPin, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { formatBRL } from "@/lib/format";
 import { getPhotoUrls } from "@/lib/public-photos";
+import { useDebounce } from "@/hooks/use-debounce";
 
 const PAGE_SIZE = 12;
 const TYPES = ["apartamento", "casa", "comercial", "kitnet", "terreno", "outro"] as const;
@@ -49,6 +51,7 @@ export function PublicListings({ variant = "page" }: PublicListingsProps) {
 
   const { data: listings = [], isLoading } = useQuery({
     queryKey: ["public-listings"],
+    staleTime: 5 * 60_000,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("properties")
@@ -71,7 +74,7 @@ export function PublicListings({ variant = "page" }: PublicListingsProps) {
           if (ph.category === "fachada") byProp.set(ph.property_id, ph.storage_path);
         }
         const paths = Array.from(byProp.values());
-        const urls = await getPhotoUrls(paths);
+        const urls = await getPhotoUrls(paths, { width: 480, quality: 75 });
         props.forEach((p) => {
           const path = byProp.get(p.id);
           p.cover_path = path ?? null;
@@ -82,11 +85,16 @@ export function PublicListings({ variant = "page" }: PublicListingsProps) {
     },
   });
 
+  const dCity = useDebounce(city, 400);
+  const dNeighborhood = useDebounce(neighborhood, 400);
+  const dMinPrice = useDebounce(minPrice, 400);
+  const dMaxPrice = useDebounce(maxPrice, 400);
+
   const filtered = useMemo(() => {
     return listings.filter((p) => {
-      const citySearch = city.toLowerCase();
+      const citySearch = dCity.toLowerCase();
       if (citySearch && !(p.city ?? "").toLowerCase().includes(citySearch) && !(p.neighborhood ?? "").toLowerCase().includes(citySearch)) return false;
-      if (neighborhood && !(p.neighborhood ?? "").toLowerCase().includes(neighborhood.toLowerCase())) return false;
+      if (dNeighborhood && !(p.neighborhood ?? "").toLowerCase().includes(dNeighborhood.toLowerCase())) return false;
       if (type !== "todos" && p.type !== type) return false;
       if (bedrooms !== "todos") {
         const n = parseInt(bedrooms, 10);
@@ -98,11 +106,11 @@ export function PublicListings({ variant = "page" }: PublicListingsProps) {
         const b = p.bathrooms ?? 0;
         if (bathrooms === "4" ? b < 4 : b !== n) return false;
       }
-      if (minPrice && p.rent_amount < parseFloat(minPrice)) return false;
-      if (maxPrice && p.rent_amount > parseFloat(maxPrice)) return false;
+      if (dMinPrice && p.rent_amount < parseFloat(dMinPrice)) return false;
+      if (dMaxPrice && p.rent_amount > parseFloat(dMaxPrice)) return false;
       return true;
     });
-  }, [listings, city, neighborhood, type, bedrooms, bathrooms, minPrice, maxPrice, isHome]);
+  }, [listings, dCity, dNeighborhood, type, bedrooms, bathrooms, dMinPrice, dMaxPrice, isHome]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const pageItems = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
@@ -200,38 +208,27 @@ export function PublicListings({ variant = "page" }: PublicListingsProps) {
           </p>
         )}
 
-        {pageItems.length === 0 && !isLoading ? (
+        {isLoading ? (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <Card key={i} className="h-full overflow-hidden">
+                <Skeleton className="aspect-[4/3] w-full rounded-none" />
+                <CardContent className="space-y-2 p-4">
+                  <Skeleton className="h-5 w-24" />
+                  <Skeleton className="h-4 w-3/4" />
+                  <Skeleton className="h-3 w-full" />
+                  <Skeleton className="h-3 w-1/2" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : pageItems.length === 0 ? (
           <div className="rounded-lg border border-dashed p-10 text-center text-muted-foreground">
             Nenhum imóvel encontrado com esses filtros.
           </div>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {pageItems.map((p) => (
-              <Link key={p.id} to="/anuncios/$id" params={{ id: p.id }} className="group block">
-                <Card className="h-full overflow-hidden transition hover:shadow-md">
-                  <div className="aspect-[4/3] w-full overflow-hidden bg-muted">
-                    {p.cover_url ? (
-                      <img src={p.cover_url} alt={p.ad_title ?? p.nickname} className="h-full w-full object-cover transition group-hover:scale-105" />
-                    ) : (
-                      <div className="grid h-full place-items-center text-muted-foreground">Sem foto</div>
-                    )}
-                  </div>
-                  <CardContent className="p-4">
-                    <div className="text-lg font-bold text-primary">{formatBRL(p.rent_amount)}<span className="text-xs font-normal text-muted-foreground">/mês</span></div>
-                    <h3 className="mt-1 line-clamp-1 font-semibold">{p.ad_title ?? p.nickname}</h3>
-                    <p className="mt-1 line-clamp-1 text-xs text-muted-foreground">
-                      <MapPin className="mr-1 inline h-3 w-3" />
-                      {[p.neighborhood, p.city, p.state].filter(Boolean).join(", ") || p.address}
-                    </p>
-                    <div className="mt-3 flex gap-4 text-xs text-muted-foreground">
-                      <span className="flex items-center gap-1"><Bed className="h-3.5 w-3.5" /> {p.bedrooms ?? 0}</span>
-                      <span className="flex items-center gap-1"><Bath className="h-3.5 w-3.5" /> {p.bathrooms ?? 0}</span>
-                      {p.area_m2 ? <span className="flex items-center gap-1"><Maximize className="h-3.5 w-3.5" /> {p.area_m2} m²</span> : null}
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
-            ))}
+            {pageItems.map((p) => <ListingCard key={p.id} item={p} />)}
           </div>
         )}
 
@@ -246,3 +243,41 @@ export function PublicListings({ variant = "page" }: PublicListingsProps) {
     </>
   );
 }
+
+const ListingCard = memo(function ListingCard({ item: p }: { item: Listing }) {
+  return (
+    <Link to="/anuncios/$id" params={{ id: p.id }} className="group block">
+      <Card className="h-full overflow-hidden transition hover:shadow-md">
+        <div className="aspect-[4/3] w-full overflow-hidden bg-muted">
+          {p.cover_url ? (
+            <img
+              src={p.cover_url}
+              alt={p.ad_title ?? p.nickname}
+              loading="lazy"
+              decoding="async"
+              className="h-full w-full object-cover transition group-hover:scale-105"
+            />
+          ) : (
+            <div className="grid h-full place-items-center text-muted-foreground">Sem foto</div>
+          )}
+        </div>
+        <CardContent className="p-4">
+          <div className="text-lg font-bold text-primary">
+            {formatBRL(p.rent_amount)}
+            <span className="text-xs font-normal text-muted-foreground">/mês</span>
+          </div>
+          <h3 className="mt-1 line-clamp-1 font-semibold">{p.ad_title ?? p.nickname}</h3>
+          <p className="mt-1 line-clamp-1 text-xs text-muted-foreground">
+            <MapPin className="mr-1 inline h-3 w-3" />
+            {[p.neighborhood, p.city, p.state].filter(Boolean).join(", ") || p.address}
+          </p>
+          <div className="mt-3 flex gap-4 text-xs text-muted-foreground">
+            <span className="flex items-center gap-1"><Bed className="h-3.5 w-3.5" /> {p.bedrooms ?? 0}</span>
+            <span className="flex items-center gap-1"><Bath className="h-3.5 w-3.5" /> {p.bathrooms ?? 0}</span>
+            {p.area_m2 ? <span className="flex items-center gap-1"><Maximize className="h-3.5 w-3.5" /> {p.area_m2} m²</span> : null}
+          </div>
+        </CardContent>
+      </Card>
+    </Link>
+  );
+});

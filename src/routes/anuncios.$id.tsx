@@ -43,6 +43,7 @@ function AnuncioDetail() {
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ["public-listing", id],
+    staleTime: 5 * 60_000,
     queryFn: async () => {
       const { data: prop, error } = await supabase
         .from("properties")
@@ -58,8 +59,15 @@ function AnuncioDetail() {
         supabase.from("profiles").select("full_name, public_phone, show_phone_public").eq("id", prop.user_id).maybeSingle(),
       ]);
       const paths = (photos ?? []).map((p) => p.storage_path);
-      const urls = await getPhotoUrls(paths);
-      const photoList = (photos ?? []).map((p) => ({ ...p, url: urls[p.storage_path] }));
+      const [thumbUrls, fullUrls] = await Promise.all([
+        getPhotoUrls(paths, { width: 480, quality: 75 }),
+        getPhotoUrls(paths, { width: 1600, quality: 85 }),
+      ]);
+      const photoList = (photos ?? []).map((p) => ({
+        ...p,
+        url: thumbUrls[p.storage_path],
+        fullUrl: fullUrls[p.storage_path],
+      }));
       return { prop, photos: photoList, owner: owner ?? null };
     },
   });
@@ -172,9 +180,9 @@ function AnuncioDetail() {
       <Dialog open={lightboxIdx !== null} onOpenChange={(o) => !o && setLightboxIdx(null)}>
         <DialogContent className="max-w-5xl border-0 bg-transparent p-0 shadow-none">
           <DialogTitle className="sr-only">Foto do imóvel</DialogTitle>
-          {lightboxIdx !== null && photos[lightboxIdx]?.url && (
+          {lightboxIdx !== null && photos[lightboxIdx]?.fullUrl && (
             <div className="relative">
-              <img src={photos[lightboxIdx].url} alt="" className="mx-auto max-h-[85vh] w-auto rounded-lg object-contain" />
+              <img src={photos[lightboxIdx].fullUrl} alt="" className="mx-auto max-h-[85vh] w-auto rounded-lg object-contain" />
               {photos.length > 1 && (
                 <>
                   <button type="button" onClick={() => setLightboxIdx((i) => (i! - 1 + photos.length) % photos.length)} className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-black/60 p-2 text-white hover:bg-black/80"><ChevronLeft className="h-6 w-6" /></button>
