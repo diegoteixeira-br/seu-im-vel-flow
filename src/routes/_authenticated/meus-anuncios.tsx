@@ -211,27 +211,63 @@ function MyAdsPage() {
             const prop = propsById.get(l.property_id);
             return (
               <Card key={l.id} className={l.visualizado ? "" : "border-primary/50 bg-primary/5"}>
-                <CardContent className="p-4">
+                <CardContent className="space-y-3 p-4">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2">
+                      <div className="flex flex-wrap items-center gap-2">
                         <p className="font-semibold">{l.nome_interessado}</p>
                         {!l.visualizado && <Badge variant="destructive">Novo</Badge>}
+                        {l.status === "convertido" && <Badge variant="default">Convertido em inquilino</Badge>}
                       </div>
                       <p className="text-xs text-muted-foreground">
                         Interesse em: {prop?.ad_title || prop?.nickname || "—"} · {formatDate(l.created_at)}
                       </p>
-                      <div className="mt-2 flex flex-wrap gap-3 text-sm">
-                        <a href={`tel:${l.telefone}`} className="flex items-center gap-1 text-primary hover:underline"><Phone className="h-3.5 w-3.5" /> {l.telefone}</a>
-                        <a href={`https://wa.me/55${l.telefone.replace(/\D/g, "")}`} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-primary hover:underline"><Mail className="h-3.5 w-3.5" /> WhatsApp</a>
-                      </div>
-                      {l.mensagem && <p className="mt-2 rounded-md bg-muted/50 p-2 text-sm">{l.mensagem}</p>}
                     </div>
-                    {!l.visualizado && (
-                      <Button size="sm" variant="ghost" onClick={() => markRead.mutate(l.id)}><Check className="h-4 w-4" /> Marcar lido</Button>
-                    )}
-                    {l.visualizado && <Eye className="h-4 w-4 text-muted-foreground" />}
+                    <div className="flex flex-col items-end gap-1">
+                      {!l.visualizado && (
+                        <Button size="sm" variant="ghost" onClick={() => markRead.mutate(l.id)}><Check className="h-4 w-4" /> Marcar lido</Button>
+                      )}
+                      {l.status !== "convertido" && (
+                        <Button size="sm" onClick={() => convertToTenant.mutate(l)} disabled={convertToTenant.isPending}>
+                          Converter em inquilino
+                        </Button>
+                      )}
+                    </div>
                   </div>
+
+                  <div className="grid gap-2 text-sm sm:grid-cols-2">
+                    <div className="flex flex-wrap gap-3">
+                      <a href={`tel:${l.telefone}`} className="flex items-center gap-1 text-primary hover:underline"><Phone className="h-3.5 w-3.5" /> {l.telefone}</a>
+                      <a href={`https://wa.me/55${l.telefone.replace(/\D/g, "")}`} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-primary hover:underline"><Mail className="h-3.5 w-3.5" /> WhatsApp</a>
+                      {l.email && <a href={`mailto:${l.email}`} className="flex items-center gap-1 text-primary hover:underline"><Mail className="h-3.5 w-3.5" /> {l.email}</a>}
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      {l.cpf && <>CPF: {l.cpf}<br /></>}
+                      {l.rg && <>RG: {l.rg}<br /></>}
+                      {l.birth_date && <>Nasc.: {formatDate(l.birth_date)}<br /></>}
+                      {l.marital_status && <>Estado civil: {l.marital_status}<br /></>}
+                      {l.profession && <>Profissão: {l.profession}<br /></>}
+                      {l.monthly_income != null && <>Renda: {formatBRL(l.monthly_income)}<br /></>}
+                    </div>
+                  </div>
+
+                  {(l.current_address || l.current_city) && (
+                    <p className="text-xs text-muted-foreground">
+                      Endereço atual: {[l.current_address, l.current_city, l.current_state, l.current_zip].filter(Boolean).join(", ")}
+                    </p>
+                  )}
+
+                  {l.mensagem && <p className="rounded-md bg-muted/50 p-2 text-sm">{l.mensagem}</p>}
+
+                  {(l.doc_rg_path || l.doc_income_path || l.doc_residence_path) && (
+                    <div className="flex flex-wrap gap-2 text-xs">
+                      {l.doc_rg_path && <Button size="sm" variant="outline" onClick={() => openDoc(l.doc_rg_path!)}>RG/CNH</Button>}
+                      {l.doc_income_path && <Button size="sm" variant="outline" onClick={() => openDoc(l.doc_income_path!)}>Comprovante de renda</Button>}
+                      {l.doc_residence_path && <Button size="sm" variant="outline" onClick={() => openDoc(l.doc_residence_path!)}>Comprovante de residência</Button>}
+                    </div>
+                  )}
+
+                  {l.visualizado && l.status !== "convertido" && <Eye className="h-4 w-4 text-muted-foreground" />}
                 </CardContent>
               </Card>
             );
