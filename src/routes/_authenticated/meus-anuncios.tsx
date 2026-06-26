@@ -194,16 +194,16 @@ function MyAdsPage() {
 
 function EditAdDialog({ editing, onClose }: { editing: Prop | null; onClose: () => void }) {
   const qc = useQueryClient();
-  const [adTitle, setAdTitle] = useState("");
-  const [adDescription, setAdDescription] = useState("");
+  const [adTitle, setAdTitle] = useState(editing?.ad_title ?? "");
+  const [adDescription, setAdDescription] = useState(editing?.ad_description ?? "");
 
-  // sync when opens
-  useState(() => {
-    if (editing) {
-      setAdTitle(editing.ad_title ?? "");
-      setAdDescription(editing.ad_description ?? "");
-    }
-  });
+  // re-sync state when a different property is opened
+  const editingId = editing?.id ?? null;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useMemo(() => {
+    setAdTitle(editing?.ad_title ?? "");
+    setAdDescription(editing?.ad_description ?? "");
+  }, [editingId]);
 
   const save = useMutation({
     mutationFn: async () => {
