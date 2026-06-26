@@ -235,66 +235,6 @@ function Landing() {
         )}
       </section>
 
-      <section className="bg-muted/30 py-16">
-        <div className="mx-auto max-w-6xl px-4">
-          <div className="text-center">
-            <p className="text-sm font-semibold uppercase tracking-wider text-primary">Para proprietários</p>
-            <h2 className="mt-2 text-3xl font-bold tracking-tight md:text-4xl">Gestão completa dos seus aluguéis</h2>
-            <p className="mx-auto mt-3 max-w-2xl text-muted-foreground">
-              Anuncie grátis e ainda controle imóveis, contratos, pagamentos e despesas em um só lugar.
-            </p>
-          </div>
-          <div className="mt-10 grid gap-6 md:grid-cols-4">
-            {[
-              { icon: Building2, title: "Imóveis", desc: "Cadastre e organize sua carteira." },
-              { icon: Users, title: "Inquilinos", desc: "Dados completos e documentos." },
-              { icon: FileText, title: "Contratos", desc: "Modelos prontos e assinatura digital." },
-              { icon: Wallet, title: "Pagamentos", desc: "Cobrança automática via ASAAS." },
-            ].map((f) => (
-              <div key={f.title} className="rounded-lg border bg-card p-6">
-                <f.icon className="h-6 w-6 text-primary" />
-                <h3 className="mt-3 font-semibold">{f.title}</h3>
-                <p className="mt-1 text-sm text-muted-foreground">{f.desc}</p>
-              </div>
-            ))}
-          </div>
-          <div className="mt-8 text-center">
-            <Button asChild size="lg"><Link to="/auth" search={{ mode: "signup" }}>Começar grátis</Link></Button>
-          </div>
-        </div>
-      </section>
-
-      <section id="planos" className="mx-auto max-w-6xl px-4 py-16 scroll-mt-20">
-        <div className="text-center">
-          <h2 className="text-3xl font-bold tracking-tight md:text-4xl">Planos</h2>
-          <p className="mx-auto mt-3 max-w-xl text-muted-foreground">Anuncie e gerencie no plano certo para você.</p>
-        </div>
-        <div className="mt-10 grid gap-6 md:grid-cols-3">
-          {[
-            { name: "Gratuito", price: "R$ 0", period: "para sempre", highlight: false, features: ["Até 2 anúncios no portal", "Gestão de imóveis e contratos", "Controle de pagamentos"], cta: "Começar grátis" },
-            { name: "Investidor", price: "R$ 49,90", period: "/mês", highlight: true, features: ["Anúncios ilimitados", "Relatórios completos", "Cobrança automática"], cta: "Assinar Investidor" },
-            { name: "Imobiliária", price: "R$ 197", period: "/mês", highlight: false, features: ["Múltiplos usuários", "Permissões por equipe", "Suporte dedicado"], cta: "Falar com vendas" },
-          ].map((p) => (
-            <div key={p.name} className={`rounded-lg border bg-card p-6 ${p.highlight ? "border-primary shadow-lg ring-1 ring-primary" : ""}`}>
-              {p.highlight && <div className="mb-3 inline-block rounded-full bg-primary px-3 py-1 text-xs font-semibold text-primary-foreground">Mais popular</div>}
-              <h3 className="text-xl font-semibold">{p.name}</h3>
-              <div className="mt-3 flex items-baseline gap-1">
-                <span className="text-3xl font-bold">{p.price}</span>
-                <span className="text-sm text-muted-foreground">{p.period}</span>
-              </div>
-              <ul className="mt-6 space-y-2 text-sm">
-                {p.features.map((f) => (
-                  <li key={f} className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" />{f}</li>
-                ))}
-              </ul>
-              <Button asChild className="mt-6 w-full" variant={p.highlight ? "default" : "outline"}>
-                <Link to="/auth" search={{ mode: "signup" }}>{p.cta}</Link>
-              </Button>
-            </div>
-          ))}
-        </div>
-      </section>
-
       <footer className="border-t bg-muted/30">
         <div className="mx-auto grid max-w-6xl gap-6 px-4 py-10 sm:grid-cols-2 md:grid-cols-4">
           <div>
@@ -304,10 +244,11 @@ function Landing() {
           <div>
             <p className="text-sm font-semibold">Navegar</p>
             <ul className="mt-2 space-y-1 text-sm text-muted-foreground">
-              <li><Link to="/" className="hover:text-foreground">Imóveis</Link></li>
-              <li><a href="#planos" className="hover:text-foreground">Planos</a></li>
+              <li><Link to="/" className="hover:text-foreground">Anúncios</Link></li>
+              <li><Link to="/sobre" className="hover:text-foreground">Sobre nós</Link></li>
             </ul>
           </div>
+
           <div>
             <p className="text-sm font-semibold">Para proprietários</p>
             <ul className="mt-2 space-y-1 text-sm text-muted-foreground">
