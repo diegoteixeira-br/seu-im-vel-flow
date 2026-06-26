@@ -149,8 +149,9 @@ function AnuncioDetail() {
               return (
                 <Card>
                   <CardContent className="p-5">
-                    <p className="text-sm font-semibold">Fale com o proprietário</p>
+                    <p className="text-sm font-semibold">Agendar visita</p>
                     {owner?.full_name && <p className="mt-1 text-sm text-muted-foreground">{owner.full_name}</p>}
+                    <p className="mt-1 text-xs text-muted-foreground">Fale rápido com o proprietário para tirar dúvidas ou marcar uma visita.</p>
                     <a href={`tel:${phone}`} className="mt-3 flex items-center gap-2 text-sm text-primary hover:underline">
                       <Phone className="h-4 w-4" /> {phone}
                     </a>
