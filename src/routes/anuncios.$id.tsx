@@ -122,38 +122,21 @@ function AnuncioDetail() {
               <CardContent className="p-5">
                 <p className="text-xs text-muted-foreground">Valor do aluguel</p>
                 <p className="text-3xl font-bold text-primary">{formatBRL(prop.rent_amount)}<span className="text-sm font-normal text-muted-foreground">/mês</span></p>
-                <Dialog open={openLead} onOpenChange={setOpenLead}>
-                  <DialogTrigger asChild>
-                    <Button className="mt-4 w-full" size="lg">Tenho interesse</Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Enviar mensagem ao proprietário</DialogTitle>
-                    </DialogHeader>
-                    <form onSubmit={form.handleSubmit((v) => submitLead.mutate(v))} className="space-y-3">
-                      <div className="space-y-1">
-                        <Label>Seu nome *</Label>
-                        <Input {...form.register("nome_interessado")} />
-                        {form.formState.errors.nome_interessado && <p className="text-xs text-destructive">{form.formState.errors.nome_interessado.message}</p>}
-                      </div>
-                      <div className="space-y-1">
-                        <Label>Telefone / WhatsApp *</Label>
-                        <Input {...form.register("telefone")} placeholder="(65) 99999-9999" />
-                        {form.formState.errors.telefone && <p className="text-xs text-destructive">{form.formState.errors.telefone.message}</p>}
-                      </div>
-                      <div className="space-y-1">
-                        <Label>Mensagem (opcional)</Label>
-                        <Textarea rows={3} {...form.register("mensagem")} placeholder="Olá, gostaria de mais informações sobre este imóvel..." />
-                      </div>
-                      <DialogFooter>
-                        <Button type="button" variant="outline" onClick={() => setOpenLead(false)}>Cancelar</Button>
-                        <Button type="submit" disabled={submitLead.isPending}>{submitLead.isPending ? "Enviando..." : "Enviar"}</Button>
-                      </DialogFooter>
-                    </form>
-                  </DialogContent>
-                </Dialog>
+                <Button className="mt-4 w-full" size="lg" onClick={() => setOpenLead(true)}>Tenho interesse</Button>
+                <p className="mt-2 text-[11px] leading-snug text-muted-foreground">
+                  Preencha seu pré-cadastro (dados pessoais e documentos) para o proprietário avaliar e adiantar o contrato.
+                </p>
               </CardContent>
             </Card>
+
+            <LeadInterestDialog
+              open={openLead}
+              onOpenChange={setOpenLead}
+              propertyId={prop.id}
+              ownerUserId={prop.user_id}
+              propertyTitle={prop.ad_title ?? prop.nickname}
+            />
+
 
             {(() => {
               const phone = (prop.show_contact_public && prop.contact_phone)
