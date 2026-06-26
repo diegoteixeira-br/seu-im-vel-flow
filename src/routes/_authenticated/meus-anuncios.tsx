@@ -121,6 +121,41 @@ function MyAdsPage() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["my-leads"] }),
   });
 
+  const convertToTenant = useMutation({
+    mutationFn: async (lead: Lead) => {
+      const { data: u } = await supabase.auth.getUser();
+      if (!u.user) throw new Error("Sessão expirada");
+      const { error: insErr } = await supabase.from("tenants").insert({
+        user_id: u.user.id,
+        full_name: lead.nome_interessado,
+        email: lead.email,
+        phone: lead.telefone,
+        whatsapp: lead.telefone,
+        cpf: lead.cpf,
+        rg: lead.rg,
+        birth_date: lead.birth_date,
+        marital_status: lead.marital_status,
+        occupation: lead.profession,
+        address_street: lead.current_address,
+        address_city: lead.current_city,
+        address_state: lead.current_state,
+        address_zip: lead.current_zip,
+        notes: lead.mensagem,
+      });
+      if (insErr) throw insErr;
+      const { error: upErr } = await supabase.from("leads").update({ status: "convertido", visualizado: true }).eq("id", lead.id);
+      if (upErr) throw upErr;
+    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["my-leads"] }); toast.success("Inquilino criado! Revise os dados em /inquilinos."); },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  async function openDoc(path: string) {
+    const { data, error } = await supabase.storage.from("lead-documents").createSignedUrl(path, 3600);
+    if (error) { toast.error(error.message); return; }
+    window.open(data.signedUrl, "_blank");
+  }
+
   const unread = leads.filter((l) => !l.visualizado).length;
   const propsById = new Map(props.map((p) => [p.id, p]));
 
