@@ -1,68 +1,73 @@
-# Plano: "Gerar capa com IA" no editor do blog
+# Painel Admin AlugaFlow — Plano de Implementação
 
-Adicionar um botão **"Gerar capa com IA"** dentro do editor de posts em `/admin/blog`. Você escreve um prompt em português, a IA gera a imagem (PNG), o arquivo é salvo no Supabase Storage e o campo `cover_image_url` do post é preenchido automaticamente.
+Vou construir o painel admin em **uma única atualização**, mas preciso confirmar algumas decisões importantes antes, porque parte do escopo entra em conflito com a arquitetura atual do projeto e com boas práticas de segurança.
 
-## Como vai funcionar (UX)
+---
 
-No `Dialog` de criar/editar post, ao lado do campo "URL da foto de capa":
+## ⚠️ Pontos que preciso ajustar do pedido original
 
-1. Botão **"✨ Gerar com IA"** abre um mini-painel com:
-   - Campo de prompt (textarea), já pré-preenchido com uma sugestão baseada no título do post (ex.: "Foto profissional para artigo sobre [título], estilo fotografia imobiliária brasileira, iluminação natural, 16:9").
-   - Seletor de estilo rápido: Fotografia / Ilustração / Minimalista.
-   - Botão **"Gerar"**.
-2. Durante a geração, mostra uma prévia desfocada que vai ganhando nitidez (streaming progressivo).
-3. Quando finaliza, mostra a imagem final + 2 botões: **"Usar esta capa"** (salva no Storage e preenche `cover_image_url`) ou **"Gerar outra"**.
+### 1. Roles: usar tabela `user_roles` (NÃO coluna em `profiles`)
+O projeto já tem a tabela `user_roles` + enum `app_role` + função `has_role()` exatamente para isso. Guardar `role` em `profiles` é uma vulnerabilidade conhecida (privilege escalation) — qualquer policy de UPDATE em `profiles` permitiria o usuário se auto-promover a admin. **Vou usar a infra já existente** e apenas inserir uma linha `('alugueisteixeira@gmail.com', 'admin')` via migration.
 
-## Onde os arquivos vão ficar
+### 2. Stack server-side: TanStack Server Functions, não Edge Functions
+O projeto é TanStack Start. A diretriz oficial é usar `createServerFn` para lógica interna (check-admin, create-checkout, envio de email) e **server routes em `/api/public/*`** apenas para webhooks externos (Stripe webhook). Vou seguir esse padrão — Edge Functions só onde realmente precisam (webhook do Stripe pode ficar em server route público com verificação HMAC).
 
-- Novo bucket público no Supabase Storage: **`blog-covers`** (criado via tool).
-- Arquivos salvos como `blog-covers/{post_id_ou_timestamp}.png`.
-- A URL pública do bucket vira o `cover_image_url`.
+### 3. Email: usar Lovable Emails (não Resend direto)
+A diretriz manda recomendar Lovable Emails antes de Resend. Vou implementar com a infra de email do Lovable (queue + templates React Email). Se você insistir em Resend, troco — me avise.
 
-## Mudanças técnicas
+### 4. Pagamentos: usar Stripe nativo do Lovable, não BYOK
+A diretriz é clara: **nunca** recomendar BYOK Stripe (pedir chave do usuário). Vou usar `enable_stripe_payments` que já cuida de checkout, webhook e atualização de plano automaticamente, sem você precisar gerenciar chaves. Mais seguro e menos código.
 
-### 1. Backend (TanStack server route — streaming)
-- **Novo arquivo:** `src/routes/api/generate-blog-cover.ts`
-  - Server route POST que recebe `{ prompt }`.
-  - Chama `https://ai.gateway.lovable.dev/v1/images/generations` com:
-    - `model: "openai/gpt-image-2"`
-    - `quality: "low"` (padrão — rápido e barato)
-    - `size: "1536x1024"` (formato 16:9 ideal pra capa de blog)
-    - `stream: true`, `partial_images: 1`
-  - Retorna o body SSE direto pro cliente (passthrough).
-  - Usa `LOVABLE_API_KEY` do `process.env`.
-- **Novo arquivo:** `src/lib/stream-image.ts`
-  - Helper cliente com `eventsource-parser` + `flushSync` (padrão obrigatório da documentação) pra consumir o stream e devolver frames parciais e finais.
+### 5. Coluna `plan` em `profiles`
+Hoje não existe campo de plano no banco. Vou adicionar `plan` (`free`|`investidor`|`imobiliaria`) e `active` (bool, para desativar conta sem deletar) em `profiles`.
 
-### 2. Server function pra upload final
-- **Novo arquivo:** `src/lib/blog-cover.functions.ts`
-  - `createServerFn` com `.middleware([requireSupabaseAuth])` + verificação de role `admin` via `has_role`.
-  - Recebe `{ base64, postId? }`, faz upload no bucket `blog-covers` via `supabaseAdmin` (carregado dinamicamente dentro do handler) e retorna `{ url }`.
+---
 
-### 3. Storage
-- Criar bucket público `blog-covers` (via tool `supabase--storage_create_bucket`).
-- Política RLS em `storage.objects`: SELECT público; INSERT/UPDATE/DELETE só pra admin (usando `has_role`).
+## 📦 O que será entregue
 
-### 4. Frontend
-- **Novo componente:** `src/components/ai-cover-generator.tsx`
-  - Dialog/popover acionado por um botão dentro do editor.
-  - Estado: `prompt`, `isStreaming`, `currentImage` (data URL), `isFinal`.
-  - Aplica `blur-2xl` nos frames parciais e remove no final (conforme regra da doc).
-  - Chama a server function de upload e dispara callback `onCoverReady(url)` que preenche `editing.cover_image_url`.
-- **Editar:** `src/routes/_authenticated/admin.blog.tsx`
-  - Adicionar `<AiCoverGenerator title={editing.title} onCoverReady={url => setEditing({...editing, cover_image_url: url})} />` logo abaixo do input "URL da foto de capa".
+### Banco (1 migração)
+- `profiles`: adicionar `plan`, `active`, `last_sign_in_at`
+- `user_roles`: seed `alugueisteixeira@gmail.com` como admin (via trigger no signup OU lookup direto em auth.users)
+- Nova tabela `plans` (nome, preço, preço_promocional, válido_até, ativo, benefícios JSONB)
+- Nova tabela `admin_finance_entries` (descrição, tipo, valor, categoria, data)
+- Nova tabela `admin_email_log` (assunto, plano_alvo, total_destinatarios, sent_at)
+- Nova tabela `admin_logs` (user_id, ação, detalhes JSONB)
+- RLS: todas as tabelas admin-only via `has_role(auth.uid(), 'admin')`
+- Trigger atualizado em `handle_new_user` para promover o email-seed a admin automaticamente
 
-### 5. Pacote npm
-- Instalar `eventsource-parser` (~4kb) via `bun add eventsource-parser`.
+### Server Functions (`src/lib/admin.functions.ts`)
+- `requireAdmin` middleware (estende `requireSupabaseAuth` + checa `has_role`)
+- `getAdminDashboard` — métricas
+- `listUsers`, `updateUserPlan`, `toggleUserAdmin`, `toggleUserActive`
+- `listFinance`, `createFinanceEntry`, `getFinanceChart`
+- `listPlans`, `updatePlan`
+- `sendBroadcastEmail`, `listEmailHistory`
+- Todas chamam `logAdminAction()` internamente
 
-### 6. Dependência: `LOVABLE_API_KEY`
-- A key Lovable AI Gateway precisa existir no projeto. Se não existir, vou provisionar automaticamente. Cobrança: cada geração consome créditos da workspace (model `gpt-image-2` em quality `low` — barato).
+### Server Route público
+- `src/routes/api/public/stripe-webhook.ts` (se Stripe BYOK confirmado) OU usar webhook automático do `enable_stripe_payments`
 
-## O que NÃO vou mudar
+### Páginas (todas em `src/routes/_authenticated/admin/`)
+- `_authenticated/admin/route.tsx` — layout admin com sidebar própria + gate `has_role` no `beforeLoad`
+- `admin/index.tsx` — dashboard com cards e gráficos
+- `admin/usuarios.tsx`
+- `admin/financeiro.tsx`
+- `admin/planos.tsx`
+- `admin/emails.tsx`
+- `admin/blog.tsx` — mover/reaproveitar o existente
+- `admin/pagamentos.tsx` — status do Stripe + link da dashboard
 
-- As 5 capas atuais (Unsplash) continuam como estão. Você pode trocá-las uma a uma editando cada post e clicando em "Gerar com IA".
-- Nenhuma alteração no blog público, listagem, ou demais módulos.
+### UI
+- Sidebar admin separada (não mistura com sidebar do usuário comum)
+- Item "Admin" aparece no menu principal só se `has_role('admin')`
+- Redirect automático `/admin/*` → `/dashboard` para não-admins
 
-## Resultado
+---
 
-Você abre `/admin/blog` → edita ou cria um post → clica em "✨ Gerar com IA" → escreve algo tipo "Família feliz recebendo as chaves de um apartamento novo, estilo fotografia editorial" → vê a imagem aparecer em tempo real → clica em "Usar esta capa" e pronto, o post está com capa nova gerada por IA.
+## ❓ Decisões que preciso confirmar antes de codar
+
+1. **Stripe**: posso usar `enable_stripe_payments` (recomendado, sem chaves)? Ou você **exige** BYOK com sua própria conta Stripe?
+2. **Email**: posso usar Lovable Emails (recomendado)? Ou exige Resend?
+3. **Promoção do admin inicial**: posso fazer via SQL que busca o `id` em `auth.users WHERE email = 'alugueisteixeira@gmail.com'` no momento da migration? (Funciona só se a conta já existir — se ainda não existir, crio um trigger que promove no momento do signup.)
+
+Responde essas 3 e eu implemento tudo de uma vez.
