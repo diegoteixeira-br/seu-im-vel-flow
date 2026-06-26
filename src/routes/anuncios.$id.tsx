@@ -12,7 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Bed, Bath, Maximize, MapPin, Phone, ArrowLeft } from "lucide-react";
+import { Bed, Bath, Maximize, MapPin, Phone, ArrowLeft, MessageCircle } from "lucide-react";
 import { formatBRL } from "@/lib/format";
 import { getPhotoUrls } from "@/lib/public-photos";
 import { PublicHeader, PublicFooter } from "./anuncios";
@@ -190,17 +190,27 @@ function AnuncioDetail() {
               </CardContent>
             </Card>
 
-            {owner && owner.show_phone_public && owner.public_phone && (
-              <Card>
-                <CardContent className="p-5">
-                  <p className="text-sm font-semibold">Fale com o proprietário</p>
-                  {owner.full_name && <p className="mt-1 text-sm text-muted-foreground">{owner.full_name}</p>}
-                  <a href={`tel:${owner.public_phone}`} className="mt-3 flex items-center gap-2 text-primary hover:underline">
-                    <Phone className="h-4 w-4" /> {owner.public_phone}
-                  </a>
-                </CardContent>
-              </Card>
-            )}
+            {owner && owner.show_phone_public && owner.public_phone && (() => {
+              const digits = owner.public_phone.replace(/\D/g, "");
+              const waNumber = digits.length === 11 || digits.length === 10 ? `55${digits}` : digits;
+              const waMsg = encodeURIComponent(`Olá! Tenho interesse no imóvel "${prop.ad_title ?? prop.nickname}" anunciado no AlugaFlow.`);
+              return (
+                <Card>
+                  <CardContent className="p-5">
+                    <p className="text-sm font-semibold">Fale com o proprietário</p>
+                    {owner.full_name && <p className="mt-1 text-sm text-muted-foreground">{owner.full_name}</p>}
+                    <a href={`tel:${owner.public_phone}`} className="mt-3 flex items-center gap-2 text-sm text-primary hover:underline">
+                      <Phone className="h-4 w-4" /> {owner.public_phone}
+                    </a>
+                    <Button asChild className="mt-3 w-full gap-2 bg-[#25D366] text-white hover:bg-[#1ebe5b]">
+                      <a href={`https://wa.me/${waNumber}?text=${waMsg}`} target="_blank" rel="noopener noreferrer">
+                        <MessageCircle className="h-4 w-4" /> Chamar no WhatsApp
+                      </a>
+                    </Button>
+                  </CardContent>
+                </Card>
+              );
+            })()}
           </div>
         </div>
       </div>
