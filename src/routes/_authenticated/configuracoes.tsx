@@ -275,6 +275,14 @@ function ConfigPage() {
               </CardContent>
             </Card>
           </TabsContent>
+
+          <TabsContent value="identidade">
+            <BrandingTab />
+          </TabsContent>
+
+          <TabsContent value="seguranca">
+            <SecurityTab />
+          </TabsContent>
         </Tabs>
 
         <div className="flex justify-end sticky bottom-0 bg-background/80 backdrop-blur py-3">
