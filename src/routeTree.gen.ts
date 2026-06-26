@@ -23,6 +23,7 @@ import { Route as BlogIndexRouteImport } from './routes/blog.index'
 import { Route as AnunciosIndexRouteImport } from './routes/anuncios.index'
 import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
 import { Route as AssinarTokenRouteImport } from './routes/assinar.$token'
+import { Route as ApiGenerateBlogCoverRouteImport } from './routes/api/generate-blog-cover'
 import { Route as AnunciosIdRouteImport } from './routes/anuncios.$id'
 import { Route as AuthenticatedVistoriaRouteImport } from './routes/_authenticated/vistoria'
 import { Route as AuthenticatedTenantsRouteImport } from './routes/_authenticated/tenants'
@@ -105,6 +106,11 @@ const BlogSlugRoute = BlogSlugRouteImport.update({
 const AssinarTokenRoute = AssinarTokenRouteImport.update({
   id: '/assinar/$token',
   path: '/assinar/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiGenerateBlogCoverRoute = ApiGenerateBlogCoverRouteImport.update({
+  id: '/api/generate-blog-cover',
+  path: '/api/generate-blog-cover',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AnunciosIdRoute = AnunciosIdRouteImport.update({
@@ -201,6 +207,7 @@ export interface FileRoutesByFullPath {
   '/tenants': typeof AuthenticatedTenantsRoute
   '/vistoria': typeof AuthenticatedVistoriaRoute
   '/anuncios/$id': typeof AnunciosIdRoute
+  '/api/generate-blog-cover': typeof ApiGenerateBlogCoverRoute
   '/assinar/$token': typeof AssinarTokenRoute
   '/blog/$slug': typeof BlogSlugRoute
   '/anuncios/': typeof AnunciosIndexRoute
@@ -228,6 +235,7 @@ export interface FileRoutesByTo {
   '/tenants': typeof AuthenticatedTenantsRoute
   '/vistoria': typeof AuthenticatedVistoriaRoute
   '/anuncios/$id': typeof AnunciosIdRoute
+  '/api/generate-blog-cover': typeof ApiGenerateBlogCoverRoute
   '/assinar/$token': typeof AssinarTokenRoute
   '/blog/$slug': typeof BlogSlugRoute
   '/anuncios': typeof AnunciosIndexRoute
@@ -259,6 +267,7 @@ export interface FileRoutesById {
   '/_authenticated/tenants': typeof AuthenticatedTenantsRoute
   '/_authenticated/vistoria': typeof AuthenticatedVistoriaRoute
   '/anuncios/$id': typeof AnunciosIdRoute
+  '/api/generate-blog-cover': typeof ApiGenerateBlogCoverRoute
   '/assinar/$token': typeof AssinarTokenRoute
   '/blog/$slug': typeof BlogSlugRoute
   '/anuncios/': typeof AnunciosIndexRoute
@@ -290,6 +299,7 @@ export interface FileRouteTypes {
     | '/tenants'
     | '/vistoria'
     | '/anuncios/$id'
+    | '/api/generate-blog-cover'
     | '/assinar/$token'
     | '/blog/$slug'
     | '/anuncios/'
@@ -317,6 +327,7 @@ export interface FileRouteTypes {
     | '/tenants'
     | '/vistoria'
     | '/anuncios/$id'
+    | '/api/generate-blog-cover'
     | '/assinar/$token'
     | '/blog/$slug'
     | '/anuncios'
@@ -347,6 +358,7 @@ export interface FileRouteTypes {
     | '/_authenticated/tenants'
     | '/_authenticated/vistoria'
     | '/anuncios/$id'
+    | '/api/generate-blog-cover'
     | '/assinar/$token'
     | '/blog/$slug'
     | '/anuncios/'
@@ -367,6 +379,7 @@ export interface RootRouteChildren {
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   SobreRoute: typeof SobreRoute
   TermosRoute: typeof TermosRoute
+  ApiGenerateBlogCoverRoute: typeof ApiGenerateBlogCoverRoute
   AssinarTokenRoute: typeof AssinarTokenRoute
   ApiPublicAsaasWebhookRoute: typeof ApiPublicAsaasWebhookRoute
   ApiPublicSignContractRoute: typeof ApiPublicSignContractRoute
@@ -470,6 +483,13 @@ declare module '@tanstack/react-router' {
       path: '/assinar/$token'
       fullPath: '/assinar/$token'
       preLoaderRoute: typeof AssinarTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/generate-blog-cover': {
+      id: '/api/generate-blog-cover'
+      path: '/api/generate-blog-cover'
+      fullPath: '/api/generate-blog-cover'
+      preLoaderRoute: typeof ApiGenerateBlogCoverRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/anuncios/$id': {
@@ -641,6 +661,7 @@ const rootRouteChildren: RootRouteChildren = {
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   SobreRoute: SobreRoute,
   TermosRoute: TermosRoute,
+  ApiGenerateBlogCoverRoute: ApiGenerateBlogCoverRoute,
   AssinarTokenRoute: AssinarTokenRoute,
   ApiPublicAsaasWebhookRoute: ApiPublicAsaasWebhookRoute,
   ApiPublicSignContractRoute: ApiPublicSignContractRoute,
