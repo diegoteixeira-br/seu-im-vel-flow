@@ -229,6 +229,30 @@ function PropertyDialog({ open, onOpenChange, editing }: { open: boolean; onOpen
             <Label>Observações</Label>
             <Textarea rows={3} {...form.register("notes")} />
           </div>
+
+          <div className="sm:col-span-2 rounded-lg border bg-muted/30 p-3 space-y-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-semibold">Anunciar no portal público</p>
+                <p className="text-xs text-muted-foreground">O imóvel aparecerá em /anuncios para qualquer pessoa.</p>
+              </div>
+              <input
+                type="checkbox"
+                className="h-5 w-5 accent-primary"
+                checked={!!form.watch("listed_public")}
+                onChange={(e) => form.setValue("listed_public", e.target.checked)}
+              />
+            </div>
+            <div className="space-y-1">
+              <Label>Título do anúncio</Label>
+              <Input {...form.register("ad_title")} placeholder="Ex: Apto 2 quartos no Centro" maxLength={120} />
+            </div>
+            <div className="space-y-1">
+              <Label>Descrição para o anúncio</Label>
+              <Textarea rows={3} {...form.register("ad_description")} placeholder="Descreva o imóvel, diferenciais, localização..." maxLength={2000} />
+            </div>
+          </div>
+
           <div className="sm:col-span-2">
             {editing ? (
               <PropertyPhotos propertyId={editing.id} />
