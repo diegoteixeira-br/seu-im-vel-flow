@@ -534,6 +534,7 @@ export type Database = {
           bathrooms: number | null
           bedrooms: number | null
           city: string | null
+          contact_phone: string | null
           created_at: string
           id: string
           listed_public: boolean
@@ -541,6 +542,7 @@ export type Database = {
           nickname: string
           notes: string | null
           rent_amount: number
+          show_contact_public: boolean
           state: string | null
           status: Database["public"]["Enums"]["property_status"]
           type: Database["public"]["Enums"]["property_type"]
@@ -556,6 +558,7 @@ export type Database = {
           bathrooms?: number | null
           bedrooms?: number | null
           city?: string | null
+          contact_phone?: string | null
           created_at?: string
           id?: string
           listed_public?: boolean
@@ -563,6 +566,7 @@ export type Database = {
           nickname: string
           notes?: string | null
           rent_amount?: number
+          show_contact_public?: boolean
           state?: string | null
           status?: Database["public"]["Enums"]["property_status"]
           type?: Database["public"]["Enums"]["property_type"]
@@ -578,6 +582,7 @@ export type Database = {
           bathrooms?: number | null
           bedrooms?: number | null
           city?: string | null
+          contact_phone?: string | null
           created_at?: string
           id?: string
           listed_public?: boolean
@@ -585,6 +590,7 @@ export type Database = {
           nickname?: string
           notes?: string | null
           rent_amount?: number
+          show_contact_public?: boolean
           state?: string | null
           status?: Database["public"]["Enums"]["property_status"]
           type?: Database["public"]["Enums"]["property_type"]

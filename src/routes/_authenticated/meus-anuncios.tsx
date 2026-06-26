@@ -31,6 +31,8 @@ type Prop = {
   city: string | null;
   neighborhood: string | null;
   listed_public: boolean;
+  contact_phone: string | null;
+  show_contact_public: boolean;
 };
 
 type Lead = {
@@ -62,7 +64,7 @@ function MyAdsPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("properties")
-        .select("id, nickname, ad_title, ad_description, rent_amount, city, neighborhood, listed_public")
+        .select("id, nickname, ad_title, ad_description, rent_amount, city, neighborhood, listed_public, contact_phone, show_contact_public")
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data as Prop[];
@@ -196,12 +198,15 @@ function EditAdDialog({ editing, onClose }: { editing: Prop | null; onClose: () 
   const qc = useQueryClient();
   const [adTitle, setAdTitle] = useState(editing?.ad_title ?? "");
   const [adDescription, setAdDescription] = useState(editing?.ad_description ?? "");
+  const [contactPhone, setContactPhone] = useState(editing?.contact_phone ?? "");
+  const [showContact, setShowContact] = useState(editing?.show_contact_public ?? true);
 
-  // re-sync state when a different property is opened
   const editingId = editing?.id ?? null;
   useEffect(() => {
     setAdTitle(editing?.ad_title ?? "");
     setAdDescription(editing?.ad_description ?? "");
+    setContactPhone(editing?.contact_phone ?? "");
+    setShowContact(editing?.show_contact_public ?? true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editingId]);
 
@@ -209,7 +214,12 @@ function EditAdDialog({ editing, onClose }: { editing: Prop | null; onClose: () 
     mutationFn: async () => {
       if (!editing) return;
       const { error } = await supabase.from("properties")
-        .update({ ad_title: adTitle.trim() || null, ad_description: adDescription.trim() || null })
+        .update({
+          ad_title: adTitle.trim() || null,
+          ad_description: adDescription.trim() || null,
+          contact_phone: contactPhone.trim() || null,
+          show_contact_public: showContact,
+        })
         .eq("id", editing.id);
       if (error) throw error;
     },
@@ -226,7 +236,7 @@ function EditAdDialog({ editing, onClose }: { editing: Prop | null; onClose: () 
             <div className="space-y-1">
               <Label>Título do anúncio</Label>
               <Input
-                defaultValue={editing.ad_title ?? ""}
+                value={adTitle}
                 onChange={(e) => setAdTitle(e.target.value)}
                 placeholder={editing.nickname}
                 maxLength={120}
@@ -236,11 +246,25 @@ function EditAdDialog({ editing, onClose }: { editing: Prop | null; onClose: () 
               <Label>Descrição para o anúncio</Label>
               <Textarea
                 rows={5}
-                defaultValue={editing.ad_description ?? ""}
+                value={adDescription}
                 onChange={(e) => setAdDescription(e.target.value)}
                 placeholder="Descreva o imóvel, diferenciais, localização..."
                 maxLength={2000}
               />
+            </div>
+            <div className="space-y-1">
+              <Label>Telefone / WhatsApp de contato</Label>
+              <Input
+                value={contactPhone}
+                onChange={(e) => setContactPhone(e.target.value)}
+                placeholder="(65) 99999-9999"
+                maxLength={20}
+              />
+              <p className="text-xs text-muted-foreground">Aparece na página do anúncio para o interessado ligar ou chamar no WhatsApp.</p>
+            </div>
+            <div className="flex items-center gap-2 rounded-md border p-3">
+              <Switch checked={showContact} onCheckedChange={setShowContact} />
+              <Label className="text-sm">Mostrar telefone publicamente no anúncio</Label>
             </div>
           </div>
         )}
@@ -252,3 +276,4 @@ function EditAdDialog({ editing, onClose }: { editing: Prop | null; onClose: () 
     </Dialog>
   );
 }
+
