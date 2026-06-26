@@ -36,13 +36,6 @@ export const Route = createFileRoute("/anuncios/$id")({
   ),
 });
 
-const leadSchema = z.object({
-  nome_interessado: z.string().trim().min(2, "Informe seu nome").max(120),
-  telefone: z.string().trim().min(8, "Informe um telefone válido").max(20),
-  mensagem: z.string().max(1000).optional().or(z.literal("")),
-});
-type LeadValues = z.infer<typeof leadSchema>;
-
 function AnuncioDetail() {
   const { id } = Route.useParams();
   const [openLead, setOpenLead] = useState(false);
@@ -71,30 +64,6 @@ function AnuncioDetail() {
     },
   });
 
-  const form = useForm<LeadValues>({
-    resolver: zodResolver(leadSchema),
-    defaultValues: { nome_interessado: "", telefone: "", mensagem: "" },
-  });
-
-  const submitLead = useMutation({
-    mutationFn: async (values: LeadValues) => {
-      if (!data?.prop) throw new Error("Anúncio indisponível");
-      const { error } = await supabase.from("leads").insert({
-        property_id: data.prop.id,
-        user_id: data.prop.user_id,
-        nome_interessado: values.nome_interessado.trim(),
-        telefone: values.telefone.trim(),
-        mensagem: values.mensagem?.trim() || null,
-      });
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      toast.success("Mensagem enviada! O proprietário entrará em contato.");
-      setOpenLead(false);
-      form.reset();
-    },
-    onError: (e: Error) => toast.error(e.message),
-  });
 
   if (isLoading) {
     return <div className="min-h-screen bg-background"><PublicHeader /><p className="p-10 text-center">Carregando...</p></div>;
