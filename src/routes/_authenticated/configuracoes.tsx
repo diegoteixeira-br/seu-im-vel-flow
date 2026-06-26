@@ -14,6 +14,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { User, MapPin, Landmark, Zap, Bell } from "lucide-react";
+
+
 
 export const Route = createFileRoute("/_authenticated/configuracoes")({
   head: () => ({ meta: [{ title: "Configurações — AlugaFlow" }] }),
@@ -143,117 +147,138 @@ function ConfigPage() {
       </div>
 
       <form onSubmit={form.handleSubmit((v) => save.mutate(v))} className="space-y-6">
-        <Card>
-          <CardHeader><CardTitle>Dados pessoais</CardTitle></CardHeader>
-          <CardContent className="grid gap-4 sm:grid-cols-2">
-            <Field label="Nome completo *" error={form.formState.errors.full_name?.message}><Input {...form.register("full_name")} /></Field>
-            <Field label="CPF"><Input {...form.register("cpf")} placeholder="000.000.000-00" /></Field>
-            <Field label="Telefone"><Input {...form.register("phone")} /></Field>
-            <Field label="E-mail" error={form.formState.errors.email?.message}><Input type="email" {...form.register("email")} /></Field>
-          </CardContent>
-        </Card>
+        <Tabs defaultValue="pessoal" className="space-y-4">
+          <TabsList className="flex flex-wrap h-auto">
+            <TabsTrigger value="pessoal"><User className="h-4 w-4" />Dados pessoais</TabsTrigger>
+            <TabsTrigger value="endereco"><MapPin className="h-4 w-4" />Endereço</TabsTrigger>
+            <TabsTrigger value="bancario"><Landmark className="h-4 w-4" />Dados bancários</TabsTrigger>
+            <TabsTrigger value="asaas"><Zap className="h-4 w-4" />Integração ASAAS</TabsTrigger>
+            <TabsTrigger value="automacao"><Bell className="h-4 w-4" />Automação</TabsTrigger>
+          </TabsList>
 
-        <Card>
-          <CardHeader><CardTitle>Endereço</CardTitle></CardHeader>
-          <CardContent className="grid gap-4 sm:grid-cols-6">
-            <div className="sm:col-span-4"><Field label="Rua"><Input {...form.register("address_street")} /></Field></div>
-            <div className="sm:col-span-2"><Field label="Número"><Input {...form.register("address_number")} /></Field></div>
-            <div className="sm:col-span-3"><Field label="Bairro"><Input {...form.register("address_neighborhood")} /></Field></div>
-            <div className="sm:col-span-2"><Field label="Cidade"><Input {...form.register("address_city")} /></Field></div>
-            <div className="sm:col-span-1"><Field label="UF"><Input maxLength={2} {...form.register("address_uf")} /></Field></div>
-            <div className="sm:col-span-2"><Field label="CEP"><Input {...form.register("address_zip")} /></Field></div>
-          </CardContent>
-        </Card>
+          <TabsContent value="pessoal">
+            <Card>
+              <CardHeader><CardTitle>Dados pessoais</CardTitle></CardHeader>
+              <CardContent className="grid gap-4 sm:grid-cols-2">
+                <Field label="Nome completo *" error={form.formState.errors.full_name?.message}><Input {...form.register("full_name")} /></Field>
+                <Field label="CPF"><Input {...form.register("cpf")} placeholder="000.000.000-00" /></Field>
+                <Field label="Telefone"><Input {...form.register("phone")} /></Field>
+                <Field label="E-mail" error={form.formState.errors.email?.message}><Input type="email" {...form.register("email")} /></Field>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-        <Card>
-          <CardHeader><CardTitle>Dados bancários</CardTitle></CardHeader>
-          <CardContent className="grid gap-4 sm:grid-cols-2">
-            <Field label="Banco"><Input {...form.register("bank_name")} /></Field>
-            <Field label="Agência"><Input {...form.register("bank_agency")} /></Field>
-            <Field label="Conta"><Input {...form.register("bank_account")} /></Field>
-            <Field label="Chave PIX"><Input {...form.register("pix_key")} /></Field>
-          </CardContent>
-        </Card>
+          <TabsContent value="endereco">
+            <Card>
+              <CardHeader><CardTitle>Endereço</CardTitle></CardHeader>
+              <CardContent className="grid gap-4 sm:grid-cols-6">
+                <div className="sm:col-span-4"><Field label="Rua"><Input {...form.register("address_street")} /></Field></div>
+                <div className="sm:col-span-2"><Field label="Número"><Input {...form.register("address_number")} /></Field></div>
+                <div className="sm:col-span-3"><Field label="Bairro"><Input {...form.register("address_neighborhood")} /></Field></div>
+                <div className="sm:col-span-2"><Field label="Cidade"><Input {...form.register("address_city")} /></Field></div>
+                <div className="sm:col-span-1"><Field label="UF"><Input maxLength={2} {...form.register("address_uf")} /></Field></div>
+                <div className="sm:col-span-2"><Field label="CEP"><Input {...form.register("address_zip")} /></Field></div>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Integração ASAAS</CardTitle>
-            <CardDescription>
-              Sua chave de API é usada para gerar cobranças automáticas. Comece no ambiente Sandbox e migre para Produção quando estiver tudo ok.
-              Configure o webhook do ASAAS apontando para <code className="text-xs">/api/public/asaas-webhook</code>.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="grid gap-4 sm:grid-cols-2">
-            <div className="sm:col-span-2">
-              <Field label="ASAAS API Key">
-                <Input type="password" autoComplete="off" placeholder="$aact_..." {...form.register("asaas_api_key")} />
-              </Field>
-            </div>
-            <Field label="Ambiente">
-              <Select value={form.watch("asaas_environment")} onValueChange={(v) => form.setValue("asaas_environment", v as Values["asaas_environment"])}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="sandbox">Sandbox (teste)</SelectItem>
-                  <SelectItem value="production">Produção</SelectItem>
-                </SelectContent>
-              </Select>
-            </Field>
-          </CardContent>
-        </Card>
+          <TabsContent value="bancario">
+            <Card>
+              <CardHeader><CardTitle>Dados bancários</CardTitle></CardHeader>
+              <CardContent className="grid gap-4 sm:grid-cols-2">
+                <Field label="Banco"><Input {...form.register("bank_name")} /></Field>
+                <Field label="Agência"><Input {...form.register("bank_agency")} /></Field>
+                <Field label="Conta"><Input {...form.register("bank_account")} /></Field>
+                <Field label="Chave PIX"><Input {...form.register("pix_key")} /></Field>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Automação de cobranças</CardTitle>
-            <CardDescription>
-              Quando ativada, o sistema verifica diariamente os pagamentos pendentes e gera a cobrança no ASAAS X dias antes do vencimento.
-              O ASAAS envia o boleto e PIX por e-mail diretamente ao inquilino.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="grid gap-4 sm:grid-cols-2">
-            <div className="flex items-center justify-between rounded-md border p-3 sm:col-span-2">
-              <div>
-                <p className="text-sm font-medium">Enviar cobranças automaticamente</p>
-                <p className="text-xs text-muted-foreground">Requer chave ASAAS configurada acima.</p>
-              </div>
-              <Switch
-                checked={form.watch("auto_charge_enabled")}
-                onCheckedChange={(b) => form.setValue("auto_charge_enabled", b)}
-              />
-            </div>
-            <Field label="Dias antes do vencimento">
-              <Select
-                value={String(form.watch("auto_charge_days_before"))}
-                onValueChange={(v) => form.setValue("auto_charge_days_before", Number(v))}
-              >
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {[1, 2, 3, 5, 7].map((d) => <SelectItem key={d} value={String(d)}>{d} dia(s)</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </Field>
-            <div className="sm:col-span-2">
-              <Field label="Mensagem personalizada (anexada à descrição da cobrança)">
-                <Textarea
-                  rows={3}
-                  placeholder="Ex.: Olá, segue o boleto referente ao aluguel. Em caso de dúvidas, fale conosco no WhatsApp."
-                  {...form.register("auto_charge_message")}
-                />
-              </Field>
-            </div>
-            <div className="sm:col-span-2">
-              <Button type="button" variant="outline" onClick={testSend} disabled={testing}>
-                <PlayCircle className="h-4 w-4" />
-                {testing ? "Testando..." : "Testar envio agora"}
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+          <TabsContent value="asaas">
+            <Card>
+              <CardHeader>
+                <CardTitle>Integração ASAAS</CardTitle>
+                <CardDescription>
+                  Sua chave de API é usada para gerar cobranças automáticas. Comece no ambiente Sandbox e migre para Produção quando estiver tudo ok.
+                  Configure o webhook do ASAAS apontando para <code className="text-xs">/api/public/asaas-webhook</code>.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="grid gap-4 sm:grid-cols-2">
+                <div className="sm:col-span-2">
+                  <Field label="ASAAS API Key">
+                    <Input type="password" autoComplete="off" placeholder="$aact_..." {...form.register("asaas_api_key")} />
+                  </Field>
+                </div>
+                <Field label="Ambiente">
+                  <Select value={form.watch("asaas_environment")} onValueChange={(v) => form.setValue("asaas_environment", v as Values["asaas_environment"])}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="sandbox">Sandbox (teste)</SelectItem>
+                      <SelectItem value="production">Produção</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </Field>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-        <div className="flex justify-end">
+          <TabsContent value="automacao">
+            <Card>
+              <CardHeader>
+                <CardTitle>Automação de cobranças</CardTitle>
+                <CardDescription>
+                  Quando ativada, o sistema verifica diariamente os pagamentos pendentes e gera a cobrança no ASAAS X dias antes do vencimento.
+                  O ASAAS envia o boleto e PIX por e-mail diretamente ao inquilino.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="grid gap-4 sm:grid-cols-2">
+                <div className="flex items-center justify-between rounded-md border p-3 sm:col-span-2">
+                  <div>
+                    <p className="text-sm font-medium">Enviar cobranças automaticamente</p>
+                    <p className="text-xs text-muted-foreground">Requer chave ASAAS configurada na aba anterior.</p>
+                  </div>
+                  <Switch
+                    checked={form.watch("auto_charge_enabled")}
+                    onCheckedChange={(b) => form.setValue("auto_charge_enabled", b)}
+                  />
+                </div>
+                <Field label="Dias antes do vencimento">
+                  <Select
+                    value={String(form.watch("auto_charge_days_before"))}
+                    onValueChange={(v) => form.setValue("auto_charge_days_before", Number(v))}
+                  >
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {[1, 2, 3, 5, 7].map((d) => <SelectItem key={d} value={String(d)}>{d} dia(s)</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </Field>
+                <div className="sm:col-span-2">
+                  <Field label="Mensagem personalizada (anexada à descrição da cobrança)">
+                    <Textarea
+                      rows={3}
+                      placeholder="Ex.: Olá, segue o boleto referente ao aluguel. Em caso de dúvidas, fale conosco no WhatsApp."
+                      {...form.register("auto_charge_message")}
+                    />
+                  </Field>
+                </div>
+                <div className="sm:col-span-2">
+                  <Button type="button" variant="outline" onClick={testSend} disabled={testing}>
+                    <PlayCircle className="h-4 w-4" />
+                    {testing ? "Testando..." : "Testar envio agora"}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+
+        <div className="flex justify-end sticky bottom-0 bg-background/80 backdrop-blur py-3">
           <Button type="submit" disabled={save.isPending}>{save.isPending ? "Salvando..." : "Salvar configurações"}</Button>
         </div>
       </form>
     </div>
+
   );
 }
 
