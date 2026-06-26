@@ -18,7 +18,11 @@ export const getAdminMetrics = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     const { data, error } = await context.supabase.rpc("admin_dashboard_metrics");
     if (error) throw error;
-    return data as Record<string, unknown>;
+    return (data ?? {}) as {
+      total_users?: number; new_users_30d?: number; total_properties?: number;
+      total_leads?: number; estimated_monthly_revenue?: number;
+      plan_counts?: Record<string, number>;
+    };
   });
 
 export const adminListUsers = createServerFn({ method: "GET" })
