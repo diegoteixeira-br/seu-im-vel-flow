@@ -2,6 +2,7 @@ import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
@@ -51,6 +52,7 @@ type LeadValues = z.infer<typeof leadSchema>;
 function AnuncioDetail() {
   const { id } = Route.useParams();
   const [openLead, setOpenLead] = useState(false);
+  const [lightboxIdx, setLightboxIdx] = useState<number | null>(null);
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ["public-listing", id],
@@ -108,7 +110,6 @@ function AnuncioDetail() {
   }
 
   const { prop, photos, owner } = data;
-  const mainPhoto = photos[0]?.url;
   const description = prop.ad_description || prop.notes || "Entre em contato com o proprietário para mais informações.";
 
   return (
@@ -118,18 +119,6 @@ function AnuncioDetail() {
       <div className="mx-auto max-w-6xl px-4 py-6">
         <Button asChild variant="ghost" size="sm" className="mb-3"><Link to="/anuncios"><ArrowLeft className="h-4 w-4" /> Voltar</Link></Button>
 
-        <div className="grid gap-2 md:grid-cols-4">
-          <div className="md:col-span-3 aspect-[16/10] overflow-hidden rounded-lg bg-muted">
-            {mainPhoto ? <img src={mainPhoto} alt={prop.ad_title ?? prop.nickname} className="h-full w-full object-cover" /> : <div className="grid h-full place-items-center text-muted-foreground">Sem foto</div>}
-          </div>
-          <div className="grid grid-cols-2 gap-2 md:grid-cols-1">
-            {photos.slice(1, 5).map((p, i) => (
-              <div key={i} className="aspect-square overflow-hidden rounded-lg bg-muted">
-                {p.url && <img src={p.url} alt="" className="h-full w-full object-cover" />}
-              </div>
-            ))}
-          </div>
-        </div>
 
         <div className="mt-6 grid gap-6 md:grid-cols-3">
           <div className="md:col-span-2">
@@ -152,13 +141,13 @@ function AnuncioDetail() {
             </div>
 
             {photos.length > 0 && (
-              <div className="mt-8">
+              <div className="mt-6">
                 <h2 className="text-lg font-semibold">Fotos do imóvel ({photos.length})</h2>
                 <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
                   {photos.map((p, i) => (
-                    <a key={i} href={p.url} target="_blank" rel="noreferrer" className="aspect-square overflow-hidden rounded-lg bg-muted">
+                    <button type="button" key={i} onClick={() => setLightboxIdx(i)} className="aspect-square overflow-hidden rounded-lg bg-muted cursor-zoom-in">
                       {p.url && <img src={p.url} alt="" loading="lazy" className="h-full w-full object-cover transition hover:scale-105" />}
-                    </a>
+                    </button>
                   ))}
                 </div>
               </div>
@@ -232,6 +221,24 @@ function AnuncioDetail() {
         </div>
       </div>
 
+
+      <Dialog open={lightboxIdx !== null} onOpenChange={(o) => !o && setLightboxIdx(null)}>
+        <DialogContent className="max-w-5xl border-0 bg-transparent p-0 shadow-none">
+          <DialogTitle className="sr-only">Foto do imóvel</DialogTitle>
+          {lightboxIdx !== null && photos[lightboxIdx]?.url && (
+            <div className="relative">
+              <img src={photos[lightboxIdx].url} alt="" className="mx-auto max-h-[85vh] w-auto rounded-lg object-contain" />
+              {photos.length > 1 && (
+                <>
+                  <button type="button" onClick={() => setLightboxIdx((i) => (i! - 1 + photos.length) % photos.length)} className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-black/60 p-2 text-white hover:bg-black/80"><ChevronLeft className="h-6 w-6" /></button>
+                  <button type="button" onClick={() => setLightboxIdx((i) => (i! + 1) % photos.length)} className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-black/60 p-2 text-white hover:bg-black/80"><ChevronRight className="h-6 w-6" /></button>
+                  <div className="absolute bottom-2 left-1/2 -translate-x-1/2 rounded-full bg-black/60 px-3 py-1 text-xs text-white">{lightboxIdx + 1} / {photos.length}</div>
+                </>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
 
       <PublicFooter />
     </div>
