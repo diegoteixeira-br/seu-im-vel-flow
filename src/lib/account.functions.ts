@@ -72,12 +72,14 @@ export const deleteAccount = createServerFn({ method: "POST" })
       "leads",
       "posts",
       "user_roles",
-      "profiles",
     ] as const;
 
     for (const t of tables) {
       await supabaseAdmin.from(t).delete().eq("user_id", userId);
     }
+
+    await supabaseAdmin.from("profiles").delete().eq("id", userId);
+
 
 
     // 3. Delete the auth user (this also signs them out everywhere)
