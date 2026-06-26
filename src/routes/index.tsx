@@ -252,11 +252,13 @@ function Landing() {
           <div>
             <p className="text-sm font-semibold">Para proprietários</p>
             <ul className="mt-2 space-y-1 text-sm text-muted-foreground">
+              <li><Link to="/para-proprietarios" className="hover:text-foreground">Conhecer a ferramenta</Link></li>
+              <li><Link to="/planos" className="hover:text-foreground">Planos e preços</Link></li>
               <li><Link to="/auth" search={{ mode: "signup" }} className="hover:text-foreground">Anunciar grátis</Link></li>
               <li><Link to={user ? "/dashboard" : "/auth"} className="hover:text-foreground">Acessar gestão</Link></li>
-              <li><Link to={user ? "/meus-anuncios" : "/auth"} className="hover:text-foreground">Meus anúncios</Link></li>
             </ul>
           </div>
+
           <div>
             <p className="text-sm font-semibold">Contato</p>
             <p className="mt-2 text-sm text-muted-foreground">contato@alugaflow.com.br</p>
