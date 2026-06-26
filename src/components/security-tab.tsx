@@ -86,3 +86,63 @@ export function SecurityTab() {
     </div>
   );
 }
+
+const emailSchema = z.object({ email: z.string().trim().email("E-mail inválido").max(255) });
+type EmailValues = z.infer<typeof emailSchema>;
+
+function EmailCard() {
+  const [currentEmail, setCurrentEmail] = useState<string>("");
+  const [submitting, setSubmitting] = useState(false);
+  const form = useForm<EmailValues>({ resolver: zodResolver(emailSchema), defaultValues: { email: "" } });
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      const e = data.user?.email ?? "";
+      setCurrentEmail(e);
+      form.reset({ email: e });
+    });
+  }, [form]);
+
+  const onSubmit = async (v: EmailValues) => {
+    if (v.email === currentEmail) { toast.info("Este já é o seu e-mail atual"); return; }
+    setSubmitting(true);
+    try {
+      const { error } = await supabase.auth.updateUser(
+        { email: v.email },
+        { emailRedirectTo: `${window.location.origin}/dashboard` },
+      );
+      if (error) throw error;
+      toast.success("Enviamos um link de confirmação para o novo e-mail. A alteração será aplicada após a confirmação.");
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2"><Mail className="h-4 w-4" />Alterar e-mail</CardTitle>
+        <CardDescription>
+          E-mail atual: <span className="font-medium">{currentEmail || "—"}</span>. Você receberá um link de confirmação no novo e-mail.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4 sm:grid-cols-2">
+          <div className="space-y-1 sm:col-span-2">
+            <Label>Novo e-mail</Label>
+            <Input type="email" autoComplete="email" {...form.register("email")} />
+            {form.formState.errors.email ? (
+              <p className="text-xs text-destructive">{form.formState.errors.email.message}</p>
+            ) : null}
+          </div>
+          <div className="sm:col-span-2">
+            <Button type="submit" disabled={submitting}>{submitting ? "Enviando..." : "Alterar e-mail"}</Button>
+          </div>
+        </form>
+      </CardContent>
+    </Card>
+  );
+}
+
