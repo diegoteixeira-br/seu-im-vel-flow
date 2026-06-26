@@ -222,6 +222,24 @@ function AnuncioDetail() {
       </div>
 
 
+      <Dialog open={lightboxIdx !== null} onOpenChange={(o) => !o && setLightboxIdx(null)}>
+        <DialogContent className="max-w-5xl border-0 bg-transparent p-0 shadow-none">
+          <DialogTitle className="sr-only">Foto do imóvel</DialogTitle>
+          {lightboxIdx !== null && photos[lightboxIdx]?.url && (
+            <div className="relative">
+              <img src={photos[lightboxIdx].url} alt="" className="mx-auto max-h-[85vh] w-auto rounded-lg object-contain" />
+              {photos.length > 1 && (
+                <>
+                  <button type="button" onClick={() => setLightboxIdx((i) => (i! - 1 + photos.length) % photos.length)} className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-black/60 p-2 text-white hover:bg-black/80"><ChevronLeft className="h-6 w-6" /></button>
+                  <button type="button" onClick={() => setLightboxIdx((i) => (i! + 1) % photos.length)} className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-black/60 p-2 text-white hover:bg-black/80"><ChevronRight className="h-6 w-6" /></button>
+                  <div className="absolute bottom-2 left-1/2 -translate-x-1/2 rounded-full bg-black/60 px-3 py-1 text-xs text-white">{lightboxIdx + 1} / {photos.length}</div>
+                </>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
       <PublicFooter />
     </div>
   );
