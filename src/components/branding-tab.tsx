@@ -99,7 +99,8 @@ export function BrandingTab() {
       const column = kind === "logo" ? "logo_url" : "watermark_url";
       const path = kind === "logo" ? profile?.logo_url : profile?.watermark_url;
       if (path) await supabase.storage.from("branding").remove([path]);
-      const { error } = await supabase.from("profiles").update({ [column]: null }).eq("id", u.user.id);
+      const patch = (kind === "logo" ? { logo_url: null } : { watermark_url: null }) as never;
+      const { error } = await supabase.from("profiles").update(patch).eq("id", u.user.id);
       if (error) throw error;
     },
     onSuccess: () => {
