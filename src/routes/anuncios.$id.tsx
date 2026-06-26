@@ -120,18 +120,6 @@ function AnuncioDetail() {
       <div className="mx-auto max-w-6xl px-4 py-6">
         <Button asChild variant="ghost" size="sm" className="mb-3"><Link to="/anuncios"><ArrowLeft className="h-4 w-4" /> Voltar</Link></Button>
 
-        <div className="grid gap-2 md:grid-cols-4">
-          <div className="md:col-span-3 aspect-[16/10] overflow-hidden rounded-lg bg-muted">
-            {mainPhoto ? <img src={mainPhoto} alt={prop.ad_title ?? prop.nickname} className="h-full w-full object-cover" /> : <div className="grid h-full place-items-center text-muted-foreground">Sem foto</div>}
-          </div>
-          <div className="grid grid-cols-2 gap-2 md:grid-cols-1">
-            {photos.slice(1, 5).map((p, i) => (
-              <div key={i} className="aspect-square overflow-hidden rounded-lg bg-muted">
-                {p.url && <img src={p.url} alt="" className="h-full w-full object-cover" />}
-              </div>
-            ))}
-          </div>
-        </div>
 
         <div className="mt-6 grid gap-6 md:grid-cols-3">
           <div className="md:col-span-2">
