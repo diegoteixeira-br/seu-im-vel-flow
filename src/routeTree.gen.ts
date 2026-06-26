@@ -11,13 +11,17 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TermosRouteImport } from './routes/termos'
 import { Route as SobreRouteImport } from './routes/sobre'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as PrivacidadeRouteImport } from './routes/privacidade'
 import { Route as ParaProprietariosRouteImport } from './routes/para-proprietarios'
+import { Route as BlogRouteImport } from './routes/blog'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AnunciosRouteImport } from './routes/anuncios'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as BlogIndexRouteImport } from './routes/blog.index'
 import { Route as AnunciosIndexRouteImport } from './routes/anuncios.index'
+import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
 import { Route as AssinarTokenRouteImport } from './routes/assinar.$token'
 import { Route as AnunciosIdRouteImport } from './routes/anuncios.$id'
 import { Route as AuthenticatedVistoriaRouteImport } from './routes/_authenticated/vistoria'
@@ -32,6 +36,7 @@ import { Route as AuthenticatedContractsRouteImport } from './routes/_authentica
 import { Route as AuthenticatedConfiguracoesRouteImport } from './routes/_authenticated/configuracoes'
 import { Route as ApiPublicSignContractRouteImport } from './routes/api/public/sign-contract'
 import { Route as ApiPublicAsaasWebhookRouteImport } from './routes/api/public/asaas-webhook'
+import { Route as AuthenticatedAdminBlogRouteImport } from './routes/_authenticated/admin.blog'
 
 const TermosRoute = TermosRouteImport.update({
   id: '/termos',
@@ -43,6 +48,11 @@ const SobreRoute = SobreRouteImport.update({
   path: '/sobre',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PrivacidadeRoute = PrivacidadeRouteImport.update({
   id: '/privacidade',
   path: '/privacidade',
@@ -51,6 +61,11 @@ const PrivacidadeRoute = PrivacidadeRouteImport.update({
 const ParaProprietariosRoute = ParaProprietariosRouteImport.update({
   id: '/para-proprietarios',
   path: '/para-proprietarios',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BlogRoute = BlogRouteImport.update({
+  id: '/blog',
+  path: '/blog',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -72,10 +87,20 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BlogIndexRoute = BlogIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => BlogRoute,
+} as any)
 const AnunciosIndexRoute = AnunciosIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AnunciosRoute,
+} as any)
+const BlogSlugRoute = BlogSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => BlogRoute,
 } as any)
 const AssinarTokenRoute = AssinarTokenRouteImport.update({
   id: '/assinar/$token',
@@ -149,13 +174,20 @@ const ApiPublicAsaasWebhookRoute = ApiPublicAsaasWebhookRouteImport.update({
   path: '/api/public/asaas-webhook',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedAdminBlogRoute = AuthenticatedAdminBlogRouteImport.update({
+  id: '/admin/blog',
+  path: '/admin/blog',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/anuncios': typeof AnunciosRouteWithChildren
   '/auth': typeof AuthRoute
+  '/blog': typeof BlogRouteWithChildren
   '/para-proprietarios': typeof ParaProprietariosRoute
   '/privacidade': typeof PrivacidadeRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/sobre': typeof SobreRoute
   '/termos': typeof TermosRoute
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
@@ -170,7 +202,10 @@ export interface FileRoutesByFullPath {
   '/vistoria': typeof AuthenticatedVistoriaRoute
   '/anuncios/$id': typeof AnunciosIdRoute
   '/assinar/$token': typeof AssinarTokenRoute
+  '/blog/$slug': typeof BlogSlugRoute
   '/anuncios/': typeof AnunciosIndexRoute
+  '/blog/': typeof BlogIndexRoute
+  '/admin/blog': typeof AuthenticatedAdminBlogRoute
   '/api/public/asaas-webhook': typeof ApiPublicAsaasWebhookRoute
   '/api/public/sign-contract': typeof ApiPublicSignContractRoute
 }
@@ -179,6 +214,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/para-proprietarios': typeof ParaProprietariosRoute
   '/privacidade': typeof PrivacidadeRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/sobre': typeof SobreRoute
   '/termos': typeof TermosRoute
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
@@ -193,7 +229,10 @@ export interface FileRoutesByTo {
   '/vistoria': typeof AuthenticatedVistoriaRoute
   '/anuncios/$id': typeof AnunciosIdRoute
   '/assinar/$token': typeof AssinarTokenRoute
+  '/blog/$slug': typeof BlogSlugRoute
   '/anuncios': typeof AnunciosIndexRoute
+  '/blog': typeof BlogIndexRoute
+  '/admin/blog': typeof AuthenticatedAdminBlogRoute
   '/api/public/asaas-webhook': typeof ApiPublicAsaasWebhookRoute
   '/api/public/sign-contract': typeof ApiPublicSignContractRoute
 }
@@ -203,8 +242,10 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/anuncios': typeof AnunciosRouteWithChildren
   '/auth': typeof AuthRoute
+  '/blog': typeof BlogRouteWithChildren
   '/para-proprietarios': typeof ParaProprietariosRoute
   '/privacidade': typeof PrivacidadeRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/sobre': typeof SobreRoute
   '/termos': typeof TermosRoute
   '/_authenticated/configuracoes': typeof AuthenticatedConfiguracoesRoute
@@ -219,7 +260,10 @@ export interface FileRoutesById {
   '/_authenticated/vistoria': typeof AuthenticatedVistoriaRoute
   '/anuncios/$id': typeof AnunciosIdRoute
   '/assinar/$token': typeof AssinarTokenRoute
+  '/blog/$slug': typeof BlogSlugRoute
   '/anuncios/': typeof AnunciosIndexRoute
+  '/blog/': typeof BlogIndexRoute
+  '/_authenticated/admin/blog': typeof AuthenticatedAdminBlogRoute
   '/api/public/asaas-webhook': typeof ApiPublicAsaasWebhookRoute
   '/api/public/sign-contract': typeof ApiPublicSignContractRoute
 }
@@ -229,8 +273,10 @@ export interface FileRouteTypes {
     | '/'
     | '/anuncios'
     | '/auth'
+    | '/blog'
     | '/para-proprietarios'
     | '/privacidade'
+    | '/sitemap.xml'
     | '/sobre'
     | '/termos'
     | '/configuracoes'
@@ -245,7 +291,10 @@ export interface FileRouteTypes {
     | '/vistoria'
     | '/anuncios/$id'
     | '/assinar/$token'
+    | '/blog/$slug'
     | '/anuncios/'
+    | '/blog/'
+    | '/admin/blog'
     | '/api/public/asaas-webhook'
     | '/api/public/sign-contract'
   fileRoutesByTo: FileRoutesByTo
@@ -254,6 +303,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/para-proprietarios'
     | '/privacidade'
+    | '/sitemap.xml'
     | '/sobre'
     | '/termos'
     | '/configuracoes'
@@ -268,7 +318,10 @@ export interface FileRouteTypes {
     | '/vistoria'
     | '/anuncios/$id'
     | '/assinar/$token'
+    | '/blog/$slug'
     | '/anuncios'
+    | '/blog'
+    | '/admin/blog'
     | '/api/public/asaas-webhook'
     | '/api/public/sign-contract'
   id:
@@ -277,8 +330,10 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/anuncios'
     | '/auth'
+    | '/blog'
     | '/para-proprietarios'
     | '/privacidade'
+    | '/sitemap.xml'
     | '/sobre'
     | '/termos'
     | '/_authenticated/configuracoes'
@@ -293,7 +348,10 @@ export interface FileRouteTypes {
     | '/_authenticated/vistoria'
     | '/anuncios/$id'
     | '/assinar/$token'
+    | '/blog/$slug'
     | '/anuncios/'
+    | '/blog/'
+    | '/_authenticated/admin/blog'
     | '/api/public/asaas-webhook'
     | '/api/public/sign-contract'
   fileRoutesById: FileRoutesById
@@ -303,8 +361,10 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AnunciosRoute: typeof AnunciosRouteWithChildren
   AuthRoute: typeof AuthRoute
+  BlogRoute: typeof BlogRouteWithChildren
   ParaProprietariosRoute: typeof ParaProprietariosRoute
   PrivacidadeRoute: typeof PrivacidadeRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   SobreRoute: typeof SobreRoute
   TermosRoute: typeof TermosRoute
   AssinarTokenRoute: typeof AssinarTokenRoute
@@ -328,6 +388,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SobreRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/privacidade': {
       id: '/privacidade'
       path: '/privacidade'
@@ -340,6 +407,13 @@ declare module '@tanstack/react-router' {
       path: '/para-proprietarios'
       fullPath: '/para-proprietarios'
       preLoaderRoute: typeof ParaProprietariosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/blog': {
+      id: '/blog'
+      path: '/blog'
+      fullPath: '/blog'
+      preLoaderRoute: typeof BlogRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -370,12 +444,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/blog/': {
+      id: '/blog/'
+      path: '/'
+      fullPath: '/blog/'
+      preLoaderRoute: typeof BlogIndexRouteImport
+      parentRoute: typeof BlogRoute
+    }
     '/anuncios/': {
       id: '/anuncios/'
       path: '/'
       fullPath: '/anuncios/'
       preLoaderRoute: typeof AnunciosIndexRouteImport
       parentRoute: typeof AnunciosRoute
+    }
+    '/blog/$slug': {
+      id: '/blog/$slug'
+      path: '/$slug'
+      fullPath: '/blog/$slug'
+      preLoaderRoute: typeof BlogSlugRouteImport
+      parentRoute: typeof BlogRoute
     }
     '/assinar/$token': {
       id: '/assinar/$token'
@@ -475,6 +563,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicAsaasWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/admin/blog': {
+      id: '/_authenticated/admin/blog'
+      path: '/admin/blog'
+      fullPath: '/admin/blog'
+      preLoaderRoute: typeof AuthenticatedAdminBlogRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
@@ -489,6 +584,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedRelatoriosRoute: typeof AuthenticatedRelatoriosRoute
   AuthenticatedTenantsRoute: typeof AuthenticatedTenantsRoute
   AuthenticatedVistoriaRoute: typeof AuthenticatedVistoriaRoute
+  AuthenticatedAdminBlogRoute: typeof AuthenticatedAdminBlogRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -502,6 +598,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedRelatoriosRoute: AuthenticatedRelatoriosRoute,
   AuthenticatedTenantsRoute: AuthenticatedTenantsRoute,
   AuthenticatedVistoriaRoute: AuthenticatedVistoriaRoute,
+  AuthenticatedAdminBlogRoute: AuthenticatedAdminBlogRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
@@ -521,13 +618,27 @@ const AnunciosRouteWithChildren = AnunciosRoute._addFileChildren(
   AnunciosRouteChildren,
 )
 
+interface BlogRouteChildren {
+  BlogSlugRoute: typeof BlogSlugRoute
+  BlogIndexRoute: typeof BlogIndexRoute
+}
+
+const BlogRouteChildren: BlogRouteChildren = {
+  BlogSlugRoute: BlogSlugRoute,
+  BlogIndexRoute: BlogIndexRoute,
+}
+
+const BlogRouteWithChildren = BlogRoute._addFileChildren(BlogRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AnunciosRoute: AnunciosRouteWithChildren,
   AuthRoute: AuthRoute,
+  BlogRoute: BlogRouteWithChildren,
   ParaProprietariosRoute: ParaProprietariosRoute,
   PrivacidadeRoute: PrivacidadeRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
   SobreRoute: SobreRoute,
   TermosRoute: TermosRoute,
   AssinarTokenRoute: AssinarTokenRoute,
