@@ -314,6 +314,47 @@ export type Database = {
           },
         ]
       }
+      leads: {
+        Row: {
+          created_at: string
+          id: string
+          mensagem: string | null
+          nome_interessado: string
+          property_id: string
+          telefone: string
+          user_id: string
+          visualizado: boolean
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          mensagem?: string | null
+          nome_interessado: string
+          property_id: string
+          telefone: string
+          user_id: string
+          visualizado?: boolean
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          mensagem?: string | null
+          nome_interessado?: string
+          property_id?: string
+          telefone?: string
+          user_id?: string
+          visualizado?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leads_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       payments: {
         Row: {
           amount: number
@@ -407,7 +448,10 @@ export type Database = {
           person_type: string
           phone: string | null
           pix_key: string | null
+          plan: string
+          public_phone: string | null
           razao_social: string | null
+          show_phone_public: boolean
           updated_at: string
           watermark_url: string | null
         }
@@ -438,7 +482,10 @@ export type Database = {
           person_type?: string
           phone?: string | null
           pix_key?: string | null
+          plan?: string
+          public_phone?: string | null
           razao_social?: string | null
+          show_phone_public?: boolean
           updated_at?: string
           watermark_url?: string | null
         }
@@ -469,7 +516,10 @@ export type Database = {
           person_type?: string
           phone?: string | null
           pix_key?: string | null
+          plan?: string
+          public_phone?: string | null
           razao_social?: string | null
+          show_phone_public?: boolean
           updated_at?: string
           watermark_url?: string | null
         }
@@ -477,6 +527,8 @@ export type Database = {
       }
       properties: {
         Row: {
+          ad_description: string | null
+          ad_title: string | null
           address: string
           area_m2: number | null
           bathrooms: number | null
@@ -484,6 +536,8 @@ export type Database = {
           city: string | null
           created_at: string
           id: string
+          listed_public: boolean
+          neighborhood: string | null
           nickname: string
           notes: string | null
           rent_amount: number
@@ -495,6 +549,8 @@ export type Database = {
           zip_code: string | null
         }
         Insert: {
+          ad_description?: string | null
+          ad_title?: string | null
           address: string
           area_m2?: number | null
           bathrooms?: number | null
@@ -502,6 +558,8 @@ export type Database = {
           city?: string | null
           created_at?: string
           id?: string
+          listed_public?: boolean
+          neighborhood?: string | null
           nickname: string
           notes?: string | null
           rent_amount?: number
@@ -513,6 +571,8 @@ export type Database = {
           zip_code?: string | null
         }
         Update: {
+          ad_description?: string | null
+          ad_title?: string | null
           address?: string
           area_m2?: number | null
           bathrooms?: number | null
@@ -520,6 +580,8 @@ export type Database = {
           city?: string | null
           created_at?: string
           id?: string
+          listed_public?: boolean
+          neighborhood?: string | null
           nickname?: string
           notes?: string | null
           rent_amount?: number
