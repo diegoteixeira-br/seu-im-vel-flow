@@ -70,8 +70,8 @@ export const deleteAccount = createServerFn({ method: "POST" })
       "tenants",
       "properties",
       "leads",
-      "posts",
       "user_roles",
+
     ] as const;
 
     for (const t of tables) {
