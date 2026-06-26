@@ -12,7 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Bed, Bath, Maximize, MapPin, Phone, ArrowLeft } from "lucide-react";
+import { Bed, Bath, Maximize, MapPin, Phone, ArrowLeft, MessageCircle } from "lucide-react";
 import { formatBRL } from "@/lib/format";
 import { getPhotoUrls } from "@/lib/public-photos";
 import { PublicHeader, PublicFooter } from "./anuncios";
