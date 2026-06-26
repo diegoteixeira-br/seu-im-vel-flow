@@ -251,32 +251,40 @@ function Landing() {
           <div>
             <BrandLogo size={28} />
             <p className="mt-2 text-xs text-muted-foreground">Direto entre proprietários e inquilinos.</p>
+            <Link to={user ? "/dashboard" : "/auth"} className="mt-3 inline-block text-sm font-medium text-primary hover:underline">
+              Já sou cliente → Entrar
+            </Link>
           </div>
           <div>
-            <p className="text-sm font-semibold">Navegar</p>
+            <p className="text-sm font-semibold">Institucional</p>
             <ul className="mt-2 space-y-1 text-sm text-muted-foreground">
-              <li><Link to="/" className="hover:text-foreground">Anúncios</Link></li>
-              <li><Link to="/sobre" className="hover:text-foreground">Sobre nós</Link></li>
+              <li><Link to="/sobre" className="hover:text-foreground">Sobre</Link></li>
+              <li><Link to="/planos" className="hover:text-foreground">Planos</Link></li>
+              <li><a href="mailto:contato@alugaflow.com.br" className="hover:text-foreground">Contato</a></li>
             </ul>
           </div>
 
           <div>
-            <p className="text-sm font-semibold">Para proprietários</p>
+            <p className="text-sm font-semibold">Legal</p>
             <ul className="mt-2 space-y-1 text-sm text-muted-foreground">
-              <li><Link to="/para-proprietarios" className="hover:text-foreground">Conhecer a ferramenta</Link></li>
-              <li><Link to="/planos" className="hover:text-foreground">Planos e preços</Link></li>
-              <li><Link to="/auth" search={{ mode: "signup" }} className="hover:text-foreground">Anunciar grátis</Link></li>
-              <li><Link to={user ? "/dashboard" : "/auth"} className="hover:text-foreground">Acessar gestão</Link></li>
+              <li><Link to="/privacidade" className="hover:text-foreground">Política de Privacidade</Link></li>
+              <li><Link to="/termos" className="hover:text-foreground">Termos de Uso</Link></li>
             </ul>
           </div>
 
           <div>
             <p className="text-sm font-semibold">Contato</p>
-            <p className="mt-2 text-sm text-muted-foreground">contato@alugaflow.com.br</p>
+            <p className="mt-2 text-sm text-muted-foreground">
+              <a href="mailto:contato@alugaflow.com.br" className="hover:text-foreground">contato@alugaflow.com.br</a>
+            </p>
+            <Link to="/para-proprietarios" className="mt-3 inline-block text-sm text-muted-foreground hover:text-foreground">
+              Conhecer a ferramenta
+            </Link>
           </div>
         </div>
-        <div className="border-t py-4 text-center text-xs text-muted-foreground">© 2025 AlugaFlow. Todos os direitos reservados.</div>
+        <div className="border-t py-4 text-center text-xs text-muted-foreground">© 2026 AlugaFlow. Todos os direitos reservados.</div>
       </footer>
+
     </div>
   );
 }

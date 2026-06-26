@@ -9,7 +9,9 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TermosRouteImport } from './routes/termos'
 import { Route as SobreRouteImport } from './routes/sobre'
+import { Route as PrivacidadeRouteImport } from './routes/privacidade'
 import { Route as PlanosRouteImport } from './routes/planos'
 import { Route as ParaProprietariosRouteImport } from './routes/para-proprietarios'
 import { Route as AuthRouteImport } from './routes/auth'
@@ -31,9 +33,19 @@ import { Route as AuthenticatedConfiguracoesRouteImport } from './routes/_authen
 import { Route as ApiPublicSignContractRouteImport } from './routes/api/public/sign-contract'
 import { Route as ApiPublicAsaasWebhookRouteImport } from './routes/api/public/asaas-webhook'
 
+const TermosRoute = TermosRouteImport.update({
+  id: '/termos',
+  path: '/termos',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SobreRoute = SobreRouteImport.update({
   id: '/sobre',
   path: '/sobre',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacidadeRoute = PrivacidadeRouteImport.update({
+  id: '/privacidade',
+  path: '/privacidade',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PlanosRoute = PlanosRouteImport.update({
@@ -144,7 +156,9 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/para-proprietarios': typeof ParaProprietariosRoute
   '/planos': typeof PlanosRoute
+  '/privacidade': typeof PrivacidadeRoute
   '/sobre': typeof SobreRoute
+  '/termos': typeof TermosRoute
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/contracts': typeof AuthenticatedContractsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -166,7 +180,9 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/para-proprietarios': typeof ParaProprietariosRoute
   '/planos': typeof PlanosRoute
+  '/privacidade': typeof PrivacidadeRoute
   '/sobre': typeof SobreRoute
+  '/termos': typeof TermosRoute
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/contracts': typeof AuthenticatedContractsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -190,7 +206,9 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/para-proprietarios': typeof ParaProprietariosRoute
   '/planos': typeof PlanosRoute
+  '/privacidade': typeof PrivacidadeRoute
   '/sobre': typeof SobreRoute
+  '/termos': typeof TermosRoute
   '/_authenticated/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/_authenticated/contracts': typeof AuthenticatedContractsRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
@@ -214,7 +232,9 @@ export interface FileRouteTypes {
     | '/auth'
     | '/para-proprietarios'
     | '/planos'
+    | '/privacidade'
     | '/sobre'
+    | '/termos'
     | '/configuracoes'
     | '/contracts'
     | '/dashboard'
@@ -236,7 +256,9 @@ export interface FileRouteTypes {
     | '/auth'
     | '/para-proprietarios'
     | '/planos'
+    | '/privacidade'
     | '/sobre'
+    | '/termos'
     | '/configuracoes'
     | '/contracts'
     | '/dashboard'
@@ -259,7 +281,9 @@ export interface FileRouteTypes {
     | '/auth'
     | '/para-proprietarios'
     | '/planos'
+    | '/privacidade'
     | '/sobre'
+    | '/termos'
     | '/_authenticated/configuracoes'
     | '/_authenticated/contracts'
     | '/_authenticated/dashboard'
@@ -283,7 +307,9 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   ParaProprietariosRoute: typeof ParaProprietariosRoute
   PlanosRoute: typeof PlanosRoute
+  PrivacidadeRoute: typeof PrivacidadeRoute
   SobreRoute: typeof SobreRoute
+  TermosRoute: typeof TermosRoute
   AssinarTokenRoute: typeof AssinarTokenRoute
   ApiPublicAsaasWebhookRoute: typeof ApiPublicAsaasWebhookRoute
   ApiPublicSignContractRoute: typeof ApiPublicSignContractRoute
@@ -291,11 +317,25 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/termos': {
+      id: '/termos'
+      path: '/termos'
+      fullPath: '/termos'
+      preLoaderRoute: typeof TermosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/sobre': {
       id: '/sobre'
       path: '/sobre'
       fullPath: '/sobre'
       preLoaderRoute: typeof SobreRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacidade': {
+      id: '/privacidade'
+      path: '/privacidade'
+      fullPath: '/privacidade'
+      preLoaderRoute: typeof PrivacidadeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/planos': {
@@ -489,7 +529,9 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   ParaProprietariosRoute: ParaProprietariosRoute,
   PlanosRoute: PlanosRoute,
+  PrivacidadeRoute: PrivacidadeRoute,
   SobreRoute: SobreRoute,
+  TermosRoute: TermosRoute,
   AssinarTokenRoute: AssinarTokenRoute,
   ApiPublicAsaasWebhookRoute: ApiPublicAsaasWebhookRoute,
   ApiPublicSignContractRoute: ApiPublicSignContractRoute,
