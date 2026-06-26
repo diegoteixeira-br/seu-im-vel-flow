@@ -52,6 +52,7 @@ type LeadValues = z.infer<typeof leadSchema>;
 function AnuncioDetail() {
   const { id } = Route.useParams();
   const [openLead, setOpenLead] = useState(false);
+  const [lightboxIdx, setLightboxIdx] = useState<number | null>(null);
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ["public-listing", id],
