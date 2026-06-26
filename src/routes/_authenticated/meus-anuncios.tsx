@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -199,10 +199,10 @@ function EditAdDialog({ editing, onClose }: { editing: Prop | null; onClose: () 
 
   // re-sync state when a different property is opened
   const editingId = editing?.id ?? null;
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useMemo(() => {
+  useEffect(() => {
     setAdTitle(editing?.ad_title ?? "");
     setAdDescription(editing?.ad_description ?? "");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editingId]);
 
   const save = useMutation({
