@@ -17,6 +17,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AnunciosRouteImport } from './routes/anuncios'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AnunciosIndexRouteImport } from './routes/anuncios.index'
 import { Route as AssinarTokenRouteImport } from './routes/assinar.$token'
 import { Route as AnunciosIdRouteImport } from './routes/anuncios.$id'
 import { Route as AuthenticatedVistoriaRouteImport } from './routes/_authenticated/vistoria'
@@ -70,6 +71,11 @@ const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AnunciosIndexRoute = AnunciosIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AnunciosRoute,
 } as any)
 const AssinarTokenRoute = AssinarTokenRouteImport.update({
   id: '/assinar/$token',
@@ -164,12 +170,12 @@ export interface FileRoutesByFullPath {
   '/vistoria': typeof AuthenticatedVistoriaRoute
   '/anuncios/$id': typeof AnunciosIdRoute
   '/assinar/$token': typeof AssinarTokenRoute
+  '/anuncios/': typeof AnunciosIndexRoute
   '/api/public/asaas-webhook': typeof ApiPublicAsaasWebhookRoute
   '/api/public/sign-contract': typeof ApiPublicSignContractRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/anuncios': typeof AnunciosRouteWithChildren
   '/auth': typeof AuthRoute
   '/para-proprietarios': typeof ParaProprietariosRoute
   '/privacidade': typeof PrivacidadeRoute
@@ -187,6 +193,7 @@ export interface FileRoutesByTo {
   '/vistoria': typeof AuthenticatedVistoriaRoute
   '/anuncios/$id': typeof AnunciosIdRoute
   '/assinar/$token': typeof AssinarTokenRoute
+  '/anuncios': typeof AnunciosIndexRoute
   '/api/public/asaas-webhook': typeof ApiPublicAsaasWebhookRoute
   '/api/public/sign-contract': typeof ApiPublicSignContractRoute
 }
@@ -212,6 +219,7 @@ export interface FileRoutesById {
   '/_authenticated/vistoria': typeof AuthenticatedVistoriaRoute
   '/anuncios/$id': typeof AnunciosIdRoute
   '/assinar/$token': typeof AssinarTokenRoute
+  '/anuncios/': typeof AnunciosIndexRoute
   '/api/public/asaas-webhook': typeof ApiPublicAsaasWebhookRoute
   '/api/public/sign-contract': typeof ApiPublicSignContractRoute
 }
@@ -237,12 +245,12 @@ export interface FileRouteTypes {
     | '/vistoria'
     | '/anuncios/$id'
     | '/assinar/$token'
+    | '/anuncios/'
     | '/api/public/asaas-webhook'
     | '/api/public/sign-contract'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/anuncios'
     | '/auth'
     | '/para-proprietarios'
     | '/privacidade'
@@ -260,6 +268,7 @@ export interface FileRouteTypes {
     | '/vistoria'
     | '/anuncios/$id'
     | '/assinar/$token'
+    | '/anuncios'
     | '/api/public/asaas-webhook'
     | '/api/public/sign-contract'
   id:
@@ -284,6 +293,7 @@ export interface FileRouteTypes {
     | '/_authenticated/vistoria'
     | '/anuncios/$id'
     | '/assinar/$token'
+    | '/anuncios/'
     | '/api/public/asaas-webhook'
     | '/api/public/sign-contract'
   fileRoutesById: FileRoutesById
@@ -359,6 +369,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/anuncios/': {
+      id: '/anuncios/'
+      path: '/'
+      fullPath: '/anuncios/'
+      preLoaderRoute: typeof AnunciosIndexRouteImport
+      parentRoute: typeof AnunciosRoute
     }
     '/assinar/$token': {
       id: '/assinar/$token'
@@ -492,10 +509,12 @@ const AuthenticatedRouteRouteWithChildren =
 
 interface AnunciosRouteChildren {
   AnunciosIdRoute: typeof AnunciosIdRoute
+  AnunciosIndexRoute: typeof AnunciosIndexRoute
 }
 
 const AnunciosRouteChildren: AnunciosRouteChildren = {
   AnunciosIdRoute: AnunciosIdRoute,
+  AnunciosIndexRoute: AnunciosIndexRoute,
 }
 
 const AnunciosRouteWithChildren = AnunciosRoute._addFileChildren(
