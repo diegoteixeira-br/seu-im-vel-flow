@@ -395,14 +395,21 @@ export type Database = {
           bank_account: string | null
           bank_agency: string | null
           bank_name: string | null
+          cnpj: string | null
           cpf: string | null
           created_at: string
           email: string | null
           full_name: string | null
           id: string
+          logo_url: string | null
+          pdf_footer: string | null
+          pdf_header: string | null
+          person_type: string
           phone: string | null
           pix_key: string | null
+          razao_social: string | null
           updated_at: string
+          watermark_url: string | null
         }
         Insert: {
           address_city?: string | null
@@ -419,14 +426,21 @@ export type Database = {
           bank_account?: string | null
           bank_agency?: string | null
           bank_name?: string | null
+          cnpj?: string | null
           cpf?: string | null
           created_at?: string
           email?: string | null
           full_name?: string | null
           id: string
+          logo_url?: string | null
+          pdf_footer?: string | null
+          pdf_header?: string | null
+          person_type?: string
           phone?: string | null
           pix_key?: string | null
+          razao_social?: string | null
           updated_at?: string
+          watermark_url?: string | null
         }
         Update: {
           address_city?: string | null
@@ -443,14 +457,21 @@ export type Database = {
           bank_account?: string | null
           bank_agency?: string | null
           bank_name?: string | null
+          cnpj?: string | null
           cpf?: string | null
           created_at?: string
           email?: string | null
           full_name?: string | null
           id?: string
+          logo_url?: string | null
+          pdf_footer?: string | null
+          pdf_header?: string | null
+          person_type?: string
           phone?: string | null
           pix_key?: string | null
+          razao_social?: string | null
           updated_at?: string
+          watermark_url?: string | null
         }
         Relationships: []
       }
