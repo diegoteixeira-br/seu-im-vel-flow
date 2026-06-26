@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
 
 const searchSchema = z.object({ mode: z.enum(["signin", "signup"]).optional() });
 
@@ -94,7 +95,52 @@ function SignInForm() {
       <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
         {form.formState.isSubmitting ? "Entrando..." : "Entrar"}
       </Button>
+      <ForgotPasswordDialog defaultEmail={form.watch("email")} />
     </form>
+  );
+}
+
+function ForgotPasswordDialog({ defaultEmail }: { defaultEmail?: string }) {
+  const [open, setOpen] = useState(false);
+  const [email, setEmail] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  useEffect(() => { if (open) setEmail(defaultEmail ?? ""); }, [open, defaultEmail]);
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email) { toast.error("Informe seu e-mail"); return; }
+    setSubmitting(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    setSubmitting(false);
+    if (error) { toast.error(error.message); return; }
+    toast.success("Enviamos um link de recuperação para seu e-mail.");
+    setOpen(false);
+  };
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <button type="button" className="block w-full text-center text-xs text-primary hover:underline">
+          Esqueci minha senha
+        </button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Recuperar senha</DialogTitle>
+          <DialogDescription>Informe seu e-mail para receber o link de redefinição.</DialogDescription>
+        </DialogHeader>
+        <form onSubmit={submit} className="space-y-3">
+          <div className="space-y-2">
+            <Label htmlFor="recover_email">E-mail</Label>
+            <Input id="recover_email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+          </div>
+          <DialogFooter>
+            <Button type="submit" disabled={submitting}>{submitting ? "Enviando..." : "Enviar link"}</Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }
 
