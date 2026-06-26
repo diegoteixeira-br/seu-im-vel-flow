@@ -145,7 +145,7 @@ function AnuncioDetail() {
               if (!phone) return null;
               const digits = phone.replace(/\D/g, "");
               const waNumber = digits.length === 11 || digits.length === 10 ? `55${digits}` : digits;
-              const waMsg = encodeURIComponent(`Olá! Tenho interesse no imóvel "${prop.ad_title ?? prop.nickname}" anunciado no AlugaFlow.`);
+              const waMsg = encodeURIComponent(`Olá! Gostaria de agendar uma visita ao imóvel "${prop.ad_title ?? prop.nickname}" anunciado no AlugaFlow.`);
               return (
                 <Card>
                   <CardContent className="p-5">
