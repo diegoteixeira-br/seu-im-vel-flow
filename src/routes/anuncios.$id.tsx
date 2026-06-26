@@ -141,13 +141,13 @@ function AnuncioDetail() {
             </div>
 
             {photos.length > 0 && (
-              <div className="mt-8">
+              <div className="mt-6">
                 <h2 className="text-lg font-semibold">Fotos do imóvel ({photos.length})</h2>
                 <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
                   {photos.map((p, i) => (
-                    <a key={i} href={p.url} target="_blank" rel="noreferrer" className="aspect-square overflow-hidden rounded-lg bg-muted">
+                    <button type="button" key={i} onClick={() => setLightboxIdx(i)} className="aspect-square overflow-hidden rounded-lg bg-muted cursor-zoom-in">
                       {p.url && <img src={p.url} alt="" loading="lazy" className="h-full w-full object-cover transition hover:scale-105" />}
-                    </a>
+                    </button>
                   ))}
                 </div>
               </div>
