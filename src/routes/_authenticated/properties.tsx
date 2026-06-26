@@ -32,6 +32,7 @@ const STATUSES = ["disponivel", "alugado", "manutencao", "inativo"] as const;
 const schema = z.object({
   nickname: z.string().trim().min(1, "Obrigatório").max(100),
   address: z.string().trim().min(1, "Obrigatório").max(255),
+  neighborhood: z.string().trim().max(100).optional().or(z.literal("")),
   city: z.string().trim().max(100).optional().or(z.literal("")),
   state: z.string().trim().max(2).optional().or(z.literal("")),
   zip_code: z.string().trim().max(10).optional().or(z.literal("")),
@@ -42,6 +43,9 @@ const schema = z.object({
   rent_amount: z.coerce.number().min(0),
   status: z.enum(STATUSES),
   notes: z.string().max(2000).optional().or(z.literal("")),
+  listed_public: z.boolean().optional(),
+  ad_title: z.string().trim().max(120).optional().or(z.literal("")),
+  ad_description: z.string().max(2000).optional().or(z.literal("")),
 });
 type FormValues = z.infer<typeof schema>;
 type Property = FormValues & { id: string };
@@ -152,9 +156,10 @@ function PropertyDialog({ open, onOpenChange, editing }: { open: boolean; onOpen
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
     values: editing ?? {
-      nickname: "", address: "", city: "", state: "", zip_code: "",
+      nickname: "", address: "", neighborhood: "", city: "", state: "", zip_code: "",
       type: "apartamento", bedrooms: 0, bathrooms: 0, area_m2: undefined,
       rent_amount: 0, status: "disponivel", notes: "",
+      listed_public: false, ad_title: "", ad_description: "",
     },
   });
 
@@ -197,6 +202,7 @@ function PropertyDialog({ open, onOpenChange, editing }: { open: boolean; onOpen
             {form.formState.errors.address && <p className="text-xs text-destructive">{form.formState.errors.address.message}</p>}
           </div>
           <div className="space-y-1"><Label>Cidade</Label><Input {...form.register("city")} /></div>
+          <div className="space-y-1"><Label>Bairro</Label><Input {...form.register("neighborhood")} /></div>
           <div className="grid grid-cols-2 gap-2">
             <div className="space-y-1"><Label>UF</Label><Input maxLength={2} {...form.register("state")} /></div>
             <div className="space-y-1"><Label>CEP</Label><Input {...form.register("zip_code")} /></div>
@@ -223,6 +229,30 @@ function PropertyDialog({ open, onOpenChange, editing }: { open: boolean; onOpen
             <Label>Observações</Label>
             <Textarea rows={3} {...form.register("notes")} />
           </div>
+
+          <div className="sm:col-span-2 rounded-lg border bg-muted/30 p-3 space-y-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-semibold">Anunciar no portal público</p>
+                <p className="text-xs text-muted-foreground">O imóvel aparecerá em /anuncios para qualquer pessoa.</p>
+              </div>
+              <input
+                type="checkbox"
+                className="h-5 w-5 accent-primary"
+                checked={!!form.watch("listed_public")}
+                onChange={(e) => form.setValue("listed_public", e.target.checked)}
+              />
+            </div>
+            <div className="space-y-1">
+              <Label>Título do anúncio</Label>
+              <Input {...form.register("ad_title")} placeholder="Ex: Apto 2 quartos no Centro" maxLength={120} />
+            </div>
+            <div className="space-y-1">
+              <Label>Descrição para o anúncio</Label>
+              <Textarea rows={3} {...form.register("ad_description")} placeholder="Descreva o imóvel, diferenciais, localização..." maxLength={2000} />
+            </div>
+          </div>
+
           <div className="sm:col-span-2">
             {editing ? (
               <PropertyPhotos propertyId={editing.id} />
