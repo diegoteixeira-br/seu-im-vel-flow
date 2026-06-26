@@ -92,9 +92,9 @@ export function PublicListings({ variant = "page" }: PublicListingsProps) {
 
   const filtered = useMemo(() => {
     return listings.filter((p) => {
-      const citySearch = city.toLowerCase();
+      const citySearch = dCity.toLowerCase();
       if (citySearch && !(p.city ?? "").toLowerCase().includes(citySearch) && !(p.neighborhood ?? "").toLowerCase().includes(citySearch)) return false;
-      if (neighborhood && !(p.neighborhood ?? "").toLowerCase().includes(neighborhood.toLowerCase())) return false;
+      if (dNeighborhood && !(p.neighborhood ?? "").toLowerCase().includes(dNeighborhood.toLowerCase())) return false;
       if (type !== "todos" && p.type !== type) return false;
       if (bedrooms !== "todos") {
         const n = parseInt(bedrooms, 10);
@@ -106,11 +106,11 @@ export function PublicListings({ variant = "page" }: PublicListingsProps) {
         const b = p.bathrooms ?? 0;
         if (bathrooms === "4" ? b < 4 : b !== n) return false;
       }
-      if (minPrice && p.rent_amount < parseFloat(minPrice)) return false;
-      if (maxPrice && p.rent_amount > parseFloat(maxPrice)) return false;
+      if (dMinPrice && p.rent_amount < parseFloat(dMinPrice)) return false;
+      if (dMaxPrice && p.rent_amount > parseFloat(dMaxPrice)) return false;
       return true;
     });
-  }, [listings, city, neighborhood, type, bedrooms, bathrooms, minPrice, maxPrice, isHome]);
+  }, [listings, dCity, dNeighborhood, type, bedrooms, bathrooms, dMinPrice, dMaxPrice, isHome]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const pageItems = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
