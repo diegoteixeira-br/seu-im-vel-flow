@@ -156,6 +156,8 @@ function ConfigPage() {
             <TabsTrigger value="bancario"><Landmark className="h-4 w-4" />Dados bancários</TabsTrigger>
             <TabsTrigger value="asaas"><Zap className="h-4 w-4" />Integração ASAAS</TabsTrigger>
             <TabsTrigger value="automacao"><Bell className="h-4 w-4" />Automação</TabsTrigger>
+            <TabsTrigger value="identidade"><Palette className="h-4 w-4" />Identidade visual</TabsTrigger>
+            <TabsTrigger value="seguranca"><ShieldCheck className="h-4 w-4" />Segurança</TabsTrigger>
           </TabsList>
 
           <TabsContent value="pessoal">
