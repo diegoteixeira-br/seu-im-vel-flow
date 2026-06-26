@@ -51,8 +51,15 @@ export const deleteAccount = createServerFn({ method: "POST" })
 
     // 2. Delete database rows. Most child rows cascade from parents via FK,
     // but we delete explicitly to be safe.
+    // Delete contract_signatures via contract ids (no user_id column)
+    const { data: contractRows } = await supabaseAdmin
+      .from("contracts").select("id").eq("user_id", userId);
+    const contractIds = (contractRows ?? []).map((r: { id: string }) => r.id);
+    if (contractIds.length) {
+      await supabaseAdmin.from("contract_signatures").delete().in("contract_id", contractIds);
+    }
+
     const tables = [
-      "contract_signatures",
       "inspection_photos",
       "inspections",
       "payments",
@@ -71,6 +78,7 @@ export const deleteAccount = createServerFn({ method: "POST" })
     for (const t of tables) {
       await supabaseAdmin.from(t).delete().eq("user_id", userId);
     }
+
 
     // 3. Delete the auth user (this also signs them out everywhere)
     const { error } = await supabaseAdmin.auth.admin.deleteUser(userId);
