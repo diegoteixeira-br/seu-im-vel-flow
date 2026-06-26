@@ -3,12 +3,26 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
-import { KeyRound, ShieldCheck, Mail } from "lucide-react";
+import { useNavigate } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
+import { KeyRound, ShieldCheck, Mail, Trash2, AlertTriangle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { deleteAccount } from "@/lib/account.functions";
 
 const schema = z.object({
   newPassword: z.string().min(8, "Mínimo de 8 caracteres"),
@@ -40,7 +54,7 @@ export function SecurityTab() {
 
   return (
     <div className="space-y-6">
-      <EmailCard />
+      <CurrentEmailCard />
 
       <Card>
         <CardHeader>
@@ -75,74 +89,118 @@ export function SecurityTab() {
           <CardTitle className="flex items-center gap-2"><ShieldCheck className="h-4 w-4" />Autenticação em duas etapas</CardTitle>
           <CardDescription>
             Proteja sua conta com um código temporário gerado por apps como Google Authenticator ou Authy.
-            Em breve disponível neste painel — por enquanto, ative em
-            {" "}
-            <a className="underline" href="https://supabase.com/dashboard/project/_/auth/providers" target="_blank" rel="noreferrer">
-              Supabase Auth
-            </a>.
+            Em breve disponível neste painel.
           </CardDescription>
         </CardHeader>
       </Card>
+
+      <DeleteAccountCard />
     </div>
   );
 }
 
-const emailSchema = z.object({ email: z.string().trim().email("E-mail inválido").max(255) });
-type EmailValues = z.infer<typeof emailSchema>;
-
-function EmailCard() {
-  const [currentEmail, setCurrentEmail] = useState<string>("");
-  const [submitting, setSubmitting] = useState(false);
-  const form = useForm<EmailValues>({ resolver: zodResolver(emailSchema), defaultValues: { email: "" } });
-
+function CurrentEmailCard() {
+  const [email, setEmail] = useState("");
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      const e = data.user?.email ?? "";
-      setCurrentEmail(e);
-      form.reset({ email: e });
-    });
-  }, [form]);
+    supabase.auth.getUser().then(({ data }) => setEmail(data.user?.email ?? ""));
+  }, []);
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2"><Mail className="h-4 w-4" />E-mail da conta</CardTitle>
+        <CardDescription>
+          E-mail atual: <span className="font-medium">{email || "—"}</span>. O e-mail de cadastro não pode ser alterado.
+          Caso precise usar outro e-mail, entre em contato com o suporte.
+        </CardDescription>
+      </CardHeader>
+    </Card>
+  );
+}
 
-  const onSubmit = async (v: EmailValues) => {
-    if (v.email === currentEmail) { toast.info("Este já é o seu e-mail atual"); return; }
+function DeleteAccountCard() {
+  const navigate = useNavigate();
+  const [confirmText, setConfirmText] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [open, setOpen] = useState(false);
+  const runDelete = useServerFn(deleteAccount);
+
+  const onConfirm = async () => {
     setSubmitting(true);
     try {
-      const { error } = await supabase.auth.updateUser(
-        { email: v.email },
-        { emailRedirectTo: `${window.location.origin}/dashboard` },
-      );
-      if (error) throw error;
-      toast.success("Enviamos um link de confirmação para o novo e-mail. A alteração será aplicada após a confirmação.");
+      await runDelete();
+      toast.success("Sua conta e todos os dados foram excluídos.");
+      await supabase.auth.signOut();
+      navigate({ to: "/" });
     } catch (e) {
-      toast.error((e as Error).message);
-    } finally {
+      toast.error((e as Error).message || "Não foi possível excluir a conta.");
       setSubmitting(false);
     }
   };
 
   return (
-    <Card>
+    <Card className="border-destructive/40">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2"><Mail className="h-4 w-4" />Alterar e-mail</CardTitle>
+        <CardTitle className="flex items-center gap-2 text-destructive">
+          <Trash2 className="h-4 w-4" />Excluir conta
+        </CardTitle>
         <CardDescription>
-          E-mail atual: <span className="font-medium">{currentEmail || "—"}</span>. Você receberá um link de confirmação no novo e-mail.
+          Esta ação é <strong>permanente</strong> e <strong>não pode ser desfeita</strong>. Serão apagados:
+          imóveis, fotos, inquilinos, documentos, contratos, pagamentos, despesas, vistorias, leads,
+          anúncios e o seu cadastro. Recomendamos exportar seus relatórios antes de prosseguir.
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4 sm:grid-cols-2">
-          <div className="space-y-1 sm:col-span-2">
-            <Label>Novo e-mail</Label>
-            <Input type="email" autoComplete="email" {...form.register("email")} />
-            {form.formState.errors.email ? (
-              <p className="text-xs text-destructive">{form.formState.errors.email.message}</p>
-            ) : null}
-          </div>
-          <div className="sm:col-span-2">
-            <Button type="submit" disabled={submitting}>{submitting ? "Enviando..." : "Alterar e-mail"}</Button>
-          </div>
-        </form>
+        <AlertDialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) setConfirmText(""); }}>
+          <AlertDialogTrigger asChild>
+            <Button variant="destructive">
+              <Trash2 className="mr-2 h-4 w-4" />Excluir minha conta
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle className="flex items-center gap-2 text-destructive">
+                <AlertTriangle className="h-5 w-5" />Tem certeza absoluta?
+              </AlertDialogTitle>
+              <AlertDialogDescription asChild>
+                <div className="space-y-3 text-sm">
+                  <p>
+                    Ao confirmar, <strong>todos os seus dados</strong> serão excluídos imediatamente
+                    e de forma <strong>irreversível</strong>:
+                  </p>
+                  <ul className="list-disc pl-5 space-y-1">
+                    <li>Imóveis, fotos e anúncios publicados</li>
+                    <li>Inquilinos e documentos enviados</li>
+                    <li>Contratos, assinaturas e PDFs</li>
+                    <li>Pagamentos, despesas e relatórios</li>
+                    <li>Vistorias e fotos por cômodo</li>
+                    <li>Leads recebidos pelos anúncios</li>
+                    <li>Identidade visual, perfil e credenciais de acesso</li>
+                  </ul>
+                  <p>Para confirmar, digite <strong>EXCLUIR</strong> abaixo:</p>
+                  <Input
+                    value={confirmText}
+                    onChange={(e) => setConfirmText(e.target.value)}
+                    placeholder="EXCLUIR"
+                    autoComplete="off"
+                  />
+                </div>
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel disabled={submitting}>Cancelar</AlertDialogCancel>
+              <AlertDialogAction
+                disabled={confirmText !== "EXCLUIR" || submitting}
+                onClick={(e) => { e.preventDefault(); onConfirm(); }}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                {submitting ? "Excluindo..." : "Excluir definitivamente"}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </CardContent>
     </Card>
   );
 }
+
 
