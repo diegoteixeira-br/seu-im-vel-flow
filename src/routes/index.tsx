@@ -260,7 +260,6 @@ function Landing() {
             <ul className="mt-2 space-y-1 text-sm text-muted-foreground">
               <li><Link to="/sobre" className="hover:text-foreground">Sobre</Link></li>
               <li><Link to="/planos" className="hover:text-foreground">Planos</Link></li>
-              <li><a href="mailto:contato@alugaflow.com.br" className="hover:text-foreground">Contato</a></li>
             </ul>
           </div>
 
@@ -277,10 +276,8 @@ function Landing() {
             <p className="mt-2 text-sm text-muted-foreground">
               <a href="mailto:contato@alugaflow.com.br" className="hover:text-foreground">contato@alugaflow.com.br</a>
             </p>
-            <Link to="/para-proprietarios" className="mt-3 inline-block text-sm text-muted-foreground hover:text-foreground">
-              Conhecer a ferramenta
-            </Link>
           </div>
+
         </div>
         <div className="border-t py-4 text-center text-xs text-muted-foreground">© 2026 AlugaFlow. Todos os direitos reservados.</div>
       </footer>
