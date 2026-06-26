@@ -9,6 +9,9 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SobreRouteImport } from './routes/sobre'
+import { Route as PlanosRouteImport } from './routes/planos'
+import { Route as ParaProprietariosRouteImport } from './routes/para-proprietarios'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AnunciosRouteImport } from './routes/anuncios'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
@@ -28,6 +31,21 @@ import { Route as AuthenticatedConfiguracoesRouteImport } from './routes/_authen
 import { Route as ApiPublicSignContractRouteImport } from './routes/api/public/sign-contract'
 import { Route as ApiPublicAsaasWebhookRouteImport } from './routes/api/public/asaas-webhook'
 
+const SobreRoute = SobreRouteImport.update({
+  id: '/sobre',
+  path: '/sobre',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PlanosRoute = PlanosRouteImport.update({
+  id: '/planos',
+  path: '/planos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ParaProprietariosRoute = ParaProprietariosRouteImport.update({
+  id: '/para-proprietarios',
+  path: '/para-proprietarios',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
@@ -124,6 +142,9 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/anuncios': typeof AnunciosRouteWithChildren
   '/auth': typeof AuthRoute
+  '/para-proprietarios': typeof ParaProprietariosRoute
+  '/planos': typeof PlanosRoute
+  '/sobre': typeof SobreRoute
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/contracts': typeof AuthenticatedContractsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -143,6 +164,9 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/anuncios': typeof AnunciosRouteWithChildren
   '/auth': typeof AuthRoute
+  '/para-proprietarios': typeof ParaProprietariosRoute
+  '/planos': typeof PlanosRoute
+  '/sobre': typeof SobreRoute
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/contracts': typeof AuthenticatedContractsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -164,6 +188,9 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/anuncios': typeof AnunciosRouteWithChildren
   '/auth': typeof AuthRoute
+  '/para-proprietarios': typeof ParaProprietariosRoute
+  '/planos': typeof PlanosRoute
+  '/sobre': typeof SobreRoute
   '/_authenticated/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/_authenticated/contracts': typeof AuthenticatedContractsRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
@@ -185,6 +212,9 @@ export interface FileRouteTypes {
     | '/'
     | '/anuncios'
     | '/auth'
+    | '/para-proprietarios'
+    | '/planos'
+    | '/sobre'
     | '/configuracoes'
     | '/contracts'
     | '/dashboard'
@@ -204,6 +234,9 @@ export interface FileRouteTypes {
     | '/'
     | '/anuncios'
     | '/auth'
+    | '/para-proprietarios'
+    | '/planos'
+    | '/sobre'
     | '/configuracoes'
     | '/contracts'
     | '/dashboard'
@@ -224,6 +257,9 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/anuncios'
     | '/auth'
+    | '/para-proprietarios'
+    | '/planos'
+    | '/sobre'
     | '/_authenticated/configuracoes'
     | '/_authenticated/contracts'
     | '/_authenticated/dashboard'
@@ -245,6 +281,9 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AnunciosRoute: typeof AnunciosRouteWithChildren
   AuthRoute: typeof AuthRoute
+  ParaProprietariosRoute: typeof ParaProprietariosRoute
+  PlanosRoute: typeof PlanosRoute
+  SobreRoute: typeof SobreRoute
   AssinarTokenRoute: typeof AssinarTokenRoute
   ApiPublicAsaasWebhookRoute: typeof ApiPublicAsaasWebhookRoute
   ApiPublicSignContractRoute: typeof ApiPublicSignContractRoute
@@ -252,6 +291,27 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/sobre': {
+      id: '/sobre'
+      path: '/sobre'
+      fullPath: '/sobre'
+      preLoaderRoute: typeof SobreRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/planos': {
+      id: '/planos'
+      path: '/planos'
+      fullPath: '/planos'
+      preLoaderRoute: typeof PlanosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/para-proprietarios': {
+      id: '/para-proprietarios'
+      path: '/para-proprietarios'
+      fullPath: '/para-proprietarios'
+      preLoaderRoute: typeof ParaProprietariosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/auth': {
       id: '/auth'
       path: '/auth'
@@ -427,6 +487,9 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AnunciosRoute: AnunciosRouteWithChildren,
   AuthRoute: AuthRoute,
+  ParaProprietariosRoute: ParaProprietariosRoute,
+  PlanosRoute: PlanosRoute,
+  SobreRoute: SobreRoute,
   AssinarTokenRoute: AssinarTokenRoute,
   ApiPublicAsaasWebhookRoute: ApiPublicAsaasWebhookRoute,
   ApiPublicSignContractRoute: ApiPublicSignContractRoute,
