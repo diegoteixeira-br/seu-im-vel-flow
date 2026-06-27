@@ -107,6 +107,33 @@ export type Database = {
         }
         Relationships: []
       }
+      cancellations: {
+        Row: {
+          cancelled_at: string
+          effective_date: string | null
+          id: string
+          plan_type: string
+          reason: string
+          user_id: string
+        }
+        Insert: {
+          cancelled_at?: string
+          effective_date?: string | null
+          id?: string
+          plan_type: string
+          reason: string
+          user_id: string
+        }
+        Update: {
+          cancelled_at?: string
+          effective_date?: string | null
+          id?: string
+          plan_type?: string
+          reason?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       contract_signatures: {
         Row: {
           contract_id: string
@@ -561,38 +588,56 @@ export type Database = {
       plans: {
         Row: {
           active: boolean
+          advanced_reports: boolean
+          asaas_enabled: boolean
           benefits: Json
           created_at: string
           id: string
+          max_listings: number | null
+          max_properties: number | null
+          max_users: number
           name: string
           price: number
           promo_price: number | null
           promo_until: string | null
           sort_order: number
+          stripe_price_id: string | null
           updated_at: string
         }
         Insert: {
           active?: boolean
+          advanced_reports?: boolean
+          asaas_enabled?: boolean
           benefits?: Json
           created_at?: string
           id: string
+          max_listings?: number | null
+          max_properties?: number | null
+          max_users?: number
           name: string
           price?: number
           promo_price?: number | null
           promo_until?: string | null
           sort_order?: number
+          stripe_price_id?: string | null
           updated_at?: string
         }
         Update: {
           active?: boolean
+          advanced_reports?: boolean
+          asaas_enabled?: boolean
           benefits?: Json
           created_at?: string
           id?: string
+          max_listings?: number | null
+          max_properties?: number | null
+          max_users?: number
           name?: string
           price?: number
           promo_price?: number | null
           promo_until?: string | null
           sort_order?: number
+          stripe_price_id?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -860,6 +905,51 @@ export type Database = {
           },
         ]
       }
+      subscriptions: {
+        Row: {
+          cancel_at_period_end: boolean
+          created_at: string
+          current_period_end: string | null
+          current_period_start: string | null
+          id: string
+          plan_type: string
+          scheduled_plan: string | null
+          status: string
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          cancel_at_period_end?: boolean
+          created_at?: string
+          current_period_end?: string | null
+          current_period_start?: string | null
+          id?: string
+          plan_type: string
+          scheduled_plan?: string | null
+          status?: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          cancel_at_period_end?: boolean
+          created_at?: string
+          current_period_end?: string | null
+          current_period_start?: string | null
+          id?: string
+          plan_type?: string
+          scheduled_plan?: string | null
+          status?: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       tenant_documents: {
         Row: {
           created_at: string
@@ -1035,6 +1125,10 @@ export type Database = {
       admin_update_user_plan: {
         Args: { _plan: string; _user_id: string }
         Returns: undefined
+      }
+      check_plan_limit: {
+        Args: { _resource: string; _user_id: string }
+        Returns: Json
       }
       delete_my_account: { Args: never; Returns: undefined }
       has_role: {
