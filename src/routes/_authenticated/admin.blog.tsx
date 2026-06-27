@@ -97,9 +97,9 @@ function AdminBlog() {
         <Button onClick={() => setEditing({ published: false, author_name: "Equipe AlugaFlow" })}><Plus className="mr-2 h-4 w-4" /> Novo post</Button>
       </div>
 
-      <div className="mt-6 overflow-hidden rounded-lg border">
-        <table className="w-full text-sm">
-          <thead className="bg-muted/40 text-left"><tr><th className="p-3">Título</th><th className="p-3">Status</th><th className="p-3">Data</th><th className="p-3">Ações</th></tr></thead>
+      <div className="mt-6 overflow-x-auto rounded-lg border">
+        <table className="w-full min-w-[560px] text-sm">
+          <thead className="bg-muted/40 text-left"><tr><th className="p-3">Título</th><th className="p-3">Status</th><th className="p-3">Data</th><th className="p-3 text-right">Ações</th></tr></thead>
           <tbody>
             {loading ? <tr><td colSpan={4} className="p-4 text-center text-muted-foreground">Carregando...</td></tr> :
               posts.length === 0 ? <tr><td colSpan={4} className="p-4 text-center text-muted-foreground">Nenhum post ainda.</td></tr> :
@@ -108,9 +108,11 @@ function AdminBlog() {
                   <td className="p-3"><div className="font-medium">{p.title}</div><div className="text-xs text-muted-foreground">/{p.slug}</div></td>
                   <td className="p-3">{p.published ? <Badge>Publicado</Badge> : <Badge variant="secondary">Rascunho</Badge>}</td>
                   <td className="p-3 text-muted-foreground">{formatDateBR(p.created_at)}</td>
-                  <td className="p-3">
-                    <Button size="sm" variant="ghost" onClick={() => setEditing(p)}><Pencil className="h-4 w-4" /></Button>
-                    <Button size="sm" variant="ghost" onClick={() => del(p.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                  <td className="p-3 whitespace-nowrap">
+                    <div className="flex justify-end gap-1">
+                      <Button size="sm" variant="ghost" onClick={() => setEditing(p)}><Pencil className="h-4 w-4" /></Button>
+                      <Button size="sm" variant="ghost" onClick={() => del(p.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -119,10 +121,10 @@ function AdminBlog() {
       </div>
 
       <Dialog open={!!editing} onOpenChange={(o) => !o && setEditing(null)}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader><DialogTitle>{editing?.id ? "Editar post" : "Novo post"}</DialogTitle></DialogHeader>
+        <DialogContent className="max-w-2xl flex max-h-[90vh] flex-col p-0">
+          <DialogHeader className="border-b px-6 py-4"><DialogTitle>{editing?.id ? "Editar post" : "Novo post"}</DialogTitle></DialogHeader>
           {editing && (
-            <div className="space-y-3">
+            <div className="flex-1 space-y-3 overflow-y-auto px-6 py-4">
               <div>
                 <Label>Título</Label>
                 <Input value={editing.title ?? ""} onChange={(e) => setEditing({ ...editing, title: e.target.value, slug: editing.id ? editing.slug : slugify(e.target.value) })} />
@@ -161,7 +163,7 @@ function AdminBlog() {
               </div>
             </div>
           )}
-          <DialogFooter>
+          <DialogFooter className="border-t bg-background px-6 py-4">
             <Button variant="outline" onClick={() => setEditing(null)}>Cancelar</Button>
             <Button onClick={save}>Salvar</Button>
           </DialogFooter>
