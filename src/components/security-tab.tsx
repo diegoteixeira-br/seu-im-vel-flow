@@ -155,13 +155,9 @@ function CurrentEmailCard() {
       <CardContent>
         <div className="rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-200">
           <p>
-            O e-mail é a identidade da conta e está vinculado a todos os seus dados (imóveis, contratos,
-            pagamentos, documentos). Para evitar perda de acesso, a troca pelo próprio usuário está desativada.
-          </p>
-          <p className="mt-2">
-            Se você é o administrador da plataforma, pode alterar o e-mail de qualquer conta (inclusive a sua)
-            em <a href="/admin/usuarios" className="font-semibold underline">Admin → Usuários → ícone de envelope</a>.
-            O ID interno é preservado, então nenhum dado é perdido.
+            O e-mail é a identidade da conta e está vinculado a todos os seus dados (imóveis,
+            contratos, pagamentos, documentos). Por motivo de segurança e integridade, não é
+            possível alterar o e-mail desta conta.
           </p>
         </div>
       </CardContent>
