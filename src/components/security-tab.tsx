@@ -82,21 +82,21 @@ export function SecurityTab() {
           <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1 sm:col-span-2">
               <Label>Senha atual</Label>
-              <Input type="password" autoComplete="current-password" {...form.register("currentPassword")} />
+              <PasswordInput autoComplete="current-password" {...form.register("currentPassword")} />
               {form.formState.errors.currentPassword ? (
                 <p className="text-xs text-destructive">{form.formState.errors.currentPassword.message}</p>
               ) : null}
             </div>
             <div className="space-y-1 sm:col-span-2">
               <Label>Nova senha</Label>
-              <Input type="password" autoComplete="new-password" {...form.register("newPassword")} />
+              <PasswordInput autoComplete="new-password" {...form.register("newPassword")} />
               {form.formState.errors.newPassword ? (
                 <p className="text-xs text-destructive">{form.formState.errors.newPassword.message}</p>
               ) : null}
             </div>
             <div className="space-y-1 sm:col-span-2">
               <Label>Confirmar nova senha</Label>
-              <Input type="password" autoComplete="new-password" {...form.register("confirm")} />
+              <PasswordInput autoComplete="new-password" {...form.register("confirm")} />
               {form.formState.errors.confirm ? (
                 <p className="text-xs text-destructive">{form.formState.errors.confirm.message}</p>
               ) : null}
