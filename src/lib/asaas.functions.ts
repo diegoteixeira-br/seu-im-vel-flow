@@ -9,8 +9,7 @@ async function invokeAsaas<T>(body: Record<string, unknown>): Promise<T> {
     // Tenta extrair a mensagem JSON retornada pela function
     let msg = error.message || "Falha ao chamar ASAAS";
     try {
-      // @ts-expect-error context é adicionado pelo supabase-js em FunctionsHttpError
-      const ctx = error.context;
+      const ctx = (error as unknown as { context?: { json?: () => Promise<{ error?: string }> } }).context;
       if (ctx && typeof ctx.json === "function") {
         const j = await ctx.json();
         if (j?.error) msg = j.error;
