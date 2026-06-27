@@ -7,8 +7,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Sparkles, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { streamImage } from "@/lib/stream-image";
-import { useServerFn } from "@tanstack/react-start";
 import { uploadBlogCover } from "@/lib/blog-cover.functions";
+import { supabase } from "@/integrations/supabase/client";
+
+const GENERATE_COVER_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-blog-cover`;
 
 type Style = "foto" | "ilustracao" | "minimalista";
 
