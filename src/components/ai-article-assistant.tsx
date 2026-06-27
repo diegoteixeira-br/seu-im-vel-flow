@@ -49,9 +49,10 @@ export function AiArticleAssistant({ onArticleReady }: { onArticleReady: (a: Gen
       if (error) throw new Error(error.message);
       if ((data as any)?.error) throw new Error((data as any).error);
       const a = data as GeneratedArticle;
+      const finalTitle = (a.title && a.title.trim().length >= 20) ? a.title.trim() : s.title;
       onArticleReady({
-        title: a.title,
-        slug: a.slug || slugify(a.title),
+        title: finalTitle,
+        slug: a.slug && /^[a-z0-9-]{3,}$/.test(a.slug) ? a.slug : slugify(finalTitle),
         excerpt: a.excerpt,
         content: a.content,
       });

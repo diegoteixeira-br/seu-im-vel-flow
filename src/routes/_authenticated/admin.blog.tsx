@@ -158,11 +158,17 @@ function AdminBlog() {
               </div>
               <div>
                 <Label>Foto de capa</Label>
-                <Input placeholder="Cole uma URL ou gere com IA" value={editing.cover_image_url ?? ""} onChange={(e) => setEditing({ ...editing, cover_image_url: e.target.value })} />
-                <AiCoverGenerator
-                  title={editing.title}
-                  onCoverReady={(url) => setEditing((prev) => ({ ...(prev ?? {}), cover_image_url: url }))}
-                />
+                <Input placeholder="Cole uma URL, gere com IA ou escolha no Unsplash" value={editing.cover_image_url ?? ""} onChange={(e) => setEditing({ ...editing, cover_image_url: e.target.value })} />
+                <div className="mt-2 flex flex-wrap gap-2">
+                  <AiCoverGenerator
+                    title={editing.title}
+                    onCoverReady={(url) => setEditing((prev) => ({ ...(prev ?? {}), cover_image_url: url }))}
+                  />
+                  <UnsplashPicker
+                    title={editing.title}
+                    onSelect={(url) => setEditing((prev) => ({ ...(prev ?? {}), cover_image_url: url }))}
+                  />
+                </div>
                 {editing.cover_image_url && (
                   <img src={editing.cover_image_url} alt="Prévia da capa" className="mt-2 aspect-[16/9] w-full rounded-md border object-cover" />
                 )}
