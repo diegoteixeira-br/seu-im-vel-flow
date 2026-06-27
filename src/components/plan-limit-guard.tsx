@@ -24,9 +24,14 @@ export function useMyPlan() {
     queryKey: ["my-plan"],
     queryFn: async () => {
       const { data: u } = await supabase.auth.getUser();
-      if (!u.user) return { plan: "free" as string };
-      const { data } = await supabase.from("profiles").select("plan").eq("id", u.user.id).maybeSingle();
-      return { plan: (data?.plan ?? "free") as string };
+      if (!u.user) return { plan: "free" as string, isAdmin: false };
+      const [{ data: profile }, { data: isAdmin }] = await Promise.all([
+        supabase.from("profiles").select("plan").eq("id", u.user.id).maybeSingle(),
+        supabase.rpc("has_role", { _user_id: u.user.id, _role: "admin" }),
+      ]);
+      // Admins bypass plan limits and have full access for testing
+      if (isAdmin) return { plan: "imobiliaria" as string, isAdmin: true };
+      return { plan: (profile?.plan ?? "free") as string, isAdmin: false };
     },
     staleTime: 30_000,
   });
