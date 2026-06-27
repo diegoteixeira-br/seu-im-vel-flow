@@ -63,18 +63,21 @@ Deno.serve(async (req) => {
     if (action === "suggest_titles") {
       const topic: string = (body?.topic ?? "").toString().trim();
       const count: number = Math.min(Math.max(Number(body?.count ?? 6), 3), 10);
-      const sys = "Você é editor-chefe de um blog imobiliário brasileiro. Sugira títulos de artigos atuais, úteis, com foco em SEO, em português do Brasil. Cada título deve ter entre 45 e 80 caracteres, ser específico (com número, ano, ou pergunta) e atrativo. Responda APENAS com JSON.";
-      const user = `Gere ${count} sugestões de títulos de artigos sobre o mercado imobiliário brasileiro atual${topic ? ` com foco em: "${topic}"` : ""}. Cubra temas como: Lei do Inquilinato, contratos de aluguel, IGP-M e IPCA (reajuste), taxa Selic e financiamento imobiliário, garantias locatícias, ITBI, due diligence, tendências de mercado, gestão para proprietários, vistoria, despejo, distratos, locação por temporada/Airbnb e LGPD para imobiliárias. Retorne JSON no formato: {"titles":[{"title":"Título completo entre 45 e 80 caracteres","angle":"breve ângulo/abordagem"}]}.`;
+      const currentYear = new Date().getFullYear();
+      const sys = `Você é editor-chefe de um blog imobiliário brasileiro em ${currentYear}. Sugira títulos de artigos ATUAIS, úteis, com foco em SEO, em português do Brasil. NUNCA use anos anteriores a ${currentYear} no título (proibido citar 2023, 2024, 2025 etc.). Se citar ano, use SEMPRE ${currentYear}. Cada título deve ter entre 45 e 80 caracteres, ser específico e atrativo. Responda APENAS com JSON.`;
+      const user = `Gere ${count} sugestões de títulos de artigos sobre o mercado imobiliário brasileiro em ${currentYear}${topic ? ` com foco em: "${topic}"` : ""}. Foque em pautas QUENTES e ATUAIS de ${currentYear}: tendências de mercado neste ano, taxa Selic e financiamento em ${currentYear}, reajuste de aluguel (IGP-M/IPCA) hoje, mudanças recentes na Lei do Inquilinato, garantias locatícias modernas (seguro-fiança, título de capitalização), locação por temporada/Airbnb e nova regulação, LGPD para imobiliárias, uso de IA e automação na gestão de aluguéis, novos produtos de crédito imobiliário, ITBI e tributação atual, golpes em aluguel e como evitar, sustentabilidade e imóveis verdes. Evite temas datados ou notícias de anos anteriores. Retorne JSON: {"titles":[{"title":"...","angle":"breve ângulo"}]}.`;
       const r = await callAI(key, sys, user, true);
       const parsed = safeJson(r);
       return json({ titles: parsed?.titles ?? [] });
     }
 
+
     if (action === "generate_article") {
       const title: string = (body?.title ?? "").toString().trim();
       const angle: string = (body?.angle ?? "").toString().trim();
       if (!title) return json({ error: "title é obrigatório" }, 400);
-      const sys = "Você é redator especialista em mercado imobiliário brasileiro. Escreve com clareza, cita leis quando relevante (ex.: Lei 8.245/91), usa exemplos práticos e linguagem acessível ao proprietário independente. Sempre em português do Brasil. Responda APENAS com JSON válido, sem texto fora do JSON.";
+      const currentYear = new Date().getFullYear();
+      const sys = `Você é redator especialista em mercado imobiliário brasileiro escrevendo em ${currentYear}. Escreve com clareza, cita leis quando relevante (ex.: Lei 8.245/91), usa exemplos práticos e linguagem acessível ao proprietário independente. Trate o cenário como o atual de ${currentYear} — NUNCA cite anos anteriores (2023, 2024, 2025) como se fossem o presente; se precisar citar ano, use ${currentYear}. Sempre em português do Brasil. Responda APENAS com JSON válido, sem texto fora do JSON.`;
       const user = `Escreva um artigo de blog completo a partir deste título base: "${title}".${angle ? ` Abordagem: ${angle}.` : ""}
 
 Requisitos OBRIGATÓRIOS do JSON de resposta:
