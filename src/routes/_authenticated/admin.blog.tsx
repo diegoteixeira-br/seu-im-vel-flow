@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { slugify, formatDateBR } from "@/lib/blog-utils";
 import { Pencil, Trash2, Plus } from "lucide-react";
 import { AiCoverGenerator } from "@/components/ai-cover-generator";
+import { AiArticleAssistant, type GeneratedArticle } from "@/components/ai-article-assistant";
 
 export const Route = createFileRoute("/_authenticated/admin/blog")({
   component: AdminBlog,
@@ -94,7 +95,19 @@ function AdminBlog() {
           <h1 className="text-2xl font-bold">Blog — Admin</h1>
           <p className="text-sm text-muted-foreground">Gerencie os artigos publicados em <Link to="/blog" className="text-primary underline">/blog</Link>.</p>
         </div>
-        <Button onClick={() => setEditing({ published: false, author_name: "Equipe AlugaFlow" })}><Plus className="mr-2 h-4 w-4" /> Novo post</Button>
+        <div className="flex flex-wrap gap-2">
+          <AiArticleAssistant
+            onArticleReady={(a: GeneratedArticle) => setEditing({
+              published: false,
+              author_name: "Equipe AlugaFlow",
+              title: a.title,
+              slug: a.slug,
+              excerpt: a.excerpt,
+              content: a.content,
+            })}
+          />
+          <Button onClick={() => setEditing({ published: false, author_name: "Equipe AlugaFlow" })}><Plus className="mr-2 h-4 w-4" /> Novo post</Button>
+        </div>
       </div>
 
       <div className="mt-6 overflow-x-auto rounded-lg border">
