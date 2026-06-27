@@ -55,6 +55,28 @@ type Values = z.infer<typeof schema>;
 function ConfigPage() {
   const qc = useQueryClient();
   const [testing, setTesting] = useState(false);
+  const [activeTab, setActiveTab] = useState(() => {
+    if (typeof window === "undefined") return "pessoal";
+    const params = new URLSearchParams(window.location.search);
+    return params.has("currentPassword") || params.has("newPassword") || params.has("confirm")
+      ? "seguranca"
+      : "pessoal";
+  });
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const sensitiveParams = ["currentPassword", "newPassword", "confirm"];
+    const hasSensitiveParams = sensitiveParams.some((param) => params.has(param));
+    if (!hasSensitiveParams) return;
+
+    sensitiveParams.forEach((param) => params.delete(param));
+    const query = params.toString();
+    window.history.replaceState(
+      null,
+      "",
+      `${window.location.pathname}${query ? `?${query}` : ""}${window.location.hash}`,
+    );
+  }, []);
 
   const { data, isLoading } = useQuery({
     queryKey: ["profile", "me"],
@@ -151,8 +173,8 @@ function ConfigPage() {
         <p className="text-sm text-muted-foreground">Dados do proprietário, bancários e integração ASAAS.</p>
       </div>
 
-      <form onSubmit={form.handleSubmit((v) => save.mutate(v))} className="space-y-6">
-        <Tabs defaultValue="pessoal" className="space-y-4">
+      <div className="space-y-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
           <TabsList className="flex flex-wrap justify-center h-auto gap-1 w-full">
             <TabsTrigger value="pessoal" className="gap-1.5"><User className="h-4 w-4" />Dados pessoais</TabsTrigger>
             <TabsTrigger value="endereco" className="gap-1.5"><MapPin className="h-4 w-4" />Endereço</TabsTrigger>
@@ -339,9 +361,9 @@ function ConfigPage() {
         </Tabs>
 
         <div className="flex justify-end sticky bottom-0 bg-background/80 backdrop-blur py-3">
-          <Button type="submit" disabled={save.isPending}>{save.isPending ? "Salvando..." : "Salvar configurações"}</Button>
+          <Button type="button" onClick={form.handleSubmit((v) => save.mutate(v))} disabled={save.isPending}>{save.isPending ? "Salvando..." : "Salvar configurações"}</Button>
         </div>
-      </form>
+      </div>
     </div>
 
   );
