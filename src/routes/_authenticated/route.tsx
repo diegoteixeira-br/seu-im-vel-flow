@@ -2,7 +2,7 @@ import { BrandLogo } from "@/components/brand-logo";
 import { createFileRoute, Outlet, Link, useNavigate, useRouterState, redirect } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import {
-  LayoutDashboard, Building2, Users, FileText, Wallet, Receipt, LogOut, Menu, ClipboardCheck, BarChart3, Settings, Megaphone, Shield,
+  LayoutDashboard, Building2, Users, FileText, Wallet, Receipt, LogOut, Menu, ClipboardCheck, BarChart3, Settings, Megaphone, Shield, CreditCard,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
@@ -35,6 +35,7 @@ const navItems = [
   { to: "/meus-anuncios", label: "Meus Anúncios", icon: Megaphone },
   { to: "/relatorios", label: "Relatórios", icon: BarChart3 },
   { to: "/configuracoes", label: "Configurações", icon: Settings },
+  { to: "/minha-conta/plano", label: "Meu plano", icon: CreditCard },
 ] as const;
 
 function AuthLayout() {
