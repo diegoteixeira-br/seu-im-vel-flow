@@ -39,7 +39,6 @@ import { Route as AuthenticatedConfiguracoesRouteImport } from './routes/_authen
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
 import { Route as ApiPublicStripeWebhookRouteImport } from './routes/api/public/stripe-webhook'
-import { Route as ApiPublicSignContractRouteImport } from './routes/api/public/sign-contract'
 import { Route as AuthenticatedMinhaContaPlanoRouteImport } from './routes/_authenticated/minha-conta.plano'
 import { Route as AuthenticatedAdminUsuariosRouteImport } from './routes/_authenticated/admin.usuarios'
 import { Route as AuthenticatedAdminPlanosRouteImport } from './routes/_authenticated/admin.planos'
@@ -199,11 +198,6 @@ const ApiPublicStripeWebhookRoute = ApiPublicStripeWebhookRouteImport.update({
   path: '/api/public/stripe-webhook',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiPublicSignContractRoute = ApiPublicSignContractRouteImport.update({
-  id: '/api/public/sign-contract',
-  path: '/api/public/sign-contract',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AuthenticatedMinhaContaPlanoRoute =
   AuthenticatedMinhaContaPlanoRouteImport.update({
     id: '/minha-conta/plano',
@@ -281,7 +275,6 @@ export interface FileRoutesByFullPath {
   '/admin/planos': typeof AuthenticatedAdminPlanosRoute
   '/admin/usuarios': typeof AuthenticatedAdminUsuariosRoute
   '/minha-conta/plano': typeof AuthenticatedMinhaContaPlanoRoute
-  '/api/public/sign-contract': typeof ApiPublicSignContractRoute
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
 }
@@ -317,7 +310,6 @@ export interface FileRoutesByTo {
   '/admin/planos': typeof AuthenticatedAdminPlanosRoute
   '/admin/usuarios': typeof AuthenticatedAdminUsuariosRoute
   '/minha-conta/plano': typeof AuthenticatedMinhaContaPlanoRoute
-  '/api/public/sign-contract': typeof ApiPublicSignContractRoute
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
 }
@@ -358,7 +350,6 @@ export interface FileRoutesById {
   '/_authenticated/admin/planos': typeof AuthenticatedAdminPlanosRoute
   '/_authenticated/admin/usuarios': typeof AuthenticatedAdminUsuariosRoute
   '/_authenticated/minha-conta/plano': typeof AuthenticatedMinhaContaPlanoRoute
-  '/api/public/sign-contract': typeof ApiPublicSignContractRoute
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
 }
@@ -399,7 +390,6 @@ export interface FileRouteTypes {
     | '/admin/planos'
     | '/admin/usuarios'
     | '/minha-conta/plano'
-    | '/api/public/sign-contract'
     | '/api/public/stripe-webhook'
     | '/admin/'
   fileRoutesByTo: FileRoutesByTo
@@ -435,7 +425,6 @@ export interface FileRouteTypes {
     | '/admin/planos'
     | '/admin/usuarios'
     | '/minha-conta/plano'
-    | '/api/public/sign-contract'
     | '/api/public/stripe-webhook'
     | '/admin'
   id:
@@ -475,7 +464,6 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/planos'
     | '/_authenticated/admin/usuarios'
     | '/_authenticated/minha-conta/plano'
-    | '/api/public/sign-contract'
     | '/api/public/stripe-webhook'
     | '/_authenticated/admin/'
   fileRoutesById: FileRoutesById
@@ -494,7 +482,6 @@ export interface RootRouteChildren {
   TermosRoute: typeof TermosRoute
   ApiGenerateBlogCoverRoute: typeof ApiGenerateBlogCoverRoute
   AssinarTokenRoute: typeof AssinarTokenRoute
-  ApiPublicSignContractRoute: typeof ApiPublicSignContractRoute
   ApiPublicStripeWebhookRoute: typeof ApiPublicStripeWebhookRoute
 }
 
@@ -710,13 +697,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicStripeWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/sign-contract': {
-      id: '/api/public/sign-contract'
-      path: '/api/public/sign-contract'
-      fullPath: '/api/public/sign-contract'
-      preLoaderRoute: typeof ApiPublicSignContractRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/_authenticated/minha-conta/plano': {
       id: '/_authenticated/minha-conta/plano'
       path: '/minha-conta/plano'
@@ -865,7 +845,6 @@ const rootRouteChildren: RootRouteChildren = {
   TermosRoute: TermosRoute,
   ApiGenerateBlogCoverRoute: ApiGenerateBlogCoverRoute,
   AssinarTokenRoute: AssinarTokenRoute,
-  ApiPublicSignContractRoute: ApiPublicSignContractRoute,
   ApiPublicStripeWebhookRoute: ApiPublicStripeWebhookRoute,
 }
 export const routeTree = rootRouteImport
