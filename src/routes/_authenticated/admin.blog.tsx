@@ -108,9 +108,11 @@ function AdminBlog() {
                   <td className="p-3"><div className="font-medium">{p.title}</div><div className="text-xs text-muted-foreground">/{p.slug}</div></td>
                   <td className="p-3">{p.published ? <Badge>Publicado</Badge> : <Badge variant="secondary">Rascunho</Badge>}</td>
                   <td className="p-3 text-muted-foreground">{formatDateBR(p.created_at)}</td>
-                  <td className="p-3">
-                    <Button size="sm" variant="ghost" onClick={() => setEditing(p)}><Pencil className="h-4 w-4" /></Button>
-                    <Button size="sm" variant="ghost" onClick={() => del(p.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                  <td className="p-3 whitespace-nowrap">
+                    <div className="flex justify-end gap-1">
+                      <Button size="sm" variant="ghost" onClick={() => setEditing(p)}><Pencil className="h-4 w-4" /></Button>
+                      <Button size="sm" variant="ghost" onClick={() => del(p.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                    </div>
                   </td>
                 </tr>
               ))}
