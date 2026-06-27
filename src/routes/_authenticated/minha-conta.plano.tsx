@@ -118,7 +118,7 @@ function PlanPage() {
           <div className="space-y-2 text-sm">
             <div className="flex items-center gap-2 text-muted-foreground">
               <Calendar className="h-4 w-4" />
-              <span>Início: {formatDate(sub?.created_at ?? data.profile?.created_at ?? null)}</span>
+              <span>Início: {formatDate(sub?.created_at ?? null)}</span>
             </div>
             {sub?.current_period_end && (
               <div className="flex items-center gap-2 text-muted-foreground">

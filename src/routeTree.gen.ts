@@ -40,6 +40,7 @@ import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
 import { Route as ApiPublicSignContractRouteImport } from './routes/api/public/sign-contract'
 import { Route as ApiPublicAsaasWebhookRouteImport } from './routes/api/public/asaas-webhook'
+import { Route as AuthenticatedMinhaContaPlanoRouteImport } from './routes/_authenticated/minha-conta.plano'
 import { Route as AuthenticatedAdminUsuariosRouteImport } from './routes/_authenticated/admin.usuarios'
 import { Route as AuthenticatedAdminPlanosRouteImport } from './routes/_authenticated/admin.planos'
 import { Route as AuthenticatedAdminPagamentosRouteImport } from './routes/_authenticated/admin.pagamentos'
@@ -203,6 +204,12 @@ const ApiPublicAsaasWebhookRoute = ApiPublicAsaasWebhookRouteImport.update({
   path: '/api/public/asaas-webhook',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedMinhaContaPlanoRoute =
+  AuthenticatedMinhaContaPlanoRouteImport.update({
+    id: '/minha-conta/plano',
+    path: '/minha-conta/plano',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedAdminUsuariosRoute =
   AuthenticatedAdminUsuariosRouteImport.update({
     id: '/usuarios',
@@ -273,6 +280,7 @@ export interface FileRoutesByFullPath {
   '/admin/pagamentos': typeof AuthenticatedAdminPagamentosRoute
   '/admin/planos': typeof AuthenticatedAdminPlanosRoute
   '/admin/usuarios': typeof AuthenticatedAdminUsuariosRoute
+  '/minha-conta/plano': typeof AuthenticatedMinhaContaPlanoRoute
   '/api/public/asaas-webhook': typeof ApiPublicAsaasWebhookRoute
   '/api/public/sign-contract': typeof ApiPublicSignContractRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
@@ -308,6 +316,7 @@ export interface FileRoutesByTo {
   '/admin/pagamentos': typeof AuthenticatedAdminPagamentosRoute
   '/admin/planos': typeof AuthenticatedAdminPlanosRoute
   '/admin/usuarios': typeof AuthenticatedAdminUsuariosRoute
+  '/minha-conta/plano': typeof AuthenticatedMinhaContaPlanoRoute
   '/api/public/asaas-webhook': typeof ApiPublicAsaasWebhookRoute
   '/api/public/sign-contract': typeof ApiPublicSignContractRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
@@ -348,6 +357,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/pagamentos': typeof AuthenticatedAdminPagamentosRoute
   '/_authenticated/admin/planos': typeof AuthenticatedAdminPlanosRoute
   '/_authenticated/admin/usuarios': typeof AuthenticatedAdminUsuariosRoute
+  '/_authenticated/minha-conta/plano': typeof AuthenticatedMinhaContaPlanoRoute
   '/api/public/asaas-webhook': typeof ApiPublicAsaasWebhookRoute
   '/api/public/sign-contract': typeof ApiPublicSignContractRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
@@ -388,6 +398,7 @@ export interface FileRouteTypes {
     | '/admin/pagamentos'
     | '/admin/planos'
     | '/admin/usuarios'
+    | '/minha-conta/plano'
     | '/api/public/asaas-webhook'
     | '/api/public/sign-contract'
     | '/admin/'
@@ -423,6 +434,7 @@ export interface FileRouteTypes {
     | '/admin/pagamentos'
     | '/admin/planos'
     | '/admin/usuarios'
+    | '/minha-conta/plano'
     | '/api/public/asaas-webhook'
     | '/api/public/sign-contract'
     | '/admin'
@@ -462,6 +474,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/pagamentos'
     | '/_authenticated/admin/planos'
     | '/_authenticated/admin/usuarios'
+    | '/_authenticated/minha-conta/plano'
     | '/api/public/asaas-webhook'
     | '/api/public/sign-contract'
     | '/_authenticated/admin/'
@@ -704,6 +717,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicAsaasWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/minha-conta/plano': {
+      id: '/_authenticated/minha-conta/plano'
+      path: '/minha-conta/plano'
+      fullPath: '/minha-conta/plano'
+      preLoaderRoute: typeof AuthenticatedMinhaContaPlanoRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/admin/usuarios': {
       id: '/_authenticated/admin/usuarios'
       path: '/usuarios'
@@ -784,6 +804,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedRelatoriosRoute: typeof AuthenticatedRelatoriosRoute
   AuthenticatedTenantsRoute: typeof AuthenticatedTenantsRoute
   AuthenticatedVistoriaRoute: typeof AuthenticatedVistoriaRoute
+  AuthenticatedMinhaContaPlanoRoute: typeof AuthenticatedMinhaContaPlanoRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -798,6 +819,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedRelatoriosRoute: AuthenticatedRelatoriosRoute,
   AuthenticatedTenantsRoute: AuthenticatedTenantsRoute,
   AuthenticatedVistoriaRoute: AuthenticatedVistoriaRoute,
+  AuthenticatedMinhaContaPlanoRoute: AuthenticatedMinhaContaPlanoRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
