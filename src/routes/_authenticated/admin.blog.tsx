@@ -82,6 +82,10 @@ function AdminBlog() {
       toast.error("Preencha título, resumo e conteúdo.");
       return;
     }
+    const scheduledIso = editing.scheduled_at ?? null;
+    const isFutureSchedule = !!scheduledIso && new Date(scheduledIso).getTime() > Date.now();
+    // Se houver agendamento no futuro, força published=false (cron vai publicar na hora)
+    const published = isFutureSchedule ? false : !!editing.published;
     const payload = {
       title: editing.title,
       slug: editing.slug || slugify(editing.title),
@@ -89,7 +93,8 @@ function AdminBlog() {
       content: editing.content,
       cover_image_url: editing.cover_image_url || null,
       author_name: editing.author_name || "Equipe AlugaFlow",
-      published: !!editing.published,
+      published,
+      scheduled_at: isFutureSchedule ? scheduledIso : null,
     };
     let error;
     if (editing.id) {
@@ -98,10 +103,11 @@ function AdminBlog() {
       ({ error } = await supabase.from("posts").insert(payload));
     }
     if (error) return toast.error(error.message);
-    toast.success("Salvo!");
+    toast.success(isFutureSchedule ? `Agendado para ${formatScheduled(scheduledIso!)}` : "Salvo!");
     setEditing(null);
     load();
   };
+
 
   const del = async (id: string) => {
     if (!confirm("Excluir este post?")) return;
