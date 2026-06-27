@@ -1,7 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { BrandLogo } from "@/components/brand-logo";
 import { Button } from "@/components/ui/button";
-import { Building2, Users, FileText, Wallet, Check, Camera, BarChart3, ShieldCheck } from "lucide-react";
+import { Building2, Users, FileText, Wallet, Check, Camera, BarChart3, ShieldCheck, Menu } from "lucide-react";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose } from "@/components/ui/sheet";
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
