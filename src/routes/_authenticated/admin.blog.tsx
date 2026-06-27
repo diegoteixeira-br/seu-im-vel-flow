@@ -30,8 +30,29 @@ type Post = {
   cover_image_url: string | null;
   author_name: string;
   published: boolean;
+  scheduled_at: string | null;
   created_at: string;
 };
+
+// Converte ISO (UTC) -> "YYYY-MM-DDTHH:mm" no fuso local para o <input type="datetime-local">
+function toLocalInput(iso: string | null | undefined): string {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return "";
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+function fromLocalInput(v: string): string | null {
+  if (!v) return null;
+  const d = new Date(v);
+  return isNaN(d.getTime()) ? null : d.toISOString();
+}
+function formatScheduled(iso: string): string {
+  const d = new Date(iso);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
 
 function AdminBlog() {
   const { user } = useAuth();

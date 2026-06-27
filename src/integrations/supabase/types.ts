@@ -654,6 +654,7 @@ export type Database = {
           excerpt: string
           id: string
           published: boolean
+          scheduled_at: string | null
           slug: string
           title: string
           updated_at: string
@@ -666,6 +667,7 @@ export type Database = {
           excerpt: string
           id?: string
           published?: boolean
+          scheduled_at?: string | null
           slug: string
           title: string
           updated_at?: string
@@ -678,6 +680,7 @@ export type Database = {
           excerpt?: string
           id?: string
           published?: boolean
+          scheduled_at?: string | null
           slug?: string
           title?: string
           updated_at?: string
@@ -1149,6 +1152,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      publish_scheduled_posts: { Args: never; Returns: number }
     }
     Enums: {
       adjustment_index: "nenhum" | "igpm" | "ipca"
