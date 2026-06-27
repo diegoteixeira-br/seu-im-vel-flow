@@ -28,7 +28,6 @@ function AdminUsers() {
   const toggleAdmin = adminToggleAdmin;
   const qc = useQueryClient();
   const [q, setQ] = useState("");
-  const [q, setQ] = useState("");
 
   const { data, isLoading } = useQuery({ queryKey: ["admin-users"], queryFn: () => list() });
   const rows = (data ?? []) as Row[];
@@ -91,10 +90,6 @@ function AdminUsers() {
                     <TableCell>{r.active ? <Badge variant="outline">Ativo</Badge> : <Badge variant="destructive">Bloqueado</Badge>}</TableCell>
                     <TableCell>
                       <div className="flex gap-1">
-                        <Button size="sm" variant="ghost" title="Alterar e-mail"
-                          onClick={() => setEmailDialog({ user: r, value: r.email })}>
-                          <Mail className="h-4 w-4" />
-                        </Button>
                         <Button size="sm" variant="ghost" title={r.is_admin ? "Revogar admin" : "Tornar admin"}
                           onClick={() => m(() => toggleAdmin({ data: { userId: r.id, makeAdmin: !r.is_admin } }), "Permissão atualizada")}>
                           {r.is_admin ? <ShieldOff className="h-4 w-4" /> : <Shield className="h-4 w-4" />}
@@ -112,50 +107,6 @@ function AdminUsers() {
           </div>
         </CardContent>
       </Card>
-
-      <Dialog open={!!emailDialog.user} onOpenChange={(o) => !o && setEmailDialog({ user: null, value: "" })}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2"><Mail className="h-4 w-4" /> Alterar e-mail do usuário</DialogTitle>
-            <DialogDescription>
-              O e-mail será atualizado imediatamente. O ID interno do usuário permanece o mesmo, então
-              todos os dados (imóveis, contratos, pagamentos, documentos) continuam vinculados normalmente.
-              Avise o usuário para entrar com o novo e-mail.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-3">
-            <div>
-              <Label className="text-xs text-muted-foreground">E-mail atual</Label>
-              <div className="text-sm font-medium">{emailDialog.user?.email}</div>
-            </div>
-            <div className="space-y-1">
-              <Label>Novo e-mail</Label>
-              <Input
-                type="email"
-                value={emailDialog.value}
-                onChange={(e) => setEmailDialog((s) => ({ ...s, value: e.target.value }))}
-                placeholder="novo@email.com"
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setEmailDialog({ user: null, value: "" })}>Cancelar</Button>
-            <Button
-              onClick={() => {
-                const target = emailDialog.user;
-                const value = emailDialog.value.trim().toLowerCase();
-                if (!target) return;
-                if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) { toast.error("E-mail inválido"); return; }
-                if (value === target.email.toLowerCase()) { toast.error("Informe um e-mail diferente do atual"); return; }
-                m(() => adminSetUserEmail({ data: { userId: target.id, email: value } }), "E-mail atualizado")
-                  .finally(() => setEmailDialog({ user: null, value: "" }));
-              }}
-            >
-              Salvar novo e-mail
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
