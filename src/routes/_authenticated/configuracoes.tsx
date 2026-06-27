@@ -207,7 +207,6 @@ function ConfigPage() {
                 <CardTitle>Integração ASAAS</CardTitle>
                 <CardDescription>
                   Use o ASAAS para emitir cobranças com <strong>boleto + PIX (QR Code no mesmo documento)</strong> e baixa automática quando pago.
-                  Configure o webhook do ASAAS apontando para <code className="text-xs">/api/public/asaas-webhook</code>.
                 </CardDescription>
               </CardHeader>
               <CardContent className="grid gap-4 sm:grid-cols-2">
