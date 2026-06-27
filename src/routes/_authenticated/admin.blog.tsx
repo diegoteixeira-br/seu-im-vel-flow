@@ -138,7 +138,13 @@ function AdminBlog() {
               posts.map((p) => (
                 <tr key={p.id} className="border-t">
                   <td className="p-3"><div className="font-medium">{p.title}</div><div className="text-xs text-muted-foreground">/{p.slug}</div></td>
-                  <td className="p-3">{p.published ? <Badge>Publicado</Badge> : <Badge variant="secondary">Rascunho</Badge>}</td>
+                  <td className="p-3">{
+                    p.published
+                      ? <Badge>Publicado</Badge>
+                      : p.scheduled_at
+                        ? <Badge variant="outline" title={formatScheduled(p.scheduled_at)}>Agendado · {formatScheduled(p.scheduled_at)}</Badge>
+                        : <Badge variant="secondary">Rascunho</Badge>
+                  }</td>
                   <td className="p-3 text-muted-foreground">{formatDateBR(p.created_at)}</td>
                   <td className="p-3 whitespace-nowrap">
                     <div className="flex justify-end gap-1">
