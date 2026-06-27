@@ -1,73 +1,108 @@
-# Painel Admin AlugaFlow — Plano de Implementação
+# Sistema de Gestão de Planos — AlugaFlow
 
-Vou construir o painel admin em **uma única atualização**, mas preciso confirmar algumas decisões importantes antes, porque parte do escopo entra em conflito com a arquitetura atual do projeto e com boas práticas de segurança.
+Implementação completa de gestão de assinaturas com Stripe (Lovable Payments), limites por plano, fluxo de upgrade/downgrade/cancelamento e bloqueios automáticos.
 
----
+## Pré-requisito: ativar Stripe Payments
 
-## ⚠️ Pontos que preciso ajustar do pedido original
-
-### 1. Roles: usar tabela `user_roles` (NÃO coluna em `profiles`)
-O projeto já tem a tabela `user_roles` + enum `app_role` + função `has_role()` exatamente para isso. Guardar `role` em `profiles` é uma vulnerabilidade conhecida (privilege escalation) — qualquer policy de UPDATE em `profiles` permitiria o usuário se auto-promover a admin. **Vou usar a infra já existente** e apenas inserir uma linha `('alugueisteixeira@gmail.com', 'admin')` via migration.
-
-### 2. Stack server-side: TanStack Server Functions, não Edge Functions
-O projeto é TanStack Start. A diretriz oficial é usar `createServerFn` para lógica interna (check-admin, create-checkout, envio de email) e **server routes em `/api/public/*`** apenas para webhooks externos (Stripe webhook). Vou seguir esse padrão — Edge Functions só onde realmente precisam (webhook do Stripe pode ficar em server route público com verificação HMAC).
-
-### 3. Email: usar Lovable Emails (não Resend direto)
-A diretriz manda recomendar Lovable Emails antes de Resend. Vou implementar com a infra de email do Lovable (queue + templates React Email). Se você insistir em Resend, troco — me avise.
-
-### 4. Pagamentos: usar Stripe nativo do Lovable, não BYOK
-A diretriz é clara: **nunca** recomendar BYOK Stripe (pedir chave do usuário). Vou usar `enable_stripe_payments` que já cuida de checkout, webhook e atualização de plano automaticamente, sem você precisar gerenciar chaves. Mais seguro e menos código.
-
-### 5. Coluna `plan` em `profiles`
-Hoje não existe campo de plano no banco. Vou adicionar `plan` (`free`|`investidor`|`imobiliaria`) e `active` (bool, para desativar conta sem deletar) em `profiles`.
+Vou usar **Lovable Stripe Payments** (built-in, sem precisar de conta Stripe própria). Esse passo precisa ser feito antes do código de checkout funcionar. Vou rodar a verificação de elegibilidade e ativar.
 
 ---
 
-## 📦 O que será entregue
+## 1. Banco de dados (migration)
 
-### Banco (1 migração)
-- `profiles`: adicionar `plan`, `active`, `last_sign_in_at`
-- `user_roles`: seed `alugueisteixeira@gmail.com` como admin (via trigger no signup OU lookup direto em auth.users)
-- Nova tabela `plans` (nome, preço, preço_promocional, válido_até, ativo, benefícios JSONB)
-- Nova tabela `admin_finance_entries` (descrição, tipo, valor, categoria, data)
-- Nova tabela `admin_email_log` (assunto, plano_alvo, total_destinatarios, sent_at)
-- Nova tabela `admin_logs` (user_id, ação, detalhes JSONB)
-- RLS: todas as tabelas admin-only via `has_role(auth.uid(), 'admin')`
-- Trigger atualizado em `handle_new_user` para promover o email-seed a admin automaticamente
+### Tabela `subscriptions`
+- `user_id`, `plan_type` (free/investidor/imobiliaria), `stripe_subscription_id`, `stripe_customer_id`, `status` (active/cancelled/past_due/scheduled_downgrade), `current_period_start`, `current_period_end`, `cancel_at_period_end`, `scheduled_plan` (próximo plano se downgrade agendado)
+- RLS: usuário lê o próprio; service_role total
+- GRANT SELECT a `authenticated`, ALL a `service_role`
 
-### Server Functions (`src/lib/admin.functions.ts`)
-- `requireAdmin` middleware (estende `requireSupabaseAuth` + checa `has_role`)
-- `getAdminDashboard` — métricas
-- `listUsers`, `updateUserPlan`, `toggleUserAdmin`, `toggleUserActive`
-- `listFinance`, `createFinanceEntry`, `getFinanceChart`
-- `listPlans`, `updatePlan`
-- `sendBroadcastEmail`, `listEmailHistory`
-- Todas chamam `logAdminAction()` internamente
+### Tabela `cancellations`
+- `user_id`, `plan_type`, `reason` (texto), `cancelled_at`, `effective_date`
+- RLS: usuário insere/lê o próprio; service_role total
 
-### Server Route público
-- `src/routes/api/public/stripe-webhook.ts` (se Stripe BYOK confirmado) OU usar webhook automático do `enable_stripe_payments`
+### Função `get_plan_limits(plan text)` 
+Retorna jsonb com `max_properties`, `max_listings`, `asaas_enabled`, `advanced_reports`, `max_users`.
 
-### Páginas (todas em `src/routes/_authenticated/admin/`)
-- `_authenticated/admin/route.tsx` — layout admin com sidebar própria + gate `has_role` no `beforeLoad`
-- `admin/index.tsx` — dashboard com cards e gráficos
-- `admin/usuarios.tsx`
-- `admin/financeiro.tsx`
-- `admin/planos.tsx`
-- `admin/emails.tsx`
-- `admin/blog.tsx` — mover/reaproveitar o existente
-- `admin/pagamentos.tsx` — status do Stripe + link da dashboard
-
-### UI
-- Sidebar admin separada (não mistura com sidebar do usuário comum)
-- Item "Admin" aparece no menu principal só se `has_role('admin')`
-- Redirect automático `/admin/*` → `/dashboard` para não-admins
+### Função `check_plan_limit(_user_id uuid, _resource text)`
+SECURITY DEFINER, retorna `{ allowed: bool, current: int, max: int, plan: text }`. Conta imóveis ou anúncios ativos e compara com limite do plano.
 
 ---
 
-## ❓ Decisões que preciso confirmar antes de codar
+## 2. Server functions (TanStack)
 
-1. **Stripe**: posso usar `enable_stripe_payments` (recomendado, sem chaves)? Ou você **exige** BYOK com sua própria conta Stripe?
-2. **Email**: posso usar Lovable Emails (recomendado)? Ou exige Resend?
-3. **Promoção do admin inicial**: posso fazer via SQL que busca o `id` em `auth.users WHERE email = 'alugueisteixeira@gmail.com'` no momento da migration? (Funciona só se a conta já existir — se ainda não existir, crio um trigger que promove no momento do signup.)
+`src/lib/subscriptions.functions.ts`:
+- `getMySubscription` — retorna assinatura ativa + uso atual (imóveis, anúncios)
+- `createCheckoutSession` — cria sessão Stripe Checkout para upgrade (usa SDK Stripe via Lovable Payments)
+- `scheduleDowngrade` — marca `cancel_at_period_end=true` no Stripe e salva `scheduled_plan` no Supabase
+- `cancelSubscription` — cancela no Stripe `at_period_end:true`, insere em `cancellations`, dispara email Resend
+- `checkLimit` — wrapper para RPC `check_plan_limit`
 
-Responde essas 3 e eu implemento tudo de uma vez.
+## 3. Webhook Stripe
+
+`src/routes/api/public/stripe-webhook.ts` — verifica signature, processa eventos:
+- `checkout.session.completed` → cria/atualiza `subscriptions`, atualiza `profiles.plan`
+- `customer.subscription.updated` → atualiza períodos e status
+- `customer.subscription.deleted` → volta `profiles.plan='free'` (ou aplica `scheduled_plan`)
+- `invoice.payment_failed` → status `past_due`
+
+## 4. Página `/minha-conta/plano`
+
+Rota `src/routes/_authenticated/minha-conta.plano.tsx`:
+- Card "Plano atual" com badge colorido (cinza/azul/dourado), data de início e próxima cobrança
+- Barra de uso: `X de Y imóveis`, `X de Y anúncios ativos` (Progress)
+- 3 cards de planos lado a lado (lendo da tabela `plans` para refletir admin)
+  - Plano atual: badge "Seu plano atual"
+  - Superior: botão primário "Fazer upgrade" → checkout
+  - Inferior: botão outline "Fazer downgrade" → modal confirmação
+- Seção "Cancelar assinatura" no rodapé (link discreto vermelho) → modal com select de motivo
+
+Modais (AlertDialog): upgrade success, downgrade confirm, cancel confirm com motivo obrigatório.
+
+## 5. Bloqueios automáticos
+
+`src/components/plan-limit-guard.tsx` — hook `usePlanLimit(resource)` + componente `<UpgradeRequiredDialog />`.
+
+Aplicar em:
+- `properties.tsx` — botão "Novo imóvel" verifica antes de abrir dialog
+- `meus-anuncios.tsx` — toggle "listar publicamente" verifica
+- `configuracoes.tsx` aba ASAAS — bloqueia salvar se `plan=free`
+
+## 6. Menu do usuário
+
+No sidebar `_authenticated/route.tsx`:
+- Adicionar item "Meu plano" com ícone CreditCard
+- Mostrar badge do plano ao lado do email no footer do sidebar
+
+## 7. Email de cancelamento
+
+Função `cancelSubscription` envia via Resend (já configurado) confirmação com data efetiva.
+
+---
+
+## Detalhes técnicos
+
+- **Stripe**: vou usar `enable_stripe_payments` (Lovable-managed). Os price IDs ficam ligados aos planos da tabela `plans` (adiciono coluna `stripe_price_id`).
+- **Limites**: aplicados via RPC server-side + verificação client-side para UX (modal antes de abrir form).
+- **Tabela `plans`**: adiciono colunas `max_properties`, `max_listings`, `asaas_enabled`, `advanced_reports`, `max_users`, `stripe_price_id` para deixar config no admin.
+- **Permissão admin**: já tem painel `/admin/planos` — vai poder editar limites/preços/price_id sem deploy.
+
+## Arquivos a criar/editar
+
+Novos:
+- `src/routes/_authenticated/minha-conta.plano.tsx`
+- `src/lib/subscriptions.functions.ts`
+- `src/routes/api/public/stripe-webhook.ts`
+- `src/components/plan-limit-guard.tsx`
+- `src/components/cancel-subscription-dialog.tsx`
+
+Editar:
+- `src/routes/_authenticated/route.tsx` (menu + badge)
+- `src/routes/_authenticated/properties.tsx` (limite)
+- `src/routes/_authenticated/meus-anuncios.tsx` (limite)
+- `src/routes/_authenticated/configuracoes.tsx` (bloqueio ASAAS free)
+- Migration SQL
+
+## Confirmações antes de implementar
+
+1. **Stripe**: confirma que posso ativar Lovable Stripe Payments? (necessário para checkout funcionar). Se já tiver conta Stripe BYOK, me diz.
+2. **Price IDs**: depois de ativar Stripe e criar produtos, vou linkar os `stripe_price_id` aos planos. Você prefere que eu crie os produtos automaticamente (Investidor R$147,90 e Imobiliária R$497,90 mensais) ou você cria no painel Stripe e me passa os IDs?
+3. **Email de cancelamento**: usar Resend (já configurado)? Domínio remetente?
