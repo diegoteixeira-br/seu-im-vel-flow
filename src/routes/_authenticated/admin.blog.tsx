@@ -216,9 +216,33 @@ function AdminBlog() {
                 <Label>Autor</Label>
                 <Input value={editing.author_name ?? ""} onChange={(e) => setEditing({ ...editing, author_name: e.target.value })} />
               </div>
+              <div className="rounded-md border bg-muted/30 p-3">
+                <Label>Agendar publicação</Label>
+                <div className="mt-2 flex flex-wrap items-center gap-2">
+                  <Input
+                    type="datetime-local"
+                    className="max-w-[240px]"
+                    value={toLocalInput(editing.scheduled_at)}
+                    min={toLocalInput(new Date().toISOString())}
+                    onChange={(e) => setEditing({ ...editing, scheduled_at: fromLocalInput(e.target.value), published: false })}
+                  />
+                  {editing.scheduled_at && (
+                    <Button size="sm" variant="ghost" onClick={() => setEditing({ ...editing, scheduled_at: null })}>Limpar</Button>
+                  )}
+                </div>
+                <p className="mt-2 text-xs text-muted-foreground">
+                  {editing.scheduled_at && new Date(editing.scheduled_at).getTime() > Date.now()
+                    ? `Será publicado automaticamente em ${formatScheduled(editing.scheduled_at)} (horário do seu computador).`
+                    : "Defina data e hora futuras para publicar automaticamente. Deixe em branco para publicar manualmente."}
+                </p>
+              </div>
               <div className="flex items-center gap-2">
-                <Switch checked={!!editing.published} onCheckedChange={(v) => setEditing({ ...editing, published: v })} />
-                <Label>Publicado</Label>
+                <Switch
+                  checked={!!editing.published}
+                  disabled={!!editing.scheduled_at && new Date(editing.scheduled_at).getTime() > Date.now()}
+                  onCheckedChange={(v) => setEditing({ ...editing, published: v, scheduled_at: v ? null : editing.scheduled_at })}
+                />
+                <Label>Publicado agora</Label>
               </div>
             </div>
           )}
