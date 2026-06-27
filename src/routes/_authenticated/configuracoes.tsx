@@ -321,3 +321,16 @@ function Field({ label, children, error }: { label: string; children: React.Reac
     </div>
   );
 }
+
+function AsaasPlanGate() {
+  const { data } = useMyPlan();
+  if (!data || data.plan !== "free") return null;
+  return (
+    <div className="sm:col-span-2 rounded-md border border-amber-300 bg-amber-50 p-3 text-sm">
+      <p className="font-medium flex items-center gap-2"><Sparkles className="h-4 w-4 text-amber-600" /> Recurso do plano Investidor</p>
+      <p className="mt-1 text-amber-900/80">A integração ASAAS está disponível a partir do plano Investidor. Faça upgrade para emitir cobranças automáticas.</p>
+      <Link to="/minha-conta/plano" className="mt-2 inline-flex h-9 items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground hover:bg-primary/90">
+        Ver planos
+      </Link>
+    </div>
+  );
