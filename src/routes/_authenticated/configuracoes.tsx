@@ -56,6 +56,9 @@ type Values = z.infer<typeof schema>;
 function ConfigPage() {
   const qc = useQueryClient();
   const [testing, setTesting] = useState(false);
+  const { data: planInfo } = useMyPlan();
+  const isMember = planInfo?.role === "member";
+  const showTeamTab = (planInfo?.maxUsers ?? 1) > 1 && !isMember;
   const [activeTab, setActiveTab] = useState(() => {
     if (typeof window === "undefined") return "pessoal";
     const params = new URLSearchParams(window.location.search);
