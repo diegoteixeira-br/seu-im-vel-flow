@@ -20,7 +20,7 @@ export const Route = createFileRoute("/_authenticated/meus-anuncios")({
   component: MyAdsPage,
 });
 
-const FREE_LIMIT = 2;
+
 
 type Prop = {
   id: string;
@@ -103,8 +103,15 @@ function MyAdsPage() {
 
   const toggle = useMutation({
     mutationFn: async ({ id, value }: { id: string; value: boolean }) => {
-      if (value && isFree && listedCount >= FREE_LIMIT) {
-        throw new Error(`Plano gratuito permite até ${FREE_LIMIT} anúncios. Atualize para o plano Investidor.`);
+      if (value) {
+        const { data: u } = await supabase.auth.getUser();
+        if (!u.user) throw new Error("Sessão expirada");
+        const { data: chk, error: chkErr } = await supabase.rpc("check_plan_limit", { _user_id: u.user.id, _resource: "listings" });
+        if (chkErr) throw chkErr;
+        const r = chk as { allowed: boolean; current: number; max: number | null; plan: string };
+        if (!r.allowed) {
+          throw new Error(`Limite de anúncios atingido (${r.current}/${r.max}) no plano ${r.plan}. Faça upgrade em Meu plano.`);
+        }
       }
       const { error } = await supabase.from("properties").update({ listed_public: value }).eq("id", id);
       if (error) throw error;
@@ -164,7 +171,7 @@ function MyAdsPage() {
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Meus Anúncios</h1>
         <p className="text-sm text-muted-foreground">
-          {listedCount} anúncio(s) ativo(s){isFree ? ` de ${FREE_LIMIT} permitidos no plano gratuito` : " — plano Investidor (ilimitado)"}
+          {listedCount} anúncio(s) ativo(s){isFree ? " — faça upgrade em Meu plano para mais" : ""}
         </p>
       </div>
 

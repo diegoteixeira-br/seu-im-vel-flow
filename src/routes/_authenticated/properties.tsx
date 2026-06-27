@@ -20,6 +20,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { formatBRL } from "@/lib/format";
 import { PropertyPhotos } from "@/components/property-photos";
 import { PropertyCover } from "@/components/property-cover";
+import { UpgradeRequiredDialog, useCheckLimit, type PlanLimit } from "@/components/plan-limit-guard";
 
 export const Route = createFileRoute("/_authenticated/properties")({
   head: () => ({ meta: [{ title: "Imóveis — AlugaFlow" }] }),
@@ -59,6 +60,14 @@ function PropertiesPage() {
   const qc = useQueryClient();
   const [editing, setEditing] = useState<Property | null>(null);
   const [open, setOpen] = useState(false);
+  const [limitBlock, setLimitBlock] = useState<PlanLimit | null>(null);
+  const checkLimit = useCheckLimit();
+
+  const handleNew = async () => {
+    const r = await checkLimit("properties");
+    if (!r.allowed) { setLimitBlock(r); return; }
+    setEditing(null); setOpen(true);
+  };
 
   const { data = [], isLoading } = useQuery({
     queryKey: ["properties"],
@@ -85,7 +94,7 @@ function PropertiesPage() {
           <h1 className="text-2xl font-bold tracking-tight">Imóveis</h1>
           <p className="text-sm text-muted-foreground">{data.length} cadastrado(s)</p>
         </div>
-        <Button onClick={() => { setEditing(null); setOpen(true); }}><Plus className="h-4 w-4" /> Novo imóvel</Button>
+        <Button onClick={handleNew}><Plus className="h-4 w-4" /> Novo imóvel</Button>
       </div>
 
       <Card>
@@ -147,6 +156,13 @@ function PropertiesPage() {
       </Card>
 
       <PropertyDialog open={open} onOpenChange={setOpen} editing={editing} />
+      <UpgradeRequiredDialog
+        open={!!limitBlock}
+        onOpenChange={(o) => !o && setLimitBlock(null)}
+        current={limitBlock?.current}
+        max={limitBlock?.max}
+        description={`Você já cadastrou ${limitBlock?.current} de ${limitBlock?.max} imóveis permitidos no plano ${limitBlock?.plan}. Faça upgrade para cadastrar mais.`}
+      />
     </div>
   );
 }

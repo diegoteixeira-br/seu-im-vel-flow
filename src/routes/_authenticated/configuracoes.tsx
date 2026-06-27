@@ -18,6 +18,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { User, MapPin, Landmark, Zap, Bell, Palette, ShieldCheck } from "lucide-react";
 import { BrandingTab } from "@/components/branding-tab";
 import { SecurityTab } from "@/components/security-tab";
+import { useMyPlan } from "@/components/plan-limit-guard";
+import { Link } from "@tanstack/react-router";
+import { Sparkles } from "lucide-react";
 
 
 
@@ -208,6 +211,7 @@ function ConfigPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="grid gap-4 sm:grid-cols-2">
+                <AsaasPlanGate />
                 <div className="sm:col-span-2 rounded-md border border-primary/30 bg-primary/5 p-3 text-sm">
                   <p className="font-medium">Ainda não tem conta no ASAAS?</p>
                   <p className="mt-1 text-muted-foreground">
@@ -314,6 +318,20 @@ function Field({ label, children, error }: { label: string; children: React.Reac
       <Label>{label}</Label>
       {children}
       {error ? <p className="text-xs text-destructive">{error}</p> : null}
+    </div>
+  );
+}
+
+function AsaasPlanGate() {
+  const { data } = useMyPlan();
+  if (!data || data.plan !== "free") return null;
+  return (
+    <div className="sm:col-span-2 rounded-md border border-amber-300 bg-amber-50 p-3 text-sm">
+      <p className="font-medium flex items-center gap-2"><Sparkles className="h-4 w-4 text-amber-600" /> Recurso do plano Investidor</p>
+      <p className="mt-1 text-amber-900/80">A integração ASAAS está disponível a partir do plano Investidor. Faça upgrade para emitir cobranças automáticas.</p>
+      <Link to="/minha-conta/plano" className="mt-2 inline-flex h-9 items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground hover:bg-primary/90">
+        Ver planos
+      </Link>
     </div>
   );
 }

@@ -38,8 +38,10 @@ import { Route as AuthenticatedContractsRouteImport } from './routes/_authentica
 import { Route as AuthenticatedConfiguracoesRouteImport } from './routes/_authenticated/configuracoes'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
+import { Route as ApiPublicStripeWebhookRouteImport } from './routes/api/public/stripe-webhook'
 import { Route as ApiPublicSignContractRouteImport } from './routes/api/public/sign-contract'
 import { Route as ApiPublicAsaasWebhookRouteImport } from './routes/api/public/asaas-webhook'
+import { Route as AuthenticatedMinhaContaPlanoRouteImport } from './routes/_authenticated/minha-conta.plano'
 import { Route as AuthenticatedAdminUsuariosRouteImport } from './routes/_authenticated/admin.usuarios'
 import { Route as AuthenticatedAdminPlanosRouteImport } from './routes/_authenticated/admin.planos'
 import { Route as AuthenticatedAdminPagamentosRouteImport } from './routes/_authenticated/admin.pagamentos'
@@ -193,6 +195,11 @@ const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthenticatedAdminRoute,
 } as any)
+const ApiPublicStripeWebhookRoute = ApiPublicStripeWebhookRouteImport.update({
+  id: '/api/public/stripe-webhook',
+  path: '/api/public/stripe-webhook',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicSignContractRoute = ApiPublicSignContractRouteImport.update({
   id: '/api/public/sign-contract',
   path: '/api/public/sign-contract',
@@ -203,6 +210,12 @@ const ApiPublicAsaasWebhookRoute = ApiPublicAsaasWebhookRouteImport.update({
   path: '/api/public/asaas-webhook',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedMinhaContaPlanoRoute =
+  AuthenticatedMinhaContaPlanoRouteImport.update({
+    id: '/minha-conta/plano',
+    path: '/minha-conta/plano',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedAdminUsuariosRoute =
   AuthenticatedAdminUsuariosRouteImport.update({
     id: '/usuarios',
@@ -273,8 +286,10 @@ export interface FileRoutesByFullPath {
   '/admin/pagamentos': typeof AuthenticatedAdminPagamentosRoute
   '/admin/planos': typeof AuthenticatedAdminPlanosRoute
   '/admin/usuarios': typeof AuthenticatedAdminUsuariosRoute
+  '/minha-conta/plano': typeof AuthenticatedMinhaContaPlanoRoute
   '/api/public/asaas-webhook': typeof ApiPublicAsaasWebhookRoute
   '/api/public/sign-contract': typeof ApiPublicSignContractRoute
+  '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
 }
 export interface FileRoutesByTo {
@@ -308,8 +323,10 @@ export interface FileRoutesByTo {
   '/admin/pagamentos': typeof AuthenticatedAdminPagamentosRoute
   '/admin/planos': typeof AuthenticatedAdminPlanosRoute
   '/admin/usuarios': typeof AuthenticatedAdminUsuariosRoute
+  '/minha-conta/plano': typeof AuthenticatedMinhaContaPlanoRoute
   '/api/public/asaas-webhook': typeof ApiPublicAsaasWebhookRoute
   '/api/public/sign-contract': typeof ApiPublicSignContractRoute
+  '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
 }
 export interface FileRoutesById {
@@ -348,8 +365,10 @@ export interface FileRoutesById {
   '/_authenticated/admin/pagamentos': typeof AuthenticatedAdminPagamentosRoute
   '/_authenticated/admin/planos': typeof AuthenticatedAdminPlanosRoute
   '/_authenticated/admin/usuarios': typeof AuthenticatedAdminUsuariosRoute
+  '/_authenticated/minha-conta/plano': typeof AuthenticatedMinhaContaPlanoRoute
   '/api/public/asaas-webhook': typeof ApiPublicAsaasWebhookRoute
   '/api/public/sign-contract': typeof ApiPublicSignContractRoute
+  '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
 }
 export interface FileRouteTypes {
@@ -388,8 +407,10 @@ export interface FileRouteTypes {
     | '/admin/pagamentos'
     | '/admin/planos'
     | '/admin/usuarios'
+    | '/minha-conta/plano'
     | '/api/public/asaas-webhook'
     | '/api/public/sign-contract'
+    | '/api/public/stripe-webhook'
     | '/admin/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -423,8 +444,10 @@ export interface FileRouteTypes {
     | '/admin/pagamentos'
     | '/admin/planos'
     | '/admin/usuarios'
+    | '/minha-conta/plano'
     | '/api/public/asaas-webhook'
     | '/api/public/sign-contract'
+    | '/api/public/stripe-webhook'
     | '/admin'
   id:
     | '__root__'
@@ -462,8 +485,10 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/pagamentos'
     | '/_authenticated/admin/planos'
     | '/_authenticated/admin/usuarios'
+    | '/_authenticated/minha-conta/plano'
     | '/api/public/asaas-webhook'
     | '/api/public/sign-contract'
+    | '/api/public/stripe-webhook'
     | '/_authenticated/admin/'
   fileRoutesById: FileRoutesById
 }
@@ -483,6 +508,7 @@ export interface RootRouteChildren {
   AssinarTokenRoute: typeof AssinarTokenRoute
   ApiPublicAsaasWebhookRoute: typeof ApiPublicAsaasWebhookRoute
   ApiPublicSignContractRoute: typeof ApiPublicSignContractRoute
+  ApiPublicStripeWebhookRoute: typeof ApiPublicStripeWebhookRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -690,6 +716,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminIndexRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/api/public/stripe-webhook': {
+      id: '/api/public/stripe-webhook'
+      path: '/api/public/stripe-webhook'
+      fullPath: '/api/public/stripe-webhook'
+      preLoaderRoute: typeof ApiPublicStripeWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/sign-contract': {
       id: '/api/public/sign-contract'
       path: '/api/public/sign-contract'
@@ -703,6 +736,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/public/asaas-webhook'
       preLoaderRoute: typeof ApiPublicAsaasWebhookRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/minha-conta/plano': {
+      id: '/_authenticated/minha-conta/plano'
+      path: '/minha-conta/plano'
+      fullPath: '/minha-conta/plano'
+      preLoaderRoute: typeof AuthenticatedMinhaContaPlanoRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/admin/usuarios': {
       id: '/_authenticated/admin/usuarios'
@@ -784,6 +824,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedRelatoriosRoute: typeof AuthenticatedRelatoriosRoute
   AuthenticatedTenantsRoute: typeof AuthenticatedTenantsRoute
   AuthenticatedVistoriaRoute: typeof AuthenticatedVistoriaRoute
+  AuthenticatedMinhaContaPlanoRoute: typeof AuthenticatedMinhaContaPlanoRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -798,6 +839,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedRelatoriosRoute: AuthenticatedRelatoriosRoute,
   AuthenticatedTenantsRoute: AuthenticatedTenantsRoute,
   AuthenticatedVistoriaRoute: AuthenticatedVistoriaRoute,
+  AuthenticatedMinhaContaPlanoRoute: AuthenticatedMinhaContaPlanoRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
@@ -845,6 +887,7 @@ const rootRouteChildren: RootRouteChildren = {
   AssinarTokenRoute: AssinarTokenRoute,
   ApiPublicAsaasWebhookRoute: ApiPublicAsaasWebhookRoute,
   ApiPublicSignContractRoute: ApiPublicSignContractRoute,
+  ApiPublicStripeWebhookRoute: ApiPublicStripeWebhookRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
