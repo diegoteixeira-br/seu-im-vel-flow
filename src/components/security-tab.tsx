@@ -144,11 +144,6 @@ function CurrentEmailCard() {
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setEmail(data.user?.email ?? ""));
   }, []);
-  const supportEmail = "alugueisteixeira@gmail.com";
-  const subject = encodeURIComponent("Solicitação de alteração de e-mail da conta");
-  const body = encodeURIComponent(
-    `Olá, gostaria de alterar o e-mail da minha conta AlugaFlow.\n\nE-mail atual: ${email}\nNovo e-mail desejado: \nMotivo: \n\nObrigado!`,
-  );
   return (
     <Card>
       <CardHeader>
@@ -160,18 +155,14 @@ function CurrentEmailCard() {
       <CardContent>
         <div className="rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-200">
           <p>
-            Por segurança, o e-mail de cadastro é a identidade da sua conta e está vinculado a todos os seus
-            registros (imóveis, contratos, pagamentos, documentos). A troca direta pelo painel está
-            desativada para evitar perda de acesso aos seus dados.
+            O e-mail é a identidade da conta e está vinculado a todos os seus dados (imóveis, contratos,
+            pagamentos, documentos). Para evitar perda de acesso, a troca pelo próprio usuário está desativada.
           </p>
           <p className="mt-2">
-            Para alterar, solicite ao suporte — fazemos a migração com segurança preservando todo o seu histórico.
+            Se você é o administrador da plataforma, pode alterar o e-mail de qualquer conta (inclusive a sua)
+            em <a href="/admin/usuarios" className="font-semibold underline">Admin → Usuários → ícone de envelope</a>.
+            O ID interno é preservado, então nenhum dado é perdido.
           </p>
-          <Button asChild className="mt-3" size="sm" variant="outline">
-            <a href={`mailto:${supportEmail}?subject=${subject}&body=${body}`}>
-              Solicitar alteração ao suporte
-            </a>
-          </Button>
         </div>
       </CardContent>
     </Card>
