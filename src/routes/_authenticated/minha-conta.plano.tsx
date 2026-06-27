@@ -17,6 +17,8 @@ import { Check, Sparkles, Crown, ArrowUp, ArrowDown, Building2, Calendar } from 
 import { formatBRL, formatDate } from "@/lib/format";
 import { getMySubscription, createCheckoutSession, scheduleDowngrade } from "@/lib/subscriptions.functions";
 import { CancelSubscriptionDialog } from "@/components/cancel-subscription-dialog";
+import { useMyPlan } from "@/components/plan-limit-guard";
+import { ShieldAlert } from "lucide-react";
 
 type Search = { upgrade?: "success" | "cancel" };
 
@@ -39,6 +41,7 @@ const PLAN_BADGE: Record<string, { label: string; cls: string; icon: typeof Spar
 function PlanPage() {
   const qc = useQueryClient();
   const search = useSearch({ from: "/_authenticated/minha-conta/plano" });
+  const { data: planInfo, isLoading: planLoading } = useMyPlan();
   const getSub = getMySubscription;
   const checkout = createCheckoutSession;
   const downgrade = scheduleDowngrade;
@@ -91,6 +94,25 @@ function PlanPage() {
     properties: currentPlanData?.max_properties as number | null,
     listings: currentPlanData?.max_listings as number | null,
   };
+
+  if (planInfo?.role === "member") {
+    return (
+      <div className="max-w-2xl mx-auto">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2"><ShieldAlert className="h-5 w-5 text-amber-600" /> Acesso restrito</CardTitle>
+            <CardDescription>O gerenciamento de plano está disponível apenas para o dono da conta.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground">
+              Você está acessando como membro de equipe. Para alterar o plano, entre em contato com o administrador da conta.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+  if (planLoading) return <p className="text-muted-foreground">Carregando...</p>;
 
   return (
     <div className="mx-auto max-w-6xl space-y-6">

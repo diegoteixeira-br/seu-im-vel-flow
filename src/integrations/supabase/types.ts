@@ -708,6 +708,7 @@ export type Database = {
           full_name: string | null
           id: string
           logo_url: string | null
+          parent_id: string | null
           pdf_footer: string | null
           pdf_header: string | null
           person_type: string
@@ -716,6 +717,7 @@ export type Database = {
           plan: string
           public_phone: string | null
           razao_social: string | null
+          role: string
           show_phone_public: boolean
           updated_at: string
           watermark_url: string | null
@@ -743,6 +745,7 @@ export type Database = {
           full_name?: string | null
           id: string
           logo_url?: string | null
+          parent_id?: string | null
           pdf_footer?: string | null
           pdf_header?: string | null
           person_type?: string
@@ -751,6 +754,7 @@ export type Database = {
           plan?: string
           public_phone?: string | null
           razao_social?: string | null
+          role?: string
           show_phone_public?: boolean
           updated_at?: string
           watermark_url?: string | null
@@ -778,6 +782,7 @@ export type Database = {
           full_name?: string | null
           id?: string
           logo_url?: string | null
+          parent_id?: string | null
           pdf_footer?: string | null
           pdf_header?: string | null
           person_type?: string
@@ -786,6 +791,7 @@ export type Database = {
           plan?: string
           public_phone?: string | null
           razao_social?: string | null
+          role?: string
           show_phone_public?: boolean
           updated_at?: string
           watermark_url?: string | null
@@ -1134,6 +1140,8 @@ export type Database = {
         Returns: Json
       }
       delete_my_account: { Args: never; Returns: undefined }
+      get_account_owner: { Args: { _user_id: string }; Returns: string }
+      get_user_role: { Args: { _user_id: string }; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

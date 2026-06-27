@@ -24,14 +24,24 @@ export function useMyPlan() {
     queryKey: ["my-plan"],
     queryFn: async () => {
       const { data: u } = await supabase.auth.getUser();
-      if (!u.user) return { plan: "free" as string, isAdmin: false };
+      if (!u.user) return { plan: "free" as string, isAdmin: false, role: "owner" as "owner" | "member", parentId: null as string | null, maxUsers: 1 };
       const [{ data: profile }, { data: isAdmin }] = await Promise.all([
-        supabase.from("profiles").select("plan").eq("id", u.user.id).maybeSingle(),
+        supabase.from("profiles").select("plan, role, parent_id").eq("id", u.user.id).maybeSingle(),
         supabase.rpc("has_role", { _user_id: u.user.id, _role: "admin" }),
       ]);
-      // Admins bypass plan limits and have full access for testing
-      if (isAdmin) return { plan: "imobiliaria" as string, isAdmin: true };
-      return { plan: (profile?.plan ?? "free") as string, isAdmin: false };
+      const role = (((profile as Record<string, unknown> | null)?.role as string) ?? "owner") as "owner" | "member";
+      const parentId = ((profile as Record<string, unknown> | null)?.parent_id as string | null) ?? null;
+      let effectivePlan = (profile?.plan ?? "free") as string;
+      if (parentId) {
+        const { data: ownerProfile } = await supabase.from("profiles").select("plan").eq("id", parentId).maybeSingle();
+        if (ownerProfile?.plan) effectivePlan = ownerProfile.plan as string;
+      }
+      if (isAdmin) {
+        const { data: planRow } = await supabase.from("plans").select("max_users").eq("id", "imobiliaria").maybeSingle();
+        return { plan: "imobiliaria" as string, isAdmin: true, role, parentId, maxUsers: (planRow?.max_users as number | null) ?? 99 };
+      }
+      const { data: planRow } = await supabase.from("plans").select("max_users").eq("id", effectivePlan).maybeSingle();
+      return { plan: effectivePlan, isAdmin: false, role, parentId, maxUsers: (planRow?.max_users as number | null) ?? 1 };
     },
     staleTime: 30_000,
   });
