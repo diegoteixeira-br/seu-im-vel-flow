@@ -122,7 +122,9 @@ function AdminPlans() {
                   {p.benefits.map((b, i) => <li key={i} className="flex gap-2"><Check className="h-4 w-4 text-emerald-600" />{b}</li>)}
                 </ul>
               </div>
-              <Button onClick={() => save(p)} className="w-full">Salvar alterações</Button>
+              <Button onClick={() => save(p)} disabled={savingId === p.id} className="w-full">
+                {savingId === p.id ? "Salvando e sincronizando Stripe..." : "Salvar alterações"}
+              </Button>
             </CardContent>
           </Card>
         ))}
