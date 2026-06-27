@@ -1,68 +1,46 @@
-import { createServerFn } from "@tanstack/react-start";
-import { z } from "zod";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+// Wrappers cliente que invocam a Edge Function `contract-signatures` no Supabase.
+// Mantém a assinatura ({ data: { ... } }) usada nos componentes para minimizar mudanças.
+import { supabase } from "@/integrations/supabase/client";
 
 type SignerInput = { role: "locador" | "locatario" | "fiador"; name: string; email: string };
+type SignatureRow = { id: string; role: string; name: string; email: string; token: string };
+type SignatureFull = SignatureRow & {
+  signed_at: string | null;
+  signed_name: string | null;
+  signed_cpf: string | null;
+  signer_ip: string | null;
+};
 
-export const createSignatureInvites = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((d) =>
-    z.object({
-      contractId: z.string().uuid(),
-      signers: z.array(
-        z.object({
-          role: z.enum(["locador", "locatario", "fiador"]),
-          name: z.string().min(2),
-          email: z.string().email(),
-        }),
-      ).min(1).max(5),
-    }).parse(d),
-  )
-  .handler(async ({ data, context }) => {
-    const { supabase, userId } = context;
+async function invokeSignatures<T>(body: Record<string, unknown>): Promise<T> {
+  const { data, error } = await supabase.functions.invoke("contract-signatures", { body });
+  if (error) {
+    let msg = error.message || "Falha ao chamar contract-signatures";
+    try {
+      const ctx = (error as unknown as { context?: { json?: () => Promise<{ error?: string }> } }).context;
+      if (ctx && typeof ctx.json === "function") {
+        const j = await ctx.json();
+        if (j?.error) msg = j.error;
+      }
+    } catch { /* noop */ }
+    throw new Error(msg);
+  }
+  if (data && typeof data === "object" && "error" in data && (data as { error?: string }).error) {
+    throw new Error((data as { error: string }).error);
+  }
+  return data as T;
+}
 
-    // Ensure caller owns the contract
-    const { data: contract, error: cErr } = await supabase
-      .from("contracts")
-      .select("id, user_id")
-      .eq("id", data.contractId)
-      .maybeSingle();
-    if (cErr) throw cErr;
-    if (!contract || contract.user_id !== userId) throw new Error("Contrato não encontrado");
-
-    // Reset signatures: delete existing pending ones (idempotent), then insert
-    await supabase.from("contract_signatures").delete().eq("contract_id", data.contractId);
-
-    const rows = data.signers.map((s: SignerInput) => ({
-      contract_id: data.contractId,
-      role: s.role,
-      name: s.name,
-      email: s.email,
-    }));
-    const { data: inserted, error: iErr } = await supabase
-      .from("contract_signatures")
-      .insert(rows)
-      .select("id, role, name, email, token");
-    if (iErr) throw iErr;
-
-    await supabase
-      .from("contracts")
-      .update({ signature_mode: "eletronica", signature_status: "pendente" })
-      .eq("id", data.contractId);
-
-    return { signatures: inserted ?? [] };
+export async function createSignatureInvites(args: { data: { contractId: string; signers: SignerInput[] } }) {
+  return invokeSignatures<{ signatures: SignatureRow[] }>({
+    action: "create",
+    contractId: args.data.contractId,
+    signers: args.data.signers,
   });
+}
 
-export const listContractSignatures = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((d) => z.object({ contractId: z.string().uuid() }).parse(d))
-  .handler(async ({ data, context }) => {
-    const { supabase } = context;
-    const { data: rows, error } = await supabase
-      .from("contract_signatures")
-      .select("id, role, name, email, token, signed_at, signed_name, signed_cpf, signer_ip")
-      .eq("contract_id", data.contractId)
-      .order("created_at", { ascending: true });
-    if (error) throw error;
-    return { signatures: rows ?? [] };
+export async function listContractSignatures(args: { data: { contractId: string } }) {
+  return invokeSignatures<{ signatures: SignatureFull[] }>({
+    action: "list",
+    contractId: args.data.contractId,
   });
+}

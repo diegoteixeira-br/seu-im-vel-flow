@@ -9,6 +9,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { formatBRL, formatDate } from "@/lib/format";
 
+
 export const Route = createFileRoute("/assinar/$token")({
   head: () => ({ meta: [{ title: "Assinar contrato — AlugaFlow" }] }),
   component: SignPage,
@@ -43,7 +44,10 @@ function SignPage() {
   const [done, setDone] = useState(false);
 
   useEffect(() => {
-    fetch(`/api/public/sign-contract?token=${encodeURIComponent(token)}`)
+    const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sign-contract?token=${encodeURIComponent(token)}`;
+    fetch(url, {
+      headers: { apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ?? "" },
+    })
       .then((r) => r.json())
       .then((d) => { if (d.error) setError(d.error); else setView(d); })
       .catch((e) => setError(String(e)))
@@ -55,8 +59,13 @@ function SignPage() {
     if (!agreed) { toast.error("Confirme a leitura do contrato"); return; }
     setSubmitting(true);
     try {
-      const r = await fetch("/api/public/sign-contract", {
-        method: "POST", headers: { "Content-Type": "application/json" },
+      const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sign-contract`;
+      const r = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ?? "",
+        },
         body: JSON.stringify({ token, signed_name: name, signed_cpf: cpf }),
       });
       const data = await r.json();
