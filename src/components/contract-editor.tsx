@@ -131,6 +131,7 @@ export function ContractEditor({
           />
         )}
       </div>
+      </div>
     </div>
   );
 }
