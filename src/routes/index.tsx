@@ -9,11 +9,18 @@ import { formatDateBR } from "@/lib/blog-utils";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "AlugaFlow — Imóveis para alugar direto com o proprietário" },
-      { name: "description", content: "Portal de aluguel direto com o proprietário. Encontre casas, apartamentos e imóveis comerciais sem taxas de imobiliária." },
-      { property: "og:title", content: "AlugaFlow — Aluguel direto com o proprietário" },
-      { property: "og:description", content: "Imóveis para alugar, sem intermediários." },
+      { title: "AlugaFlow | Sistema de Gestão de Aluguéis e Imóveis" },
+      { name: "description", content: "Gestão de inquilinos, contratos de aluguel automáticos, cobrança integrada (PIX e boleto) e controle financeiro completo para proprietários e imobiliárias. Anuncie grátis e gerencie tudo em um só lugar." },
+      { name: "keywords", content: "gestão de aluguéis, gestão de inquilinos, contratos de aluguel automáticos, cobrança integrada, controle financeiro imobiliário, software para imobiliária, sistema para proprietários" },
+      { property: "og:title", content: "AlugaFlow | Sistema de Gestão de Aluguéis e Imóveis" },
+      { property: "og:description", content: "Gestão de inquilinos, contratos automáticos, cobrança integrada e controle financeiro para proprietários e imobiliárias." },
+      { property: "og:type", content: "website" },
+      { property: "og:url", content: "/" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "AlugaFlow | Sistema de Gestão de Aluguéis e Imóveis" },
+      { name: "twitter:description", content: "Gestão de inquilinos, contratos automáticos, cobrança integrada e controle financeiro." },
     ],
+    links: [{ rel: "canonical", href: "/" }],
   }),
   component: Landing,
 });
