@@ -1,6 +1,4 @@
 User-agent: *
 Allow: /
-Disallow: /anuncios
-Disallow: /anuncios/
-Allow: /anuncios/$
+Disallow: /anuncios$
 Sitemap: https://alugaflow.com.br/sitemap.xml
