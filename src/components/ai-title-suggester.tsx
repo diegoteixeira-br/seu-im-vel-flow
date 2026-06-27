@@ -16,12 +16,12 @@ export function AiTitleSuggester({ onPick }: { onPick: (title: string, slug: str
   const [loading, setLoading] = useState(false);
   const [items, setItems] = useState<Suggestion[]>([]);
 
-  const suggest = async () => {
+  const suggest = async (topicOverride?: string) => {
     setLoading(true);
     setItems([]);
     try {
       const { data, error } = await supabase.functions.invoke("generate-blog-article", {
-        body: { action: "suggest_titles", topic, count: 6 },
+        body: { action: "suggest_titles", topic: topicOverride ?? topic, count: 6 },
       });
       if (error) throw new Error(error.message);
       if ((data as any)?.error) throw new Error((data as any).error);
@@ -33,8 +33,15 @@ export function AiTitleSuggester({ onPick }: { onPick: (title: string, slug: str
     }
   };
 
+  const handleOpenChange = (o: boolean) => {
+    setOpen(o);
+    if (o && items.length === 0 && !loading) {
+      suggest("");
+    }
+  };
+
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover open={open} onOpenChange={handleOpenChange}>
       <PopoverTrigger asChild>
         <Button type="button" variant="outline" size="sm">
           <Sparkles className="mr-2 h-4 w-4" /> Sugerir título com IA
@@ -43,7 +50,7 @@ export function AiTitleSuggester({ onPick }: { onPick: (title: string, slug: str
       <PopoverContent className="w-96" align="end">
         <div className="space-y-3">
           <div>
-            <Label className="text-xs">Tema (opcional)</Label>
+            <Label className="text-xs">Refinar por tema (opcional)</Label>
             <div className="mt-1 flex gap-2">
               <Input
                 placeholder="Ex.: Lei do Inquilinato, IGP-M..."
@@ -51,11 +58,16 @@ export function AiTitleSuggester({ onPick }: { onPick: (title: string, slug: str
                 onChange={(e) => setTopic(e.target.value)}
                 onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); suggest(); } }}
               />
-              <Button type="button" size="sm" onClick={suggest} disabled={loading}>
-                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Sugerir"}
+              <Button type="button" size="sm" onClick={() => suggest()} disabled={loading}>
+                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Atualizar"}
               </Button>
             </div>
           </div>
+          {loading && (
+            <div className="flex items-center justify-center py-6 text-sm text-muted-foreground">
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Gerando sugestões atuais...
+            </div>
+          )}
           {items.length > 0 && (
             <ul className="max-h-72 space-y-1 overflow-y-auto">
               {items.map((s, i) => (
@@ -71,9 +83,6 @@ export function AiTitleSuggester({ onPick }: { onPick: (title: string, slug: str
                 </li>
               ))}
             </ul>
-          )}
-          {!loading && items.length === 0 && (
-            <p className="text-xs text-muted-foreground">Clique em <b>Sugerir</b> para receber ideias. Depois clique em uma para preencher o título e slug.</p>
           )}
         </div>
       </PopoverContent>
