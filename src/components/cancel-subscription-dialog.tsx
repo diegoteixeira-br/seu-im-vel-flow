@@ -24,7 +24,7 @@ export function CancelSubscriptionDialog({
   const qc = useQueryClient();
   const [reason, setReason] = useState("");
   const [details, setDetails] = useState("");
-  const cancelFn = useServerFn(cancelSubscription);
+  const cancelFn = cancelSubscription;
 
   const mut = useMutation({
     mutationFn: () => cancelFn({ data: { reason: reason + (details ? ` — ${details}` : "") } }),
