@@ -36,12 +36,15 @@ export function useMyPlan() {
         const { data: ownerProfile } = await supabase.from("profiles").select("plan").eq("id", parentId).maybeSingle();
         if (ownerProfile?.plan) effectivePlan = ownerProfile.plan as string;
       }
-      if (isAdmin) {
-        const { data: planRow } = await supabase.from("plans").select("max_users").eq("id", "imobiliaria").maybeSingle();
-        return { plan: "imobiliaria" as string, isAdmin: true, role, parentId, maxUsers: (planRow?.max_users as number | null) ?? 99 };
-      }
+      // maxUsers sempre reflete o plano real assinado (não eleva por admin),
+      // para que a aba Equipe só apareça quando o plano realmente permitir.
       const { data: planRow } = await supabase.from("plans").select("max_users").eq("id", effectivePlan).maybeSingle();
-      return { plan: effectivePlan, isAdmin: false, role, parentId, maxUsers: (planRow?.max_users as number | null) ?? 1 };
+      const maxUsers = (planRow?.max_users as number | null) ?? 1;
+      if (isAdmin) {
+        // Admin mantém plano elevado para bypass de outros limites, mas maxUsers respeita o plano real.
+        return { plan: "imobiliaria" as string, isAdmin: true, role, parentId, maxUsers };
+      }
+      return { plan: effectivePlan, isAdmin: false, role, parentId, maxUsers };
     },
     staleTime: 30_000,
   });
