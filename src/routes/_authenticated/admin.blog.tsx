@@ -14,6 +14,7 @@ import { slugify, formatDateBR } from "@/lib/blog-utils";
 import { Pencil, Trash2, Plus } from "lucide-react";
 import { AiCoverGenerator } from "@/components/ai-cover-generator";
 import { AiArticleAssistant, type GeneratedArticle } from "@/components/ai-article-assistant";
+import { UnsplashPicker } from "@/components/unsplash-picker";
 
 export const Route = createFileRoute("/_authenticated/admin/blog")({
   component: AdminBlog,
