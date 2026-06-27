@@ -147,7 +147,7 @@ function DeleteAccountCard() {
   const [confirmText, setConfirmText] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [open, setOpen] = useState(false);
-  const runDelete = useServerFn(deleteAccount);
+  const runDelete = deleteAccount;
 
   const onConfirm = async () => {
     setSubmitting(true);
