@@ -21,11 +21,11 @@ type Plan = {
   active: boolean; benefits: string[]; sort_order: number;
   max_properties: number | null; max_listings: number | null;
   asaas_enabled: boolean; advanced_reports: boolean; max_users: number;
-  stripe_price_id: string | null;
 };
 
 function AdminPlans() {
   const [plans, setPlans] = useState<Plan[]>([]);
+  const [savingId, setSavingId] = useState<string | null>(null);
 
   const load = async () => {
     const { data } = await supabase.from("plans").select("*").order("sort_order");
@@ -36,15 +36,34 @@ function AdminPlans() {
   const update = (id: string, patch: Partial<Plan>) => setPlans((p) => p.map((x) => (x.id === id ? { ...x, ...patch } : x)));
 
   const save = async (p: Plan) => {
-    const { error } = await supabase.from("plans").update({
-      name: p.name, price: p.price, promo_price: p.promo_price, promo_until: p.promo_until,
-      active: p.active, benefits: p.benefits,
-      max_properties: p.max_properties, max_listings: p.max_listings,
-      asaas_enabled: p.asaas_enabled, advanced_reports: p.advanced_reports, max_users: p.max_users,
-      stripe_price_id: p.stripe_price_id || null,
-    }).eq("id", p.id);
-    if (error) return toast.error(error.message);
-    toast.success(`Plano "${p.name}" salvo`);
+    setSavingId(p.id);
+    try {
+      const { error } = await supabase.from("plans").update({
+        name: p.name, price: p.price, promo_price: p.promo_price, promo_until: p.promo_until,
+        active: p.active, benefits: p.benefits,
+        max_properties: p.max_properties, max_listings: p.max_listings,
+        asaas_enabled: p.asaas_enabled, advanced_reports: p.advanced_reports, max_users: p.max_users,
+      }).eq("id", p.id);
+      if (error) { toast.error(error.message); return; }
+
+      // Sincroniza com Stripe automaticamente (cria/atualiza Product e Price)
+      if (Number(p.price) > 0) {
+        const { data: sync, error: syncErr } = await supabase.functions.invoke("sync-plan-stripe", {
+          body: { planId: p.id },
+        });
+        if (syncErr || (sync && (sync as { error?: string }).error)) {
+          const msg = (sync as { error?: string })?.error || syncErr?.message || "Erro ao sincronizar com Stripe";
+          toast.error(`Salvo, mas falhou ao sincronizar Stripe: ${msg}`);
+        } else {
+          toast.success(`Plano "${p.name}" salvo e sincronizado com Stripe`);
+        }
+      } else {
+        toast.success(`Plano "${p.name}" salvo`);
+      }
+      await load();
+    } finally {
+      setSavingId(null);
+    }
   };
 
   return (
