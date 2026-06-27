@@ -18,6 +18,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { User, MapPin, Landmark, Zap, Bell, Palette, ShieldCheck } from "lucide-react";
 import { BrandingTab } from "@/components/branding-tab";
 import { SecurityTab } from "@/components/security-tab";
+import { useMyPlan } from "@/components/plan-limit-guard";
+import { Link } from "@tanstack/react-router";
+import { Sparkles } from "lucide-react";
 
 
 
@@ -207,7 +210,8 @@ function ConfigPage() {
                   Configure o webhook do ASAAS apontando para <code className="text-xs">/api/public/asaas-webhook</code>.
                 </CardDescription>
               </CardHeader>
-              <CardContent className="grid gap-4 sm:grid-cols-2">
+              <AsaasPlanGate>
+              <CardContent className="grid gap-4 sm:grid-cols-2"></Cantent_placeholder>
                 <div className="sm:col-span-2 rounded-md border border-primary/30 bg-primary/5 p-3 text-sm">
                   <p className="font-medium">Ainda não tem conta no ASAAS?</p>
                   <p className="mt-1 text-muted-foreground">
