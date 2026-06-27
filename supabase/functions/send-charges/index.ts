@@ -144,7 +144,7 @@ Deno.serve(async (req) => {
           method: "POST",
           body: JSON.stringify({
             customer: customerId,
-            billingType: "BOLETO",
+            billingType: "UNDEFINED",
             value: Number(p.amount),
             dueDate: p.due_date,
             description,
