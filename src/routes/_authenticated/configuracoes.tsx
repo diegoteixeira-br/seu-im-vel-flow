@@ -210,8 +210,8 @@ function ConfigPage() {
                   Configure o webhook do ASAAS apontando para <code className="text-xs">/api/public/asaas-webhook</code>.
                 </CardDescription>
               </CardHeader>
-              <AsaasPlanGate>
-              <CardContent className="grid gap-4 sm:grid-cols-2"></Cantent_placeholder>
+              <CardContent className="grid gap-4 sm:grid-cols-2">
+                <AsaasPlanGate />
                 <div className="sm:col-span-2 rounded-md border border-primary/30 bg-primary/5 p-3 text-sm">
                   <p className="font-medium">Ainda não tem conta no ASAAS?</p>
                   <p className="mt-1 text-muted-foreground">
