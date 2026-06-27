@@ -11,7 +11,6 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TermosRouteImport } from './routes/termos'
 import { Route as SobreRouteImport } from './routes/sobre'
-import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as PrivacidadeRouteImport } from './routes/privacidade'
 import { Route as ParaProprietariosRouteImport } from './routes/para-proprietarios'
@@ -24,7 +23,6 @@ import { Route as BlogIndexRouteImport } from './routes/blog.index'
 import { Route as AnunciosIndexRouteImport } from './routes/anuncios.index'
 import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
 import { Route as AssinarTokenRouteImport } from './routes/assinar.$token'
-import { Route as ApiGenerateBlogCoverRouteImport } from './routes/api/generate-blog-cover'
 import { Route as AnunciosIdRouteImport } from './routes/anuncios.$id'
 import { Route as AuthenticatedVistoriaRouteImport } from './routes/_authenticated/vistoria'
 import { Route as AuthenticatedTenantsRouteImport } from './routes/_authenticated/tenants'
@@ -54,11 +52,6 @@ const TermosRoute = TermosRouteImport.update({
 const SobreRoute = SobreRouteImport.update({
   id: '/sobre',
   path: '/sobre',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
-  id: '/sitemap.xml',
-  path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
@@ -118,11 +111,6 @@ const BlogSlugRoute = BlogSlugRouteImport.update({
 const AssinarTokenRoute = AssinarTokenRouteImport.update({
   id: '/assinar/$token',
   path: '/assinar/$token',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiGenerateBlogCoverRoute = ApiGenerateBlogCoverRouteImport.update({
-  id: '/api/generate-blog-cover',
-  path: '/api/generate-blog-cover',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AnunciosIdRoute = AnunciosIdRouteImport.update({
@@ -242,7 +230,6 @@ export interface FileRoutesByFullPath {
   '/para-proprietarios': typeof ParaProprietariosRoute
   '/privacidade': typeof PrivacidadeRoute
   '/reset-password': typeof ResetPasswordRoute
-  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/sobre': typeof SobreRoute
   '/termos': typeof TermosRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
@@ -257,7 +244,6 @@ export interface FileRoutesByFullPath {
   '/tenants': typeof AuthenticatedTenantsRoute
   '/vistoria': typeof AuthenticatedVistoriaRoute
   '/anuncios/$id': typeof AnunciosIdRoute
-  '/api/generate-blog-cover': typeof ApiGenerateBlogCoverRoute
   '/assinar/$token': typeof AssinarTokenRoute
   '/blog/$slug': typeof BlogSlugRoute
   '/anuncios/': typeof AnunciosIndexRoute
@@ -277,7 +263,6 @@ export interface FileRoutesByTo {
   '/para-proprietarios': typeof ParaProprietariosRoute
   '/privacidade': typeof PrivacidadeRoute
   '/reset-password': typeof ResetPasswordRoute
-  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/sobre': typeof SobreRoute
   '/termos': typeof TermosRoute
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
@@ -291,7 +276,6 @@ export interface FileRoutesByTo {
   '/tenants': typeof AuthenticatedTenantsRoute
   '/vistoria': typeof AuthenticatedVistoriaRoute
   '/anuncios/$id': typeof AnunciosIdRoute
-  '/api/generate-blog-cover': typeof ApiGenerateBlogCoverRoute
   '/assinar/$token': typeof AssinarTokenRoute
   '/blog/$slug': typeof BlogSlugRoute
   '/anuncios': typeof AnunciosIndexRoute
@@ -315,7 +299,6 @@ export interface FileRoutesById {
   '/para-proprietarios': typeof ParaProprietariosRoute
   '/privacidade': typeof PrivacidadeRoute
   '/reset-password': typeof ResetPasswordRoute
-  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/sobre': typeof SobreRoute
   '/termos': typeof TermosRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
@@ -330,7 +313,6 @@ export interface FileRoutesById {
   '/_authenticated/tenants': typeof AuthenticatedTenantsRoute
   '/_authenticated/vistoria': typeof AuthenticatedVistoriaRoute
   '/anuncios/$id': typeof AnunciosIdRoute
-  '/api/generate-blog-cover': typeof ApiGenerateBlogCoverRoute
   '/assinar/$token': typeof AssinarTokenRoute
   '/blog/$slug': typeof BlogSlugRoute
   '/anuncios/': typeof AnunciosIndexRoute
@@ -354,7 +336,6 @@ export interface FileRouteTypes {
     | '/para-proprietarios'
     | '/privacidade'
     | '/reset-password'
-    | '/sitemap.xml'
     | '/sobre'
     | '/termos'
     | '/admin'
@@ -369,7 +350,6 @@ export interface FileRouteTypes {
     | '/tenants'
     | '/vistoria'
     | '/anuncios/$id'
-    | '/api/generate-blog-cover'
     | '/assinar/$token'
     | '/blog/$slug'
     | '/anuncios/'
@@ -389,7 +369,6 @@ export interface FileRouteTypes {
     | '/para-proprietarios'
     | '/privacidade'
     | '/reset-password'
-    | '/sitemap.xml'
     | '/sobre'
     | '/termos'
     | '/configuracoes'
@@ -403,7 +382,6 @@ export interface FileRouteTypes {
     | '/tenants'
     | '/vistoria'
     | '/anuncios/$id'
-    | '/api/generate-blog-cover'
     | '/assinar/$token'
     | '/blog/$slug'
     | '/anuncios'
@@ -426,7 +404,6 @@ export interface FileRouteTypes {
     | '/para-proprietarios'
     | '/privacidade'
     | '/reset-password'
-    | '/sitemap.xml'
     | '/sobre'
     | '/termos'
     | '/_authenticated/admin'
@@ -441,7 +418,6 @@ export interface FileRouteTypes {
     | '/_authenticated/tenants'
     | '/_authenticated/vistoria'
     | '/anuncios/$id'
-    | '/api/generate-blog-cover'
     | '/assinar/$token'
     | '/blog/$slug'
     | '/anuncios/'
@@ -465,10 +441,8 @@ export interface RootRouteChildren {
   ParaProprietariosRoute: typeof ParaProprietariosRoute
   PrivacidadeRoute: typeof PrivacidadeRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
-  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   SobreRoute: typeof SobreRoute
   TermosRoute: typeof TermosRoute
-  ApiGenerateBlogCoverRoute: typeof ApiGenerateBlogCoverRoute
   AssinarTokenRoute: typeof AssinarTokenRoute
 }
 
@@ -486,13 +460,6 @@ declare module '@tanstack/react-router' {
       path: '/sobre'
       fullPath: '/sobre'
       preLoaderRoute: typeof SobreRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/sitemap.xml': {
-      id: '/sitemap.xml'
-      path: '/sitemap.xml'
-      fullPath: '/sitemap.xml'
-      preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/reset-password': {
@@ -577,13 +544,6 @@ declare module '@tanstack/react-router' {
       path: '/assinar/$token'
       fullPath: '/assinar/$token'
       preLoaderRoute: typeof AssinarTokenRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/generate-blog-cover': {
-      id: '/api/generate-blog-cover'
-      path: '/api/generate-blog-cover'
-      fullPath: '/api/generate-blog-cover'
-      preLoaderRoute: typeof ApiGenerateBlogCoverRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/anuncios/$id': {
@@ -820,10 +780,8 @@ const rootRouteChildren: RootRouteChildren = {
   ParaProprietariosRoute: ParaProprietariosRoute,
   PrivacidadeRoute: PrivacidadeRoute,
   ResetPasswordRoute: ResetPasswordRoute,
-  SitemapDotxmlRoute: SitemapDotxmlRoute,
   SobreRoute: SobreRoute,
   TermosRoute: TermosRoute,
-  ApiGenerateBlogCoverRoute: ApiGenerateBlogCoverRoute,
   AssinarTokenRoute: AssinarTokenRoute,
 }
 export const routeTree = rootRouteImport
