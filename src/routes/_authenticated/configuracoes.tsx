@@ -214,7 +214,7 @@ function ConfigPage() {
                     Abra a sua usando nosso link de parceiro — é grátis para criar e você só paga a taxa por cobrança emitida.
                   </p>
                   <a
-                    href="https://www.asaas.com/r/alugaflow"
+                    href="https://www.asaas.com/r/bfe686ed-5f21-4af9-8959-5b1523325d93"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="mt-2 inline-flex h-9 items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground hover:bg-primary/90"
