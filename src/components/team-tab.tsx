@@ -155,10 +155,12 @@ function EditDialog({ member, onClose, onSaved }: { member: Member | null; onClo
   const [fullName, setFullName] = useState("");
   const [password, setPassword] = useState("");
 
-  // sync when opens
-  if (member && fullName === "" && password === "" && member.full_name && fullName !== member.full_name) {
-    setFullName(member.full_name ?? "");
-  }
+  useEffect(() => {
+    if (member) {
+      setFullName(member.full_name ?? "");
+      setPassword("");
+    }
+  }, [member]);
 
   const save = useMutation({
     mutationFn: async () => {
