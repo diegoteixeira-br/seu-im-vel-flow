@@ -105,7 +105,7 @@ export const createAsaasChargeForPayment = createServerFn({ method: "POST" })
       method: "POST",
       body: JSON.stringify({
         customer: customerId,
-        billingType: "BOLETO",
+        billingType: "UNDEFINED",
         value: Number(payment.amount),
         dueDate: payment.due_date,
         description: `Aluguel ${refLabel}`.trim(),
@@ -158,7 +158,7 @@ export const createAsaasChargesForContract = createServerFn({ method: "POST" })
           method: "POST",
           body: JSON.stringify({
             customer: customerId,
-            billingType: "BOLETO",
+            billingType: "UNDEFINED",
             value: Number(p.amount),
             dueDate: p.due_date,
             description: `Aluguel ${refLabel}`.trim(),

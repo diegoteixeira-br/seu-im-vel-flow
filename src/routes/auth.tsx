@@ -28,6 +28,7 @@ const signInSchema = z.object({
 });
 const signUpSchema = signInSchema.extend({
   full_name: z.string().trim().min(2, "Informe seu nome").max(100),
+  accept_terms: z.literal(true, { errorMap: () => ({ message: "Você precisa aceitar os Termos e a Política de Privacidade" }) }),
 });
 
 function AuthPage() {
@@ -147,7 +148,7 @@ function ForgotPasswordDialog({ defaultEmail }: { defaultEmail?: string }) {
 function SignUpForm({ onDone }: { onDone: () => void }) {
   const form = useForm<z.infer<typeof signUpSchema>>({
     resolver: zodResolver(signUpSchema),
-    defaultValues: { full_name: "", email: "", password: "" },
+    defaultValues: { full_name: "", email: "", password: "", accept_terms: false as unknown as true },
   });
   const onSubmit = async (values: z.infer<typeof signUpSchema>) => {
     const { error } = await supabase.auth.signUp({
@@ -155,13 +156,14 @@ function SignUpForm({ onDone }: { onDone: () => void }) {
       password: values.password,
       options: {
         emailRedirectTo: `${window.location.origin}/dashboard`,
-        data: { full_name: values.full_name },
+        data: { full_name: values.full_name, accepted_terms_at: new Date().toISOString() },
       },
     });
     if (error) { toast.error("Falha no cadastro: " + error.message); return; }
     toast.success("Conta criada! Verifique seu e-mail se a confirmação estiver ativada.");
     onDone();
   };
+  const accepted = form.watch("accept_terms");
   return (
     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
       <div className="space-y-2">
@@ -179,7 +181,23 @@ function SignUpForm({ onDone }: { onDone: () => void }) {
         <Input id="password2" type="password" autoComplete="new-password" {...form.register("password")} />
         {form.formState.errors.password && <p className="text-xs text-destructive">{form.formState.errors.password.message}</p>}
       </div>
-      <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
+      <div className="flex items-start gap-2 rounded-md border bg-muted/30 p-3">
+        <input
+          id="accept_terms"
+          type="checkbox"
+          className="mt-0.5 h-4 w-4 accent-primary"
+          checked={Boolean(accepted)}
+          onChange={(e) => form.setValue("accept_terms", e.target.checked as unknown as true, { shouldValidate: true })}
+        />
+        <Label htmlFor="accept_terms" className="text-xs font-normal leading-snug text-muted-foreground">
+          Li e concordo com os{" "}
+          <Link to="/termos" target="_blank" className="text-primary underline">Termos de Uso</Link>{" "}
+          e com a{" "}
+          <Link to="/privacidade" target="_blank" className="text-primary underline">Política de Privacidade</Link>.
+        </Label>
+      </div>
+      {form.formState.errors.accept_terms && <p className="text-xs text-destructive">{form.formState.errors.accept_terms.message as string}</p>}
+      <Button type="submit" className="w-full" disabled={form.formState.isSubmitting || !accepted}>
         {form.formState.isSubmitting ? "Criando..." : "Criar conta"}
       </Button>
     </form>

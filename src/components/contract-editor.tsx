@@ -61,7 +61,13 @@ export function ContractEditor({
   }
 
   return (
-    <div className="grid gap-3 md:grid-cols-[220px_1fr]">
+    <div className="space-y-3">
+      <div className="rounded-md border border-amber-300 bg-amber-50 p-3 text-xs text-amber-900 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-200">
+        <strong>Atenção:</strong> os modelos são apenas um ponto de partida.
+        Leia, edite e adapte o texto à realidade do seu negócio antes de enviar para assinatura.
+        Recomendamos a revisão por um advogado de sua confiança.
+      </div>
+      <div className="grid gap-3 md:grid-cols-[220px_1fr]">
       <Card className="h-fit">
         <CardContent className="p-2">
           <p className="px-2 py-1 text-xs text-muted-foreground">Arraste os campos para a área de texto ao lado.</p>
@@ -124,6 +130,7 @@ export function ContractEditor({
             spellCheck={false}
           />
         )}
+      </div>
       </div>
     </div>
   );

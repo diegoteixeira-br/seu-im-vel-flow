@@ -9,7 +9,7 @@ export const Route = createFileRoute("/api/public/asaas-webhook")({
         if (!expected || token !== expected) {
           return new Response("Unauthorized", { status: 401 });
         }
-        let body: { event?: string; payment?: { id?: string; status?: string; paymentDate?: string; clientPaymentDate?: string; value?: number; netValue?: number } } = {};
+        let body: { event?: string; payment?: { id?: string; status?: string; paymentDate?: string; clientPaymentDate?: string; value?: number; netValue?: number; billingType?: string } } = {};
         try { body = await request.json(); } catch { return new Response("Bad JSON", { status: 400 }); }
 
         const { event, payment } = body;
@@ -28,7 +28,7 @@ export const Route = createFileRoute("/api/public/asaas-webhook")({
               status: "pago",
               paid_date: paidDate,
               paid_amount: payment.value ?? null,
-              method: "boleto",
+              method: (payment.billingType ?? "").toLowerCase() === "pix" ? "pix" : "boleto",
             })
             .eq("asaas_payment_id", payment.id);
           if (error) return new Response(error.message, { status: 500 });
