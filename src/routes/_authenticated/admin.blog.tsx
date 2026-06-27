@@ -163,7 +163,7 @@ function AdminBlog() {
               </div>
             </div>
           )}
-          <DialogFooter>
+          <DialogFooter className="border-t bg-background px-6 py-4">
             <Button variant="outline" onClick={() => setEditing(null)}>Cancelar</Button>
             <Button onClick={save}>Salvar</Button>
           </DialogFooter>
