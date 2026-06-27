@@ -121,10 +121,10 @@ function AdminBlog() {
       </div>
 
       <Dialog open={!!editing} onOpenChange={(o) => !o && setEditing(null)}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader><DialogTitle>{editing?.id ? "Editar post" : "Novo post"}</DialogTitle></DialogHeader>
+        <DialogContent className="max-w-2xl flex max-h-[90vh] flex-col p-0">
+          <DialogHeader className="border-b px-6 py-4"><DialogTitle>{editing?.id ? "Editar post" : "Novo post"}</DialogTitle></DialogHeader>
           {editing && (
-            <div className="space-y-3">
+            <div className="flex-1 space-y-3 overflow-y-auto px-6 py-4">
               <div>
                 <Label>Título</Label>
                 <Input value={editing.title ?? ""} onChange={(e) => setEditing({ ...editing, title: e.target.value, slug: editing.id ? editing.slug : slugify(e.target.value) })} />
