@@ -17,6 +17,8 @@ import { Check, Sparkles, Crown, ArrowUp, ArrowDown, Building2, Calendar } from 
 import { formatBRL, formatDate } from "@/lib/format";
 import { getMySubscription, createCheckoutSession, scheduleDowngrade } from "@/lib/subscriptions.functions";
 import { CancelSubscriptionDialog } from "@/components/cancel-subscription-dialog";
+import { useMyPlan } from "@/components/plan-limit-guard";
+import { ShieldAlert } from "lucide-react";
 
 type Search = { upgrade?: "success" | "cancel" };
 
