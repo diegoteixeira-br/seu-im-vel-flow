@@ -13,8 +13,9 @@ import { toast } from "sonner";
 import { slugify, formatDateBR } from "@/lib/blog-utils";
 import { Pencil, Trash2, Plus } from "lucide-react";
 import { AiCoverGenerator } from "@/components/ai-cover-generator";
-import { AiArticleAssistant, type GeneratedArticle } from "@/components/ai-article-assistant";
 import { UnsplashPicker } from "@/components/unsplash-picker";
+import { AiTitleSuggester } from "@/components/ai-title-suggester";
+import { AiArticleGeneratorButton } from "@/components/ai-article-generator-button";
 
 export const Route = createFileRoute("/_authenticated/admin/blog")({
   component: AdminBlog,
