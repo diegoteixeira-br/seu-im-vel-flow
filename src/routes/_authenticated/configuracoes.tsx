@@ -203,11 +203,25 @@ function ConfigPage() {
               <CardHeader>
                 <CardTitle>Integração ASAAS</CardTitle>
                 <CardDescription>
-                  Sua chave de API é usada para gerar cobranças automáticas. Comece no ambiente Sandbox e migre para Produção quando estiver tudo ok.
+                  Use o ASAAS para emitir cobranças com <strong>boleto + PIX (QR Code no mesmo documento)</strong> e baixa automática quando pago.
                   Configure o webhook do ASAAS apontando para <code className="text-xs">/api/public/asaas-webhook</code>.
                 </CardDescription>
               </CardHeader>
               <CardContent className="grid gap-4 sm:grid-cols-2">
+                <div className="sm:col-span-2 rounded-md border border-primary/30 bg-primary/5 p-3 text-sm">
+                  <p className="font-medium">Ainda não tem conta no ASAAS?</p>
+                  <p className="mt-1 text-muted-foreground">
+                    Abra a sua usando nosso link de parceiro — é grátis para criar e você só paga a taxa por cobrança emitida.
+                  </p>
+                  <a
+                    href="https://www.asaas.com/r/alugaflow"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-2 inline-flex h-9 items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+                  >
+                    Abrir conta no ASAAS
+                  </a>
+                </div>
                 <div className="sm:col-span-2">
                   <Field label="ASAAS API Key">
                     <Input type="password" autoComplete="off" placeholder="$aact_..." {...form.register("asaas_api_key")} />
