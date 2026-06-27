@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { BrandLogo } from "@/components/brand-logo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/password-input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 
@@ -72,12 +73,12 @@ function ResetPasswordPage() {
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="new_password">Nova senha</Label>
-                  <Input id="new_password" type="password" autoComplete="new-password" {...form.register("password")} />
+                  <PasswordInput id="new_password" autoComplete="new-password" {...form.register("password")} />
                   {form.formState.errors.password && <p className="text-xs text-destructive">{form.formState.errors.password.message}</p>}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="confirm_password">Confirmar nova senha</Label>
-                  <Input id="confirm_password" type="password" autoComplete="new-password" {...form.register("confirm")} />
+                  <PasswordInput id="confirm_password" autoComplete="new-password" {...form.register("confirm")} />
                   {form.formState.errors.confirm && <p className="text-xs text-destructive">{form.formState.errors.confirm.message}</p>}
                 </div>
                 <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>

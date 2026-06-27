@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
+import { PasswordInput } from "@/components/password-input";
 
 const searchSchema = z.object({ mode: z.enum(["signin", "signup"]).optional() });
 
@@ -90,7 +91,7 @@ function SignInForm() {
       </div>
       <div className="space-y-2">
         <Label htmlFor="password">Senha</Label>
-        <Input id="password" type="password" autoComplete="current-password" {...form.register("password")} />
+        <PasswordInput id="password" autoComplete="current-password" {...form.register("password")} />
         {form.formState.errors.password && <p className="text-xs text-destructive">{form.formState.errors.password.message}</p>}
       </div>
       <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
@@ -178,7 +179,7 @@ function SignUpForm({ onDone }: { onDone: () => void }) {
       </div>
       <div className="space-y-2">
         <Label htmlFor="password2">Senha</Label>
-        <Input id="password2" type="password" autoComplete="new-password" {...form.register("password")} />
+        <PasswordInput id="password2" autoComplete="new-password" {...form.register("password")} />
         {form.formState.errors.password && <p className="text-xs text-destructive">{form.formState.errors.password.message}</p>}
       </div>
       <div className="flex items-start gap-2 rounded-md border bg-muted/30 p-3">
