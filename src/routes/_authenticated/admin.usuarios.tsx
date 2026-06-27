@@ -93,6 +93,10 @@ function AdminUsers() {
                     <TableCell>{r.active ? <Badge variant="outline">Ativo</Badge> : <Badge variant="destructive">Bloqueado</Badge>}</TableCell>
                     <TableCell>
                       <div className="flex gap-1">
+                        <Button size="sm" variant="ghost" title="Alterar e-mail"
+                          onClick={() => setEmailDialog({ user: r, value: r.email })}>
+                          <Mail className="h-4 w-4" />
+                        </Button>
                         <Button size="sm" variant="ghost" title={r.is_admin ? "Revogar admin" : "Tornar admin"}
                           onClick={() => m(() => toggleAdmin({ data: { userId: r.id, makeAdmin: !r.is_admin } }), "Permissão atualizada")}>
                           {r.is_admin ? <ShieldOff className="h-4 w-4" /> : <Shield className="h-4 w-4" />}
