@@ -31,7 +31,7 @@ const FEATURES = [
   { icon: FileText, title: "Documentos prontos", desc: "Distrato, confissão de dívida e mais." },
 ];
 
-type DbPlan = { id: string; name: string; price: number; promo_price: number | null; promo_until: string | null; active: boolean; benefits: unknown; sort_order: number };
+type DbPlan = { id: string; name: string; price: number; promo_price: number | null; promo_until: string | null; active: boolean; benefits: unknown; sort_order: number; max_users?: number | null };
 
 function isPromoActive(p: DbPlan) {
   if (p.promo_price == null) return false;
@@ -126,7 +126,11 @@ function Page() {
               const highlight = idx === 1;
               const promo = isPromoActive(p);
               const effective = promo ? (p.promo_price as number) : p.price;
-              const benefits = Array.isArray(p.benefits) ? (p.benefits as string[]) : [];
+              const baseBenefits = Array.isArray(p.benefits) ? (p.benefits as string[]) : [];
+              const extraUsers = (p.max_users ?? 1) - 1;
+              const benefits = extraUsers > 0
+                ? [...baseBenefits, `Múltiplos acessos (+${extraUsers} usuário${extraUsers > 1 ? "s" : ""})`]
+                : baseBenefits;
               const isFree = Number(p.price) === 0;
               const cta = isFree ? "Começar grátis" : `Assinar ${p.name}`;
               return (
