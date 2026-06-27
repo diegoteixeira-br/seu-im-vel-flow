@@ -297,13 +297,45 @@ function TenantDialog({
 
           <section className="space-y-3">
             <h3 className="text-sm font-semibold text-primary">Endereço atual</h3>
+            <p className="text-xs text-muted-foreground">Digite o CEP primeiro — Rua, Bairro, Cidade e UF serão preenchidos automaticamente.</p>
             <div className="grid gap-3 sm:grid-cols-6">
+              <div className="space-y-1 sm:col-span-2">
+                <Label>CEP</Label>
+                <div className="relative">
+                  <Input
+                    {...form.register("address_zip")}
+                    maxLength={9}
+                    placeholder="00000-000"
+                    onChange={async (e) => {
+                      const masked = maskCepInput(e.target.value);
+                      form.setValue("address_zip", masked, { shouldDirty: true });
+                      const digits = masked.replace(/\D/g, "");
+                      if (digits.length === 8) {
+                        setCepLoading(true);
+                        const data = await fetchCep(digits);
+                        setCepLoading(false);
+                        if (data) {
+                          form.setValue("address_street", data.logradouro || "", { shouldDirty: true });
+                          form.setValue("address_neighborhood", data.bairro || "", { shouldDirty: true });
+                          form.setValue("address_city", data.localidade || "", { shouldDirty: true });
+                          form.setValue("address_state", (data.uf || "").toUpperCase(), { shouldDirty: true });
+                          setTimeout(() => numberRef.current?.focus(), 50);
+                        } else {
+                          toast.error("CEP não encontrado");
+                        }
+                      }
+                    }}
+                  />
+                  {cepLoading && (
+                    <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">…</span>
+                  )}
+                </div>
+              </div>
               <div className="space-y-1 sm:col-span-4"><Label>Rua</Label><Input {...form.register("address_street")} /></div>
-              <div className="space-y-1 sm:col-span-2"><Label>Número</Label><Input {...form.register("address_number")} /></div>
+              <div className="space-y-1 sm:col-span-1"><Label>Número *</Label><Input ref={numberRef} onChange={(e) => form.setValue("address_number", e.target.value, { shouldDirty: true })} defaultValue={form.getValues("address_number") || ""} /></div>
               <div className="space-y-1 sm:col-span-3"><Label>Bairro</Label><Input {...form.register("address_neighborhood")} /></div>
               <div className="space-y-1 sm:col-span-2"><Label>Cidade</Label><Input {...form.register("address_city")} /></div>
-              <div className="space-y-1 sm:col-span-1"><Label>UF</Label><Input maxLength={2} {...form.register("address_state")} /></div>
-              <div className="space-y-1 sm:col-span-2"><Label>CEP</Label><Input {...form.register("address_zip")} /></div>
+              <div className="space-y-1 sm:col-span-2"><Label>UF</Label><Input maxLength={2} {...form.register("address_state")} /></div>
             </div>
           </section>
 
