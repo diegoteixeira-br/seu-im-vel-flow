@@ -141,77 +141,38 @@ export function SecurityTab() {
 
 function CurrentEmailCard() {
   const [email, setEmail] = useState("");
-  const [newEmail, setNewEmail] = useState("");
-  const [pending, setPending] = useState<string | null>(null);
-  const [saving, setSaving] = useState(false);
-
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      setEmail(data.user?.email ?? "");
-      const nextEmail = (data.user as { new_email?: string } | null)?.new_email ?? null;
-      setPending(nextEmail);
-    });
+    supabase.auth.getUser().then(({ data }) => setEmail(data.user?.email ?? ""));
   }, []);
-
-  const onSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const target = newEmail.trim().toLowerCase();
-    if (!target || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(target)) {
-      toast.error("Informe um e-mail válido.");
-      return;
-    }
-    if (target === email.toLowerCase()) {
-      toast.error("O novo e-mail deve ser diferente do atual.");
-      return;
-    }
-    setSaving(true);
-    try {
-      const { error } = await supabase.auth.updateUser(
-        { email: target },
-        { emailRedirectTo: `${window.location.origin}/configuracoes` },
-      );
-      if (error) throw error;
-      setPending(target);
-      setNewEmail("");
-      toast.success(
-        "Enviamos um link de confirmação para o e-mail atual e para o novo. Confirme em ambos para concluir a alteração.",
-      );
-    } catch (err) {
-      toast.error((err as Error).message || "Não foi possível alterar o e-mail.");
-    } finally {
-      setSaving(false);
-    }
-  };
-
+  const supportEmail = "alugueisteixeira@gmail.com";
+  const subject = encodeURIComponent("Solicitação de alteração de e-mail da conta");
+  const body = encodeURIComponent(
+    `Olá, gostaria de alterar o e-mail da minha conta AlugaFlow.\n\nE-mail atual: ${email}\nNovo e-mail desejado: \nMotivo: \n\nObrigado!`,
+  );
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2"><Mail className="h-4 w-4" />E-mail da conta</CardTitle>
         <CardDescription>
           E-mail atual: <span className="font-medium">{email || "—"}</span>.
-          Para alterar, informe o novo e-mail abaixo. Enviaremos um link de confirmação para o e-mail atual e para o novo —
-          é preciso confirmar nos dois para concluir a troca. Seu ID de conta permanece o mesmo.
         </CardDescription>
       </CardHeader>
       <CardContent>
-        {pending && pending !== email ? (
-          <div className="mb-3 rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-900 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-200">
-            Alteração pendente para <strong>{pending}</strong>. Confirme nos dois e-mails para finalizar.
-          </div>
-        ) : null}
-        <form onSubmit={onSubmit} className="grid gap-3 sm:grid-cols-[1fr_auto] sm:items-end">
-          <div className="space-y-1">
-            <Label>Novo e-mail</Label>
-            <Input
-              type="email"
-              autoComplete="email"
-              placeholder="novo@email.com"
-              value={newEmail}
-              onChange={(e) => setNewEmail(e.target.value)}
-            />
-          </div>
-          <Button type="submit" disabled={saving}>{saving ? "Enviando..." : "Alterar e-mail"}</Button>
-        </form>
+        <div className="rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-200">
+          <p>
+            Por segurança, o e-mail de cadastro é a identidade da sua conta e está vinculado a todos os seus
+            registros (imóveis, contratos, pagamentos, documentos). A troca direta pelo painel está
+            desativada para evitar perda de acesso aos seus dados.
+          </p>
+          <p className="mt-2">
+            Para alterar, solicite ao suporte — fazemos a migração com segurança preservando todo o seu histórico.
+          </p>
+          <Button asChild className="mt-3" size="sm" variant="outline">
+            <a href={`mailto:${supportEmail}?subject=${subject}&body=${body}`}>
+              Solicitar alteração ao suporte
+            </a>
+          </Button>
+        </div>
       </CardContent>
     </Card>
   );
