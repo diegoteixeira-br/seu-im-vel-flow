@@ -126,7 +126,8 @@ function Page() {
               const highlight = idx === 1;
               const promo = isPromoActive(p);
               const effective = promo ? (p.promo_price as number) : p.price;
-              const baseBenefits = Array.isArray(p.benefits) ? (p.benefits as string[]) : [];
+              const baseBenefits = (Array.isArray(p.benefits) ? (p.benefits as string[]) : [])
+                .filter((b) => !/m[uú]ltiplos\s+acessos/i.test(b));
               const extraUsers = (p.max_users ?? 1) - 1;
               const benefits = extraUsers > 0
                 ? [...baseBenefits, `Múltiplos acessos (+${extraUsers} usuário${extraUsers > 1 ? "s" : ""})`]
