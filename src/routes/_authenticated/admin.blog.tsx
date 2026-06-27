@@ -13,8 +13,9 @@ import { toast } from "sonner";
 import { slugify, formatDateBR } from "@/lib/blog-utils";
 import { Pencil, Trash2, Plus } from "lucide-react";
 import { AiCoverGenerator } from "@/components/ai-cover-generator";
-import { AiArticleAssistant, type GeneratedArticle } from "@/components/ai-article-assistant";
 import { UnsplashPicker } from "@/components/unsplash-picker";
+import { AiTitleSuggester } from "@/components/ai-title-suggester";
+import { AiArticleGeneratorButton } from "@/components/ai-article-generator-button";
 
 export const Route = createFileRoute("/_authenticated/admin/blog")({
   component: AdminBlog,
@@ -97,16 +98,6 @@ function AdminBlog() {
           <p className="text-sm text-muted-foreground">Gerencie os artigos publicados em <Link to="/blog" className="text-primary underline">/blog</Link>.</p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <AiArticleAssistant
-            onArticleReady={(a: GeneratedArticle) => setEditing({
-              published: false,
-              author_name: "Equipe AlugaFlow",
-              title: a.title,
-              slug: a.slug,
-              excerpt: a.excerpt,
-              content: a.content,
-            })}
-          />
           <Button onClick={() => setEditing({ published: false, author_name: "Equipe AlugaFlow" })}><Plus className="mr-2 h-4 w-4" /> Novo post</Button>
         </div>
       </div>
@@ -140,8 +131,11 @@ function AdminBlog() {
           {editing && (
             <div className="flex-1 space-y-3 overflow-y-auto px-6 py-4">
               <div>
-                <Label>Título</Label>
-                <Input value={editing.title ?? ""} onChange={(e) => setEditing({ ...editing, title: e.target.value, slug: editing.id ? editing.slug : slugify(e.target.value) })} />
+                <div className="flex items-center justify-between gap-2">
+                  <Label>Título</Label>
+                  <AiTitleSuggester onPick={(title, slug) => setEditing((prev) => ({ ...(prev ?? {}), title, slug: prev?.id ? (prev.slug ?? slug) : slug }))} />
+                </div>
+                <Input className="mt-1" value={editing.title ?? ""} onChange={(e) => setEditing({ ...editing, title: e.target.value, slug: editing.id ? editing.slug : slugify(e.target.value) })} />
               </div>
               <div>
                 <Label>Slug (URL)</Label>
@@ -153,8 +147,20 @@ function AdminBlog() {
                 <p className="mt-1 text-xs text-muted-foreground">{(editing.excerpt ?? "").length}/150</p>
               </div>
               <div>
-                <Label>Conteúdo (## títulos, - listas, **negrito**)</Label>
-                <Textarea rows={10} value={editing.content ?? ""} onChange={(e) => setEditing({ ...editing, content: e.target.value })} />
+                <div className="flex items-center justify-between gap-2">
+                  <Label>Conteúdo (## títulos, - listas, **negrito**)</Label>
+                  <AiArticleGeneratorButton
+                    title={editing.title ?? ""}
+                    onGenerated={(a) => setEditing((prev) => ({
+                      ...(prev ?? {}),
+                      title: a.title,
+                      slug: prev?.id ? (prev.slug ?? a.slug) : a.slug,
+                      excerpt: a.excerpt || prev?.excerpt,
+                      content: a.content,
+                    }))}
+                  />
+                </div>
+                <Textarea className="mt-1" rows={12} value={editing.content ?? ""} onChange={(e) => setEditing({ ...editing, content: e.target.value })} />
               </div>
               <div>
                 <Label>Foto de capa</Label>
