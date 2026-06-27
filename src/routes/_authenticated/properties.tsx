@@ -94,7 +94,7 @@ function PropertiesPage() {
           <h1 className="text-2xl font-bold tracking-tight">Imóveis</h1>
           <p className="text-sm text-muted-foreground">{data.length} cadastrado(s)</p>
         </div>
-        <Button onClick={() => { setEditing(null); setOpen(true); }}><Plus className="h-4 w-4" /> Novo imóvel</Button>
+        <Button onClick={handleNew}><Plus className="h-4 w-4" /> Novo imóvel</Button>
       </div>
 
       <Card>
@@ -156,6 +156,13 @@ function PropertiesPage() {
       </Card>
 
       <PropertyDialog open={open} onOpenChange={setOpen} editing={editing} />
+      <UpgradeRequiredDialog
+        open={!!limitBlock}
+        onOpenChange={(o) => !o && setLimitBlock(null)}
+        current={limitBlock?.current}
+        max={limitBlock?.max}
+        description={`Você já cadastrou ${limitBlock?.current} de ${limitBlock?.max} imóveis permitidos no plano ${limitBlock?.plan}. Faça upgrade para cadastrar mais.`}
+      />
     </div>
   );
 }
