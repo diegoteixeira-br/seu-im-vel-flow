@@ -53,7 +53,7 @@ function AdminPlans() {
         <h1 className="text-2xl font-bold">Planos e preços</h1>
         <p className="text-sm text-muted-foreground">Edite valores, promoções e benefícios.</p>
       </div>
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid gap-4 xl:grid-cols-3">
         {plans.map((p) => (
           <Card key={p.id}>
             <CardHeader className="flex flex-row items-center justify-between">
