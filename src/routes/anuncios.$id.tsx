@@ -13,7 +13,62 @@ import { getPhotoUrls } from "@/lib/public-photos";
 import { PublicHeader, PublicFooter } from "./anuncios";
 
 export const Route = createFileRoute("/anuncios/$id")({
-  head: () => ({ meta: [{ title: "Anúncio — AlugaFlow" }] }),
+  loader: async ({ params }) => {
+    const { data: prop } = await supabase
+      .from("properties")
+      .select("ad_title, nickname, ad_description, notes, city, state, neighborhood, type, bedrooms, rent_amount")
+      .eq("id", params.id)
+      .eq("listed_public", true)
+      .maybeSingle();
+    if (!prop) return null;
+    let coverUrl: string | null = null;
+    const { data: cover } = await supabase
+      .from("property_photos")
+      .select("storage_path")
+      .eq("property_id", params.id)
+      .order("sort_order")
+      .limit(1)
+      .maybeSingle();
+    if (cover?.storage_path) {
+      const urls = await getPhotoUrls([cover.storage_path], { width: 1200, quality: 80 });
+      coverUrl = urls[cover.storage_path] ?? null;
+    }
+    return { prop, coverUrl };
+  },
+  head: ({ params, loaderData }) => {
+    const path = `/anuncios/${params.id}`;
+    if (!loaderData) {
+      return {
+        meta: [
+          { title: "Anúncio não encontrado — AlugaFlow" },
+          { name: "robots", content: "noindex" },
+        ],
+        links: [{ rel: "canonical", href: path }],
+      };
+    }
+    const { prop, coverUrl } = loaderData;
+    const title = `${prop.ad_title ?? prop.nickname} — Aluguel em ${prop.city}/${prop.state} | AlugaFlow`;
+    const rawDesc = prop.ad_description || prop.notes || `${prop.type ?? "Imóvel"} ${prop.bedrooms ? `com ${prop.bedrooms} quartos ` : ""}para alugar em ${[prop.neighborhood, prop.city, prop.state].filter(Boolean).join(", ")} por R$ ${Number(prop.rent_amount ?? 0).toLocaleString("pt-BR")}/mês.`;
+    const description = rawDesc.replace(/\s+/g, " ").trim().slice(0, 160);
+    const meta: Array<Record<string, string>> = [
+      { title },
+      { name: "description", content: description },
+      { property: "og:title", content: title },
+      { property: "og:description", content: description },
+      { property: "og:type", content: "product" },
+      { property: "og:url", content: path },
+      { property: "product:price:amount", content: String(prop.rent_amount ?? "") },
+      { property: "product:price:currency", content: "BRL" },
+      { name: "twitter:card", content: coverUrl ? "summary_large_image" : "summary" },
+      { name: "twitter:title", content: title },
+      { name: "twitter:description", content: description },
+    ];
+    if (coverUrl) {
+      meta.push({ property: "og:image", content: coverUrl });
+      meta.push({ name: "twitter:image", content: coverUrl });
+    }
+    return { meta, links: [{ rel: "canonical", href: path }] };
+  },
   component: AnuncioDetail,
   errorComponent: ({ error }) => (
     <div className="min-h-screen bg-background">
