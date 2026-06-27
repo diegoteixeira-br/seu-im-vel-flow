@@ -1,17 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { PublicListings } from "@/components/public-listings";
-import { PublicFooter, PublicHeader } from "./anuncios";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/anuncios/")({
-  component: AnunciosIndexPage,
+  beforeLoad: () => {
+    throw redirect({ to: "/" });
+  },
 });
-
-function AnunciosIndexPage() {
-  return (
-    <div className="min-h-screen bg-background">
-      <PublicHeader />
-      <PublicListings />
-      <PublicFooter />
-    </div>
-  );
-}

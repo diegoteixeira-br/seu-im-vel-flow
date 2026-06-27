@@ -11,7 +11,7 @@ export const Route = createFileRoute("/sitemap.xml")({
         const posts = await listAllPostSlugs();
         const staticEntries = [
           { path: "/", priority: "1.0", changefreq: "weekly" },
-          { path: "/anuncios", priority: "0.9", changefreq: "daily" },
+          
           { path: "/blog", priority: "0.8", changefreq: "weekly" },
           { path: "/para-proprietarios", priority: "0.7", changefreq: "monthly" },
           { path: "/sobre", priority: "0.5", changefreq: "yearly" },

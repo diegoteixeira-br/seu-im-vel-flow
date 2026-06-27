@@ -250,7 +250,7 @@ function PropertyDialog({ open, onOpenChange, editing }: { open: boolean; onOpen
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-semibold">Anunciar no portal público</p>
-                <p className="text-xs text-muted-foreground">O imóvel aparecerá em /anuncios para qualquer pessoa.</p>
+                <p className="text-xs text-muted-foreground">O imóvel aparecerá na página inicial pública para qualquer pessoa.</p>
               </div>
               <input
                 type="checkbox"
