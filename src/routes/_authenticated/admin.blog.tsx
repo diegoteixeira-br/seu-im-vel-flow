@@ -98,16 +98,6 @@ function AdminBlog() {
           <p className="text-sm text-muted-foreground">Gerencie os artigos publicados em <Link to="/blog" className="text-primary underline">/blog</Link>.</p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <AiArticleAssistant
-            onArticleReady={(a: GeneratedArticle) => setEditing({
-              published: false,
-              author_name: "Equipe AlugaFlow",
-              title: a.title,
-              slug: a.slug,
-              excerpt: a.excerpt,
-              content: a.content,
-            })}
-          />
           <Button onClick={() => setEditing({ published: false, author_name: "Equipe AlugaFlow" })}><Plus className="mr-2 h-4 w-4" /> Novo post</Button>
         </div>
       </div>
