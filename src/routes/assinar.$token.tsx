@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { formatBRL, formatDate } from "@/lib/format";
-import { supabase } from "@/integrations/supabase/client";
+
 
 export const Route = createFileRoute("/assinar/$token")({
   head: () => ({ meta: [{ title: "Assinar contrato — AlugaFlow" }] }),
@@ -44,14 +44,6 @@ function SignPage() {
   const [done, setDone] = useState(false);
 
   useEffect(() => {
-    supabase.functions
-      .invoke("sign-contract", { method: "GET", body: { token } as never })
-      .then(({ data, error }) => {
-        // GET com query string via SDK não é direto; usamos POST-like ou fetch direto:
-      })
-      .catch(() => { /* noop, fallback abaixo */ });
-
-    // Chamada direta via fetch para suportar GET ?token=
     const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sign-contract?token=${encodeURIComponent(token)}`;
     fetch(url, {
       headers: { apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ?? "" },
