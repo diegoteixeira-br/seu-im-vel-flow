@@ -202,6 +202,8 @@ function TenantDialog({
   open, onOpenChange, editing,
 }: { open: boolean; onOpenChange: (b: boolean) => void; editing: Tenant | null }) {
   const qc = useQueryClient();
+  const numberRef = useRef<HTMLInputElement>(null);
+  const [cepLoading, setCepLoading] = useState(false);
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
     values: editing
