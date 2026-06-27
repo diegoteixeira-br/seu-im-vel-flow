@@ -31,7 +31,7 @@ const FEATURES = [
   { icon: FileText, title: "Documentos prontos", desc: "Distrato, confissão de dívida e mais." },
 ];
 
-type DbPlan = { id: string; name: string; price: number; promo_price: number | null; promo_until: string | null; active: boolean; benefits: unknown; sort_order: number };
+type DbPlan = { id: string; name: string; price: number; promo_price: number | null; promo_until: string | null; active: boolean; benefits: unknown; sort_order: number; max_users?: number | null };
 
 function isPromoActive(p: DbPlan) {
   if (p.promo_price == null) return false;
