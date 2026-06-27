@@ -48,6 +48,9 @@ export async function adminToggleActive(args: { data: { userId: string; active: 
 export async function adminToggleAdmin(args: { data: { userId: string; makeAdmin: boolean } }) {
   return invoke<{ ok: true }>({ action: "toggle_admin", userId: args.data.userId, makeAdmin: args.data.makeAdmin });
 }
+export async function adminSetUserEmail(args: { data: { userId: string; email: string } }) {
+  return invoke<{ ok: true }>({ action: "set_email", userId: args.data.userId, email: args.data.email });
+}
 
 export async function adminSendBroadcast(args: {
   data: { subject: string; body: string; targetPlan: "all" | PlanId };
