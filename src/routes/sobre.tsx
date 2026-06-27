@@ -1,7 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { BrandLogo } from "@/components/brand-logo";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/hooks/use-auth";
+import { PublicHeader, PublicFooter } from "./anuncios";
 
 export const Route = createFileRoute("/sobre")({
   head: () => ({
@@ -16,19 +15,10 @@ export const Route = createFileRoute("/sobre")({
 });
 
 function Page() {
-  const { user } = useAuth();
   return (
     <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-20 border-b bg-background/95 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-2 px-4 py-3">
-          <Link to="/"><BrandLogo size={32} /></Link>
-          <nav className="flex items-center gap-2">
-            <Button asChild variant="ghost" size="sm"><Link to="/">Imóveis</Link></Button>
-            <Button asChild variant="ghost" size="sm"><Link to="/para-proprietarios">Para proprietários</Link></Button>
-            <Button asChild size="sm"><Link to={user ? "/dashboard" : "/auth"}>{user ? "Painel" : "Entrar"}</Link></Button>
-          </nav>
-        </div>
-      </header>
+      <PublicHeader />
+
 
       <section className="mx-auto max-w-3xl px-4 py-16">
         <h1 className="text-3xl font-bold tracking-tight md:text-4xl">Sobre nós</h1>
