@@ -10,6 +10,34 @@ const corsHeaders = {
 const MODEL = "google/gemini-2.5-flash";
 const GATEWAY = "https://ai.gateway.lovable.dev/v1/chat/completions";
 
+function slugify(s: string) {
+  return (s || "")
+    .toString()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .trim()
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
+    .slice(0, 80);
+}
+
+// Remove a leading "# Título" line from markdown so it doesn't duplicate the title field.
+function stripLeadingH1(md: string): string {
+  if (!md) return md;
+  const lines = md.split(/\r?\n/);
+  // skip leading blanks
+  let i = 0;
+  while (i < lines.length && lines[i].trim() === "") i++;
+  if (i < lines.length && /^#\s+/.test(lines[i])) {
+    lines.splice(i, 1);
+    // also drop one trailing blank line right after the removed heading
+    if (i < lines.length && lines[i].trim() === "") lines.splice(i, 1);
+  }
+  return lines.join("\n").trim();
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
   try {
@@ -35,8 +63,8 @@ Deno.serve(async (req) => {
     if (action === "suggest_titles") {
       const topic: string = (body?.topic ?? "").toString().trim();
       const count: number = Math.min(Math.max(Number(body?.count ?? 6), 3), 10);
-      const sys = "Você é editor-chefe de um blog imobiliário brasileiro. Sugira títulos de artigos atuais, úteis, com foco em SEO, em português do Brasil. Responda APENAS com JSON.";
-      const user = `Gere ${count} sugestões de títulos de artigos sobre o mercado imobiliário brasileiro atual${topic ? ` com foco em: "${topic}"` : ""}. Cubra temas como: Lei do Inquilinato, contratos de aluguel, IGP-M e IPCA (reajuste), taxa Selic e financiamento imobiliário, garantias locatícias, ITBI, due diligence, tendências de mercado, gestão para proprietários, vistoria, despejo, distratos, locação por temporada/Airbnb e LGPD para imobiliárias. Retorne JSON no formato: {"titles":[{"title":"...","angle":"breve ângulo/abordagem"}]}.`;
+      const sys = "Você é editor-chefe de um blog imobiliário brasileiro. Sugira títulos de artigos atuais, úteis, com foco em SEO, em português do Brasil. Cada título deve ter entre 45 e 80 caracteres, ser específico (com número, ano, ou pergunta) e atrativo. Responda APENAS com JSON.";
+      const user = `Gere ${count} sugestões de títulos de artigos sobre o mercado imobiliário brasileiro atual${topic ? ` com foco em: "${topic}"` : ""}. Cubra temas como: Lei do Inquilinato, contratos de aluguel, IGP-M e IPCA (reajuste), taxa Selic e financiamento imobiliário, garantias locatícias, ITBI, due diligence, tendências de mercado, gestão para proprietários, vistoria, despejo, distratos, locação por temporada/Airbnb e LGPD para imobiliárias. Retorne JSON no formato: {"titles":[{"title":"Título completo entre 45 e 80 caracteres","angle":"breve ângulo/abordagem"}]}.`;
       const r = await callAI(key, sys, user, true);
       const parsed = safeJson(r);
       return json({ titles: parsed?.titles ?? [] });
@@ -46,25 +74,34 @@ Deno.serve(async (req) => {
       const title: string = (body?.title ?? "").toString().trim();
       const angle: string = (body?.angle ?? "").toString().trim();
       if (!title) return json({ error: "title é obrigatório" }, 400);
-      const sys = "Você é redator especialista em mercado imobiliário brasileiro. Escreve com clareza, cita leis quando relevante (ex.: Lei 8.245/91), usa exemplos práticos e linguagem acessível ao proprietário independente. Sempre em português do Brasil. Responda APENAS com JSON válido.";
-      const user = `Escreva um artigo de blog completo com o título: "${title}".${angle ? ` Abordagem: ${angle}.` : ""}
+      const sys = "Você é redator especialista em mercado imobiliário brasileiro. Escreve com clareza, cita leis quando relevante (ex.: Lei 8.245/91), usa exemplos práticos e linguagem acessível ao proprietário independente. Sempre em português do Brasil. Responda APENAS com JSON válido, sem texto fora do JSON.";
+      const user = `Escreva um artigo de blog completo a partir deste título base: "${title}".${angle ? ` Abordagem: ${angle}.` : ""}
 
-Requisitos:
-- Resumo (excerpt) de até 150 caracteres, atrativo.
-- Conteúdo em Markdown simples: use "## Subtítulo" para seções, "- " para listas e "**negrito**" para destaques. Não use imagens nem links.
-- 6 a 9 seções, entre 700 e 1100 palavras no total.
-- Inclua uma seção final "## Conclusão" com chamada para ação sutil para proprietários organizarem aluguéis com tecnologia.
-- Evite promessas jurídicas absolutas; oriente a procurar um advogado quando necessário.
+Requisitos OBRIGATÓRIOS do JSON de resposta:
+- "title": entre 45 e 80 caracteres, completo, específico e atrativo (você pode polir o título base, mas NUNCA devolver vazio, abreviado ou só uma palavra). NÃO inclua o título dentro do "content".
+- "slug": kebab-case, sem acentos, sem pontuação, derivado do title, máx. 70 caracteres.
+- "excerpt": resumo entre 110 e 150 caracteres, atrativo, sem aspas.
+- "content": Markdown SEM título H1 (não comece com "# ..."). Use "## Subtítulo" para seções, "- " para listas e "**negrito**" para destaques. Não use imagens nem links. 6 a 9 seções, 700 a 1100 palavras no total. Inclua uma seção final "## Conclusão" com chamada para ação sutil para proprietários organizarem aluguéis com tecnologia. Evite promessas jurídicas absolutas; oriente a procurar um advogado quando necessário.
 
-Retorne JSON: {"title":"...","slug":"slug-em-kebab-case","excerpt":"...","content":"markdown..."}`;
+Retorne EXATAMENTE: {"title":"...","slug":"...","excerpt":"...","content":"..."}`;
       const r = await callAI(key, sys, user, true);
       const parsed = safeJson(r);
       if (!parsed?.content) return json({ error: "Falha ao gerar artigo" }, 500);
+
+      const finalTitle = (parsed.title && String(parsed.title).trim().length >= 20)
+        ? String(parsed.title).trim()
+        : title;
+      const finalSlug = parsed.slug && String(parsed.slug).match(/^[a-z0-9-]{3,}$/)
+        ? String(parsed.slug)
+        : slugify(finalTitle);
+      const finalContent = stripLeadingH1(String(parsed.content));
+      const finalExcerpt = String(parsed.excerpt || "").slice(0, 150).trim();
+
       return json({
-        title: parsed.title || title,
-        slug: parsed.slug || "",
-        excerpt: (parsed.excerpt || "").slice(0, 150),
-        content: parsed.content,
+        title: finalTitle,
+        slug: finalSlug,
+        excerpt: finalExcerpt,
+        content: finalContent,
       });
     }
 
