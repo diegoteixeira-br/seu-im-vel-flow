@@ -170,7 +170,18 @@ function ConfigPage() {
                 <Field label="Nome completo *" error={form.formState.errors.full_name?.message}><Input {...form.register("full_name")} /></Field>
                 <Field label="CPF"><Input {...form.register("cpf")} placeholder="000.000.000-00" /></Field>
                 <Field label="Telefone"><Input {...form.register("phone")} /></Field>
-                <Field label="E-mail" error={form.formState.errors.email?.message}><Input type="email" {...form.register("email")} /></Field>
+                <Field label="E-mail">
+                  <Input
+                    type="email"
+                    value={form.watch("email") ?? ""}
+                    readOnly
+                    disabled
+                    className="bg-muted cursor-not-allowed"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Para alterar o e-mail, acesse a aba <strong>Segurança</strong>.
+                  </p>
+                </Field>
               </CardContent>
             </Card>
           </TabsContent>
