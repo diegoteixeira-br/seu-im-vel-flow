@@ -76,7 +76,8 @@ Deno.serve(async (req) => {
       const title: string = (body?.title ?? "").toString().trim();
       const angle: string = (body?.angle ?? "").toString().trim();
       if (!title) return json({ error: "title é obrigatório" }, 400);
-      const sys = "Você é redator especialista em mercado imobiliário brasileiro. Escreve com clareza, cita leis quando relevante (ex.: Lei 8.245/91), usa exemplos práticos e linguagem acessível ao proprietário independente. Sempre em português do Brasil. Responda APENAS com JSON válido, sem texto fora do JSON.";
+      const currentYear = new Date().getFullYear();
+      const sys = `Você é redator especialista em mercado imobiliário brasileiro escrevendo em ${currentYear}. Escreve com clareza, cita leis quando relevante (ex.: Lei 8.245/91), usa exemplos práticos e linguagem acessível ao proprietário independente. Trate o cenário como o atual de ${currentYear} — NUNCA cite anos anteriores (2023, 2024, 2025) como se fossem o presente; se precisar citar ano, use ${currentYear}. Sempre em português do Brasil. Responda APENAS com JSON válido, sem texto fora do JSON.`;
       const user = `Escreva um artigo de blog completo a partir deste título base: "${title}".${angle ? ` Abordagem: ${angle}.` : ""}
 
 Requisitos OBRIGATÓRIOS do JSON de resposta:
