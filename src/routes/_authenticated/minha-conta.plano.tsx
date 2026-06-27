@@ -39,6 +39,7 @@ const PLAN_BADGE: Record<string, { label: string; cls: string; icon: typeof Spar
 function PlanPage() {
   const qc = useQueryClient();
   const search = useSearch({ from: "/_authenticated/minha-conta/plano" });
+  const { data: planInfo, isLoading: planLoading } = useMyPlan();
   const getSub = getMySubscription;
   const checkout = createCheckoutSession;
   const downgrade = scheduleDowngrade;
