@@ -76,10 +76,14 @@ function AppSidebar({ onSignOut, email }: { onSignOut: () => void; email?: strin
   const path = useRouterState({ select: (s) => s.location.pathname });
   const { user } = useAuth();
   const [isAdmin, setIsAdmin] = useState(false);
+  const [plan, setPlan] = useState<string>("free");
   useEffect(() => {
-    if (!user) { setIsAdmin(false); return; }
+    if (!user) { setIsAdmin(false); setPlan("free"); return; }
     supabase.rpc("has_role", { _user_id: user.id, _role: "admin" }).then(({ data }) => setIsAdmin(!!data));
+    supabase.from("profiles").select("plan").eq("id", user.id).maybeSingle().then(({ data }) => setPlan((data?.plan as string) ?? "free"));
   }, [user]);
+  const planLabel = plan === "investidor" ? "Investidor" : plan === "imobiliaria" ? "Imobiliária" : "Gratuito";
+  const planCls = plan === "investidor" ? "bg-primary/15 text-primary" : plan === "imobiliaria" ? "bg-amber-100 text-amber-800" : "bg-slate-200 text-slate-700";
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader>
@@ -128,9 +132,12 @@ function AppSidebar({ onSignOut, email }: { onSignOut: () => void; email?: strin
         )}
       </SidebarContent>
       <SidebarFooter>
-        <div className="px-2 pb-2">
-          <p className="truncate text-xs text-muted-foreground group-data-[collapsible=icon]:hidden">{email}</p>
-          <Button onClick={onSignOut} variant="ghost" size="sm" className="mt-1 w-full justify-start gap-2">
+        <div className="px-2 pb-2 space-y-1">
+          <div className="flex items-center justify-between gap-2 group-data-[collapsible=icon]:hidden">
+            <p className="truncate text-xs text-muted-foreground">{email}</p>
+            <span className={`shrink-0 rounded px-1.5 py-0.5 text-[10px] font-semibold ${planCls}`}>{planLabel}</span>
+          </div>
+          <Button onClick={onSignOut} variant="ghost" size="sm" className="w-full justify-start gap-2">
             <LogOut className="h-4 w-4" />
             <span className="group-data-[collapsible=icon]:hidden">Sair</span>
           </Button>
