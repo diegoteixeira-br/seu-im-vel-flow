@@ -1,16 +1,18 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { adminListUsers, adminSetUserPlan, adminToggleActive, adminToggleAdmin } from "@/lib/admin.functions";
+import { adminListUsers, adminSetUserPlan, adminToggleActive, adminToggleAdmin, adminSetUserEmail } from "@/lib/admin.functions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 import { formatDate } from "@/lib/format";
 import { toast } from "sonner";
-import { Shield, ShieldOff, UserX, UserCheck } from "lucide-react";
+import { Shield, ShieldOff, UserX, UserCheck, Mail } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/admin/usuarios")({
   component: AdminUsers,
