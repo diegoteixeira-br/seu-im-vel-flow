@@ -77,13 +77,19 @@ function AppSidebar({ onSignOut, email }: { onSignOut: () => void; email?: strin
   const { user } = useAuth();
   const [isAdmin, setIsAdmin] = useState(false);
   const [plan, setPlan] = useState<string>("free");
+  const [role, setRole] = useState<string>("owner");
   useEffect(() => {
-    if (!user) { setIsAdmin(false); setPlan("free"); return; }
+    if (!user) { setIsAdmin(false); setPlan("free"); setRole("owner"); return; }
     supabase.rpc("has_role", { _user_id: user.id, _role: "admin" }).then(({ data }) => setIsAdmin(!!data));
-    supabase.from("profiles").select("plan").eq("id", user.id).maybeSingle().then(({ data }) => setPlan((data?.plan as string) ?? "free"));
+    supabase.from("profiles").select("plan, role").eq("id", user.id).maybeSingle().then(({ data }) => {
+      setPlan(((data?.plan as string) ?? "free"));
+      setRole((((data as Record<string, unknown> | null)?.role as string) ?? "owner"));
+    });
   }, [user]);
+  const isMember = role === "member";
   const planLabel = plan === "investidor" ? "Investidor" : plan === "imobiliaria" ? "Imobiliária" : "Gratuito";
   const planCls = plan === "investidor" ? "bg-primary/15 text-primary" : plan === "imobiliaria" ? "bg-amber-100 text-amber-800" : "bg-slate-200 text-slate-700";
+  const visibleNav = isMember ? navItems.filter((i) => i.to !== "/minha-conta/plano") : navItems;
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader>
@@ -97,7 +103,7 @@ function AppSidebar({ onSignOut, email }: { onSignOut: () => void; email?: strin
           <SidebarGroupLabel>Menu</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {navItems.map((item) => {
+              {visibleNav.map((item) => {
                 const active = path === item.to || path.startsWith(item.to + "/");
                 return (
                   <SidebarMenuItem key={item.to}>
