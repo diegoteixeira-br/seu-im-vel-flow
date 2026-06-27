@@ -1,15 +1,30 @@
-// @lovable.dev/vite-tanstack-config already includes the following — do NOT add them manually
-// or the app will break with duplicate plugins:
-//   - tanstackStart, viteReact, tailwindcss, tsConfigPaths, nitro (build-only using cloudflare as a default target),
-//     componentTagger (dev-only), VITE_* env injection, @ path alias, React/TanStack dedupe,
-//     error logger plugins, and sandbox detection (port/host/strictPort).
-// You can pass additional config via defineConfig({ vite: { ... }, etc... }) if needed.
+// SPA build configuration — gera pasta `dist/` com arquivos estáticos (HTML/CSS/JS)
+// pronta para hospedagem compartilhada (Hostinger public_html).
+//
+// O que mudou em relação ao modo SSR original:
+//  - `nitro: false`  → desliga o build do worker/Cloudflare e não gera `.output/`.
+//  - `tanstackStart.spa.enabled: true` → TanStack Start gera um shell HTML único
+//    que hidrata no cliente (sem SSR). Todas as rotas são servidas pelo mesmo
+//    index.html.
+//  - `vite.build.outDir: "dist"` → saída final em `dist/`.
+//
+// IMPORTANTE: Server Functions (`createServerFn`) e rotas `/api/public/*`
+// continuam no código-fonte, mas NÃO funcionarão em produção até serem
+// migradas para Supabase Edge Functions (próxima etapa).
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
 export default defineConfig({
+  nitro: false,
   tanstackStart: {
-    // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
-    // nitro/vite builds from this
+    // Mantém o wrapper de erro de SSR para dev local; em produção SPA não é usado.
     server: { entry: "server" },
+    // SPA mode: renderiza um shell estático e hidrata no cliente.
+    spa: { enabled: true },
+  },
+  vite: {
+    build: {
+      outDir: "dist",
+      emptyOutDir: true,
+    },
   },
 });
