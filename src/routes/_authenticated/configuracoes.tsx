@@ -207,7 +207,6 @@ function ConfigPage() {
                 <CardTitle>Integração ASAAS</CardTitle>
                 <CardDescription>
                   Use o ASAAS para emitir cobranças com <strong>boleto + PIX (QR Code no mesmo documento)</strong> e baixa automática quando pago.
-                  Configure o webhook do ASAAS apontando para <code className="text-xs">/api/public/asaas-webhook</code>.
                 </CardDescription>
               </CardHeader>
               <CardContent className="grid gap-4 sm:grid-cols-2">
@@ -225,6 +224,31 @@ function ConfigPage() {
                   >
                     Abrir conta no ASAAS
                   </a>
+                </div>
+                <div className="sm:col-span-2 rounded-md border bg-muted/40 p-3 text-sm space-y-2">
+                  <p className="font-medium">URL do Webhook (configure no painel do ASAAS)</p>
+                  <p className="text-xs text-muted-foreground">
+                    No ASAAS, vá em <strong>Integrações → Webhooks</strong> e cadastre a URL abaixo para receber a baixa automática das cobranças pagas (boleto e PIX).
+                  </p>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <code className="flex-1 min-w-0 break-all rounded bg-background border px-2 py-1 text-xs">
+                      https://fmifbxrqbwkyjgkgceyh.supabase.co/functions/v1/asaas-webhook
+                    </code>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        navigator.clipboard.writeText("https://fmifbxrqbwkyjgkgceyh.supabase.co/functions/v1/asaas-webhook");
+                        toast.success("URL copiada");
+                      }}
+                    >
+                      Copiar
+                    </Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    A identificação do proprietário é automática: cada cobrança criada pelo AlugaFlow guarda o <code>asaas_payment_id</code> vinculado ao seu pagamento, e o webhook usa esse ID para baixar o pagamento correto — não importa de qual conta ASAAS o evento veio.
+                  </p>
                 </div>
                 <div className="sm:col-span-2">
                   <Field label="ASAAS API Key">
