@@ -47,20 +47,31 @@ export function SecurityTab() {
     try {
       const { data: userData, error: userErr } = await supabase.auth.getUser();
       if (userErr || !userData.user?.email) throw new Error("Sessão inválida. Faça login novamente.");
+      const email = userData.user.email;
 
       // Reautenticação: confirma a senha atual antes de alterar
       const { error: signInErr } = await supabase.auth.signInWithPassword({
-        email: userData.user.email,
+        email,
         password: v.currentPassword,
       });
       if (signInErr) throw new Error("Senha atual incorreta.");
 
+      // Aguarda a nova sessão estar ativa antes de atualizar a senha
+      const { data: sessionData } = await supabase.auth.getSession();
+      if (!sessionData.session) throw new Error("Não foi possível validar a sessão. Tente novamente.");
+
       const { error } = await supabase.auth.updateUser({ password: v.newPassword });
       if (error) throw error;
-      toast.success("Senha alterada com sucesso");
+
+      toast.success("Senha alterada com sucesso. Faça login novamente com a nova senha.");
       form.reset();
+
+      // Encerra a sessão para garantir que o usuário re-autentique com a nova senha
+      await supabase.auth.signOut();
+      window.location.href = "/auth";
     } catch (e) {
-      toast.error((e as Error).message);
+      console.error("[security-tab] alterar senha falhou:", e);
+      toast.error((e as Error).message || "Não foi possível alterar a senha.");
     } finally {
       setSubmitting(false);
     }
