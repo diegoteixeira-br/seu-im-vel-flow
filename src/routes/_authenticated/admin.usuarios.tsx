@@ -22,10 +22,10 @@ type Row = {
 };
 
 function AdminUsers() {
-  const list = useServerFn(adminListUsers);
-  const setPlan = useServerFn(adminSetUserPlan);
-  const toggleActive = useServerFn(adminToggleActive);
-  const toggleAdmin = useServerFn(adminToggleAdmin);
+  const list = adminListUsers;
+  const setPlan = adminSetUserPlan;
+  const toggleActive = adminToggleActive;
+  const toggleAdmin = adminToggleAdmin;
   const qc = useQueryClient();
   const [q, setQ] = useState("");
 
