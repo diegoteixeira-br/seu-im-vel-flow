@@ -335,7 +335,7 @@ function TenantDialog({
                 </div>
               </div>
               <div className="space-y-1 sm:col-span-4"><Label>Rua</Label><Input {...form.register("address_street")} /></div>
-              <div className="space-y-1 sm:col-span-1"><Label>Número *</Label><Input ref={numberRef} onChange={(e) => form.setValue("address_number", e.target.value, { shouldDirty: true })} defaultValue={form.getValues("address_number") || ""} /></div>
+              <div className="space-y-1 sm:col-span-1"><Label>Número *</Label><Input {...(() => { const r = form.register("address_number"); return { ...r, ref: (el: HTMLInputElement | null) => { r.ref(el); numberRef.current = el; } }; })()} /></div>
               <div className="space-y-1 sm:col-span-3"><Label>Bairro</Label><Input {...form.register("address_neighborhood")} /></div>
               <div className="space-y-1 sm:col-span-2"><Label>Cidade</Label><Input {...form.register("address_city")} /></div>
               <div className="space-y-1 sm:col-span-2"><Label>UF</Label><Input maxLength={2} {...form.register("address_state")} /></div>
