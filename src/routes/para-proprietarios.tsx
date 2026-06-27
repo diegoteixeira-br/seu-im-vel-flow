@@ -102,24 +102,33 @@ function Page() {
             <p className="mx-auto mt-3 max-w-xl text-muted-foreground">Escolha o plano certo para o seu momento.</p>
           </div>
           <div className="mt-10 grid gap-6 md:grid-cols-3">
-            {PLANS.map((p) => (
-              <div key={p.name} className={`rounded-lg border bg-card p-6 ${p.highlight ? "border-primary shadow-lg ring-1 ring-primary" : ""}`}>
-                {p.highlight && <div className="mb-3 inline-block rounded-full bg-primary px-3 py-1 text-xs font-semibold text-primary-foreground">Mais popular</div>}
-                <h3 className="text-xl font-semibold">{p.name}</h3>
-                <div className="mt-3 flex items-baseline gap-1">
-                  <span className="text-3xl font-bold">{p.price}</span>
-                  <span className="text-sm text-muted-foreground">{p.period}</span>
+            {plans.map((p, idx) => {
+              const highlight = idx === 1;
+              const promo = isPromoActive(p);
+              const effective = promo ? (p.promo_price as number) : p.price;
+              const benefits = Array.isArray(p.benefits) ? (p.benefits as string[]) : [];
+              const isFree = Number(p.price) === 0;
+              const cta = isFree ? "Começar grátis" : `Assinar ${p.name}`;
+              return (
+                <div key={p.id} className={`rounded-lg border bg-card p-6 ${highlight ? "border-primary shadow-lg ring-1 ring-primary" : ""}`}>
+                  {highlight && <div className="mb-3 inline-block rounded-full bg-primary px-3 py-1 text-xs font-semibold text-primary-foreground">Mais popular</div>}
+                  <h3 className="text-xl font-semibold">{p.name}</h3>
+                  <div className="mt-3 flex items-baseline gap-2">
+                    <span className="text-3xl font-bold">{isFree ? "R$ 0" : formatBRL(effective)}</span>
+                    <span className="text-sm text-muted-foreground">{isFree ? "para sempre" : "/mês"}</span>
+                    {promo && <span className="text-sm text-muted-foreground line-through">{formatBRL(p.price)}</span>}
+                  </div>
+                  <ul className="mt-6 space-y-2 text-sm">
+                    {benefits.map((f) => (
+                      <li key={f} className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" />{f}</li>
+                    ))}
+                  </ul>
+                  <Button asChild className="mt-6 w-full" variant={highlight ? "default" : "outline"}>
+                    <Link to="/auth" search={{ mode: "signup" }}>{cta}</Link>
+                  </Button>
                 </div>
-                <ul className="mt-6 space-y-2 text-sm">
-                  {p.features.map((f) => (
-                    <li key={f} className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" />{f}</li>
-                  ))}
-                </ul>
-                <Button asChild className="mt-6 w-full" variant={p.highlight ? "default" : "outline"}>
-                  <Link to="/auth" search={{ mode: "signup" }}>{p.cta}</Link>
-                </Button>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>
