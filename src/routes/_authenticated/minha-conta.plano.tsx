@@ -95,6 +95,25 @@ function PlanPage() {
     listings: currentPlanData?.max_listings as number | null,
   };
 
+  if (planInfo?.role === "member") {
+    return (
+      <div className="max-w-2xl mx-auto">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2"><ShieldAlert className="h-5 w-5 text-amber-600" /> Acesso restrito</CardTitle>
+            <CardDescription>O gerenciamento de plano está disponível apenas para o dono da conta.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground">
+              Você está acessando como membro de equipe. Para alterar o plano, entre em contato com o administrador da conta.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+  if (planLoading) return <p className="text-muted-foreground">Carregando...</p>;
+
   return (
     <div className="mx-auto max-w-6xl space-y-6">
       <div>
