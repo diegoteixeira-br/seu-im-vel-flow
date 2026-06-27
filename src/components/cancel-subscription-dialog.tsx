@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import {
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
@@ -25,7 +24,7 @@ export function CancelSubscriptionDialog({
   const qc = useQueryClient();
   const [reason, setReason] = useState("");
   const [details, setDetails] = useState("");
-  const cancelFn = useServerFn(cancelSubscription);
+  const cancelFn = cancelSubscription;
 
   const mut = useMutation({
     mutationFn: () => cancelFn({ data: { reason: reason + (details ? ` — ${details}` : "") } }),

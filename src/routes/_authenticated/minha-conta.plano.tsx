@@ -1,7 +1,6 @@
 import { createFileRoute, useSearch } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -40,9 +39,9 @@ const PLAN_BADGE: Record<string, { label: string; cls: string; icon: typeof Spar
 function PlanPage() {
   const qc = useQueryClient();
   const search = useSearch({ from: "/_authenticated/minha-conta/plano" });
-  const getSub = useServerFn(getMySubscription);
-  const checkout = useServerFn(createCheckoutSession);
-  const downgrade = useServerFn(scheduleDowngrade);
+  const getSub = getMySubscription;
+  const checkout = createCheckoutSession;
+  const downgrade = scheduleDowngrade;
 
   const [successOpen, setSuccessOpen] = useState(false);
   const [downgradePlan, setDowngradePlan] = useState<string | null>(null);
