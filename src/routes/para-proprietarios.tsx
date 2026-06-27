@@ -1,7 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { BrandLogo } from "@/components/brand-logo";
 import { Button } from "@/components/ui/button";
-import { Building2, Users, FileText, Wallet, Check, Camera, BarChart3, ShieldCheck } from "lucide-react";
+import { Building2, Users, FileText, Wallet, Check, Camera, BarChart3, ShieldCheck, Menu } from "lucide-react";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose } from "@/components/ui/sheet";
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -52,13 +53,32 @@ function Page() {
   return (
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-20 border-b bg-background/95 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-2 px-4 py-3">
-          <Link to="/"><BrandLogo size={32} /></Link>
-          <nav className="flex items-center gap-2">
+        <div className="mx-auto grid max-w-6xl grid-cols-[auto_1fr_auto] items-center gap-2 px-4 py-3">
+          <Link to="/" className="shrink-0"><BrandLogo size={32} /></Link>
+          <nav className="hidden items-center justify-end gap-2 md:flex">
             <Button asChild variant="ghost" size="sm"><Link to="/">Imóveis</Link></Button>
             <Button asChild variant="ghost" size="sm"><Link to="/sobre">Sobre</Link></Button>
-            <Button asChild size="sm"><Link to={user ? "/dashboard" : "/auth"}>{user ? "Painel" : "Entrar"}</Link></Button>
           </nav>
+          <span className="md:hidden" />
+          <div className="flex items-center justify-end gap-2">
+            <Button asChild size="sm"><Link to={user ? "/dashboard" : "/auth"}>{user ? "Painel" : "Entrar"}</Link></Button>
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button variant="outline" size="icon" className="md:hidden" aria-label="Abrir menu">
+                  <Menu className="h-5 w-5" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right" className="w-72">
+                <SheetHeader><SheetTitle>Menu</SheetTitle></SheetHeader>
+                <nav className="mt-4 flex flex-col gap-1">
+                  <SheetClose asChild><Link to="/" className="rounded-md px-3 py-2 text-sm hover:bg-muted">Imóveis</Link></SheetClose>
+                  <SheetClose asChild><Link to="/blog" className="rounded-md px-3 py-2 text-sm hover:bg-muted">Blog</Link></SheetClose>
+                  <SheetClose asChild><Link to="/sobre" className="rounded-md px-3 py-2 text-sm hover:bg-muted">Sobre</Link></SheetClose>
+                  <SheetClose asChild><Link to="/para-proprietarios" className="rounded-md px-3 py-2 text-sm hover:bg-muted">Para proprietários</Link></SheetClose>
+                </nav>
+              </SheetContent>
+            </Sheet>
+          </div>
         </div>
       </header>
 
