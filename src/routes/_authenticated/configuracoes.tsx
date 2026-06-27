@@ -334,3 +334,4 @@ function AsaasPlanGate() {
       </Link>
     </div>
   );
+}
