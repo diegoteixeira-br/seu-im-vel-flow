@@ -1,55 +1,23 @@
-import { createServerFn } from "@tanstack/react-start";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+// Wrapper cliente que invoca a Edge Function `account` no Supabase.
+import { supabase } from "@/integrations/supabase/client";
 
-const BUCKETS = [
-  "property-photos",
-  "tenant-documents",
-  "signed-contracts",
-  "branding",
-  "blog-covers",
-  "lead-documents",
-];
-
-async function deleteUserFolder(client: any, bucket: string, prefix: string) {
-  const toDelete: string[] = [];
-  const stack: string[] = [prefix];
-  while (stack.length) {
-    const dir = stack.pop()!;
-    const { data, error } = await client.storage.from(bucket).list(dir, { limit: 1000 });
-    if (error || !data) continue;
-    for (const item of data) {
-      const path = `${dir}/${item.name}`;
-      if (item.id === null || !item.metadata) {
-        stack.push(path);
-      } else {
-        toDelete.push(path);
-      }
-    }
-  }
-  if (toDelete.length) {
-    for (let i = 0; i < toDelete.length; i += 100) {
-      await client.storage.from(bucket).remove(toDelete.slice(i, i + 100));
-    }
-  }
-}
-
-export const deleteAccount = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => {
-    const { userId, supabase } = context;
-
-    // 1. Storage cleanup (best-effort, scoped to user's folder via RLS)
-    for (const bucket of BUCKETS) {
-      try {
-        await deleteUserFolder(supabase, bucket, userId);
-      } catch {
-        // continue
-      }
-    }
-
-    // 2. Delete all DB rows + auth user via SECURITY DEFINER RPC
-    const { error } = await supabase.rpc("delete_my_account");
-    if (error) throw new Error(error.message);
-
-    return { ok: true };
+export async function deleteAccount(_args?: Record<string, unknown>): Promise<{ ok: true }> {
+  const { data, error } = await supabase.functions.invoke("account", {
+    body: { action: "delete_account" },
   });
+  if (error) {
+    let msg = error.message || "Falha ao excluir conta";
+    try {
+      const ctx = (error as unknown as { context?: { json?: () => Promise<{ error?: string }> } }).context;
+      if (ctx && typeof ctx.json === "function") {
+        const j = await ctx.json();
+        if (j?.error) msg = j.error;
+      }
+    } catch { /* noop */ }
+    throw new Error(msg);
+  }
+  if (data && typeof data === "object" && "error" in data && (data as { error?: string }).error) {
+    throw new Error((data as { error: string }).error);
+  }
+  return data as { ok: true };
+}
