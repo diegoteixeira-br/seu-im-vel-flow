@@ -101,9 +101,8 @@ function AdminPlans() {
                 <div className="flex items-end gap-2"><Switch checked={p.advanced_reports} onCheckedChange={(v) => update(p.id, { advanced_reports: v })} /><Label>Relatórios</Label></div>
                 <div><Label>Máx. usuários</Label><Input type="number" value={p.max_users} onChange={(e) => update(p.id, { max_users: Number(e.target.value) || 1 })} /></div>
               </div>
-              <div>
-                <Label>Stripe Price ID (price_xxx) — necessário para cobrança</Label>
-                <Input placeholder="price_..." value={p.stripe_price_id ?? ""} onChange={(e) => update(p.id, { stripe_price_id: e.target.value })} />
+              <div className="rounded-md border border-emerald-200 bg-emerald-50/50 p-3 text-xs text-emerald-900 dark:border-emerald-900/40 dark:bg-emerald-950/30 dark:text-emerald-200">
+                ✓ Sincronização automática com Stripe ativada — Produto e preço são criados/atualizados ao salvar.
               </div>
               <div className="rounded-md border bg-muted/30 p-4">
                 <div className="text-xs text-muted-foreground">Prévia na landing page</div>
