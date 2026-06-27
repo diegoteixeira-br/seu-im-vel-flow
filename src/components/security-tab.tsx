@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
 import { useNavigate } from "@tanstack/react-router";
-import { useServerFn } from "@tanstack/react-start";
+
 import { KeyRound, ShieldCheck, Mail, Trash2, AlertTriangle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -147,7 +147,7 @@ function DeleteAccountCard() {
   const [confirmText, setConfirmText] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [open, setOpen] = useState(false);
-  const runDelete = useServerFn(deleteAccount);
+  const runDelete = deleteAccount;
 
   const onConfirm = async () => {
     setSubmitting(true);

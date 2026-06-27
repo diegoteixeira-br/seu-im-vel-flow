@@ -1,7 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { adminListUsers, adminSetUserPlan, adminToggleActive, adminToggleAdmin } from "@/lib/admin.functions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -23,10 +22,10 @@ type Row = {
 };
 
 function AdminUsers() {
-  const list = useServerFn(adminListUsers);
-  const setPlan = useServerFn(adminSetUserPlan);
-  const toggleActive = useServerFn(adminToggleActive);
-  const toggleAdmin = useServerFn(adminToggleAdmin);
+  const list = adminListUsers;
+  const setPlan = adminSetUserPlan;
+  const toggleActive = adminToggleActive;
+  const toggleAdmin = adminToggleAdmin;
   const qc = useQueryClient();
   const [q, setQ] = useState("");
 

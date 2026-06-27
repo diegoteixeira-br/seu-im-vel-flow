@@ -1,6 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
 import { getAdminMetrics } from "@/lib/admin.functions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, Building2, Megaphone, TrendingUp, UserPlus, DollarSign } from "lucide-react";
@@ -11,7 +10,7 @@ export const Route = createFileRoute("/_authenticated/admin/")({
 });
 
 function AdminHome() {
-  const fn = useServerFn(getAdminMetrics);
+  const fn = getAdminMetrics;
   const { data, isLoading } = useQuery({ queryKey: ["admin-metrics"], queryFn: () => fn() });
 
   const m = (data ?? {}) as Record<string, unknown>;
