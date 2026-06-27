@@ -119,7 +119,7 @@ function AdminPlans() {
                   )}
                 </div>
                 <ul className="mt-3 space-y-1 text-sm">
-                  {p.benefits.map((b, i) => <li key={i} className="flex gap-2"><Check className="h-4 w-4 text-emerald-600" />{b}</li>)}
+                  {p.benefits.filter((b) => !/m[uú]ltiplos\s+acessos/i.test(b)).map((b, i) => <li key={i} className="flex gap-2"><Check className="h-4 w-4 text-emerald-600" />{b}</li>)}
                   {p.max_users > 1 && (
                     <li className="flex gap-2"><Check className="h-4 w-4 text-emerald-600" />{`Múltiplos acessos (+${p.max_users - 1} usuário${p.max_users - 1 > 1 ? "s" : ""})`}</li>
                   )}
