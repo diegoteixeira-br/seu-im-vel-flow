@@ -3,6 +3,9 @@ import { BrandLogo } from "@/components/brand-logo";
 import { Button } from "@/components/ui/button";
 import { Building2, Users, FileText, Wallet, Check, Camera, BarChart3, ShieldCheck } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { formatBRL } from "@/lib/format";
 
 export const Route = createFileRoute("/para-proprietarios")({
   head: () => ({
@@ -27,14 +30,25 @@ const FEATURES = [
   { icon: FileText, title: "Documentos prontos", desc: "Distrato, confissão de dívida e mais." },
 ];
 
-const PLANS = [
-  { name: "Gratuito", price: "R$ 0", period: "para sempre", highlight: false, features: ["Até 2 anúncios no portal", "Gestão de imóveis e contratos", "Controle de pagamentos"], cta: "Começar grátis" },
-  { name: "Investidor", price: "R$ 49,90", period: "/mês", highlight: true, features: ["Anúncios ilimitados", "Relatórios completos", "Cobrança automática via ASAAS"], cta: "Assinar Investidor" },
-  { name: "Imobiliária", price: "R$ 197", period: "/mês", highlight: false, features: ["Múltiplos usuários", "Permissões por equipe", "Suporte dedicado"], cta: "Falar com vendas" },
-];
+type DbPlan = { id: string; name: string; price: number; promo_price: number | null; promo_until: string | null; active: boolean; benefits: unknown; sort_order: number };
+
+function isPromoActive(p: DbPlan) {
+  if (p.promo_price == null) return false;
+  if (!p.promo_until) return true;
+  return new Date(p.promo_until) >= new Date();
+}
 
 function Page() {
   const { user } = useAuth();
+  const { data: plans = [] } = useQuery({
+    queryKey: ["public-plans"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("plans").select("*").eq("active", true).order("sort_order");
+      if (error) throw error;
+      return (data ?? []) as DbPlan[];
+    },
+    staleTime: 30_000,
+  });
   return (
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-20 border-b bg-background/95 backdrop-blur">
@@ -88,24 +102,33 @@ function Page() {
             <p className="mx-auto mt-3 max-w-xl text-muted-foreground">Escolha o plano certo para o seu momento.</p>
           </div>
           <div className="mt-10 grid gap-6 md:grid-cols-3">
-            {PLANS.map((p) => (
-              <div key={p.name} className={`rounded-lg border bg-card p-6 ${p.highlight ? "border-primary shadow-lg ring-1 ring-primary" : ""}`}>
-                {p.highlight && <div className="mb-3 inline-block rounded-full bg-primary px-3 py-1 text-xs font-semibold text-primary-foreground">Mais popular</div>}
-                <h3 className="text-xl font-semibold">{p.name}</h3>
-                <div className="mt-3 flex items-baseline gap-1">
-                  <span className="text-3xl font-bold">{p.price}</span>
-                  <span className="text-sm text-muted-foreground">{p.period}</span>
+            {plans.map((p, idx) => {
+              const highlight = idx === 1;
+              const promo = isPromoActive(p);
+              const effective = promo ? (p.promo_price as number) : p.price;
+              const benefits = Array.isArray(p.benefits) ? (p.benefits as string[]) : [];
+              const isFree = Number(p.price) === 0;
+              const cta = isFree ? "Começar grátis" : `Assinar ${p.name}`;
+              return (
+                <div key={p.id} className={`rounded-lg border bg-card p-6 ${highlight ? "border-primary shadow-lg ring-1 ring-primary" : ""}`}>
+                  {highlight && <div className="mb-3 inline-block rounded-full bg-primary px-3 py-1 text-xs font-semibold text-primary-foreground">Mais popular</div>}
+                  <h3 className="text-xl font-semibold">{p.name}</h3>
+                  <div className="mt-3 flex items-baseline gap-2">
+                    <span className="text-3xl font-bold">{isFree ? "R$ 0" : formatBRL(effective)}</span>
+                    <span className="text-sm text-muted-foreground">{isFree ? "para sempre" : "/mês"}</span>
+                    {promo && <span className="text-sm text-muted-foreground line-through">{formatBRL(p.price)}</span>}
+                  </div>
+                  <ul className="mt-6 space-y-2 text-sm">
+                    {benefits.map((f) => (
+                      <li key={f} className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" />{f}</li>
+                    ))}
+                  </ul>
+                  <Button asChild className="mt-6 w-full" variant={highlight ? "default" : "outline"}>
+                    <Link to="/auth" search={{ mode: "signup" }}>{cta}</Link>
+                  </Button>
                 </div>
-                <ul className="mt-6 space-y-2 text-sm">
-                  {p.features.map((f) => (
-                    <li key={f} className="flex items-center gap-2"><Check className="h-4 w-4 text-green-600" />{f}</li>
-                  ))}
-                </ul>
-                <Button asChild className="mt-6 w-full" variant={p.highlight ? "default" : "outline"}>
-                  <Link to="/auth" search={{ mode: "signup" }}>{p.cta}</Link>
-                </Button>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>
