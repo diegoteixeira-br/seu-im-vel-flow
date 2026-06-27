@@ -28,7 +28,7 @@ export function AiCoverGenerator({ title, onCoverReady }: { title?: string; onCo
   const [isFinal, setIsFinal] = useState(false);
   const [streaming, setStreaming] = useState(false);
   const [saving, setSaving] = useState(false);
-  const upload = useServerFn(uploadBlogCover);
+  const upload = uploadBlogCover;
 
   const suggested = title
     ? `Imagem de capa para artigo de blog imobiliário brasileiro sobre "${title}". ${styleHints[style]}.`
@@ -41,10 +41,17 @@ export function AiCoverGenerator({ title, onCoverReady }: { title?: string; onCo
     setIsFinal(false);
     setStreaming(true);
     try {
-      await streamImage("/api/generate-blog-cover", effectivePrompt, (data, final) => {
-        setB64(data);
-        if (final) setIsFinal(true);
-      });
+      const { data: sess } = await supabase.auth.getSession();
+      const token = sess.session?.access_token;
+      await streamImage(
+        GENERATE_COVER_URL,
+        effectivePrompt,
+        (data, final) => {
+          setB64(data);
+          if (final) setIsFinal(true);
+        },
+        token ? { Authorization: `Bearer ${token}`, apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY } : undefined,
+      );
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Falha ao gerar imagem");
     } finally {
