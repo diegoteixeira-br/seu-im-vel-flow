@@ -1,6 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
 import { getAdminMetrics } from "@/lib/admin.functions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, Building2, Megaphone, TrendingUp, UserPlus, DollarSign } from "lucide-react";
