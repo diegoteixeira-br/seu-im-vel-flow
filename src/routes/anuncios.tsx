@@ -68,7 +68,6 @@ export function PublicFooter() {
         <div>
           <p className="text-sm font-semibold">Navegar</p>
           <ul className="mt-2 space-y-1 text-sm text-muted-foreground">
-            <li><Link to="/">Início</Link></li>
             <li><Link to="/">Imóveis</Link></li>
             <li><Link to="/blog">Blog</Link></li>
             <li><Link to="/sobre">Sobre</Link></li>
