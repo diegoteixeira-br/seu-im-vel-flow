@@ -30,6 +30,7 @@ function AdminUsers() {
   const toggleAdmin = adminToggleAdmin;
   const qc = useQueryClient();
   const [q, setQ] = useState("");
+  const [emailDialog, setEmailDialog] = useState<{ user: Row | null; value: string }>({ user: null, value: "" });
 
   const { data, isLoading } = useQuery({ queryKey: ["admin-users"], queryFn: () => list() });
   const rows = (data ?? []) as Row[];
