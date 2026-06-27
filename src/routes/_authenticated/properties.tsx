@@ -20,6 +20,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { formatBRL } from "@/lib/format";
 import { PropertyPhotos } from "@/components/property-photos";
 import { PropertyCover } from "@/components/property-cover";
+import { UpgradeRequiredDialog, useCheckLimit, type PlanLimit } from "@/components/plan-limit-guard";
 
 export const Route = createFileRoute("/_authenticated/properties")({
   head: () => ({ meta: [{ title: "Imóveis — AlugaFlow" }] }),
@@ -59,6 +60,14 @@ function PropertiesPage() {
   const qc = useQueryClient();
   const [editing, setEditing] = useState<Property | null>(null);
   const [open, setOpen] = useState(false);
+  const [limitBlock, setLimitBlock] = useState<PlanLimit | null>(null);
+  const checkLimit = useCheckLimit();
+
+  const handleNew = async () => {
+    const r = await checkLimit("properties");
+    if (!r.allowed) { setLimitBlock(r); return; }
+    setEditing(null); setOpen(true);
+  };
 
   const { data = [], isLoading } = useQuery({
     queryKey: ["properties"],
