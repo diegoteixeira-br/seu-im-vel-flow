@@ -30,8 +30,29 @@ type Post = {
   cover_image_url: string | null;
   author_name: string;
   published: boolean;
+  scheduled_at: string | null;
   created_at: string;
 };
+
+// Converte ISO (UTC) -> "YYYY-MM-DDTHH:mm" no fuso local para o <input type="datetime-local">
+function toLocalInput(iso: string | null | undefined): string {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return "";
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+function fromLocalInput(v: string): string | null {
+  if (!v) return null;
+  const d = new Date(v);
+  return isNaN(d.getTime()) ? null : d.toISOString();
+}
+function formatScheduled(iso: string): string {
+  const d = new Date(iso);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
 
 function AdminBlog() {
   const { user } = useAuth();
@@ -61,6 +82,10 @@ function AdminBlog() {
       toast.error("Preencha título, resumo e conteúdo.");
       return;
     }
+    const scheduledIso = editing.scheduled_at ?? null;
+    const isFutureSchedule = !!scheduledIso && new Date(scheduledIso).getTime() > Date.now();
+    // Se houver agendamento no futuro, força published=false (cron vai publicar na hora)
+    const published = isFutureSchedule ? false : !!editing.published;
     const payload = {
       title: editing.title,
       slug: editing.slug || slugify(editing.title),
@@ -68,7 +93,8 @@ function AdminBlog() {
       content: editing.content,
       cover_image_url: editing.cover_image_url || null,
       author_name: editing.author_name || "Equipe AlugaFlow",
-      published: !!editing.published,
+      published,
+      scheduled_at: isFutureSchedule ? scheduledIso : null,
     };
     let error;
     if (editing.id) {
@@ -77,10 +103,11 @@ function AdminBlog() {
       ({ error } = await supabase.from("posts").insert(payload));
     }
     if (error) return toast.error(error.message);
-    toast.success("Salvo!");
+    toast.success(isFutureSchedule ? `Agendado para ${formatScheduled(scheduledIso!)}` : "Salvo!");
     setEditing(null);
     load();
   };
+
 
   const del = async (id: string) => {
     if (!confirm("Excluir este post?")) return;
@@ -111,7 +138,13 @@ function AdminBlog() {
               posts.map((p) => (
                 <tr key={p.id} className="border-t">
                   <td className="p-3"><div className="font-medium">{p.title}</div><div className="text-xs text-muted-foreground">/{p.slug}</div></td>
-                  <td className="p-3">{p.published ? <Badge>Publicado</Badge> : <Badge variant="secondary">Rascunho</Badge>}</td>
+                  <td className="p-3">{
+                    p.published
+                      ? <Badge>Publicado</Badge>
+                      : p.scheduled_at
+                        ? <Badge variant="outline" title={formatScheduled(p.scheduled_at)}>Agendado · {formatScheduled(p.scheduled_at)}</Badge>
+                        : <Badge variant="secondary">Rascunho</Badge>
+                  }</td>
                   <td className="p-3 text-muted-foreground">{formatDateBR(p.created_at)}</td>
                   <td className="p-3 whitespace-nowrap">
                     <div className="flex justify-end gap-1">
@@ -183,9 +216,33 @@ function AdminBlog() {
                 <Label>Autor</Label>
                 <Input value={editing.author_name ?? ""} onChange={(e) => setEditing({ ...editing, author_name: e.target.value })} />
               </div>
+              <div className="rounded-md border bg-muted/30 p-3">
+                <Label>Agendar publicação</Label>
+                <div className="mt-2 flex flex-wrap items-center gap-2">
+                  <Input
+                    type="datetime-local"
+                    className="max-w-[240px]"
+                    value={toLocalInput(editing.scheduled_at)}
+                    min={toLocalInput(new Date().toISOString())}
+                    onChange={(e) => setEditing({ ...editing, scheduled_at: fromLocalInput(e.target.value), published: false })}
+                  />
+                  {editing.scheduled_at && (
+                    <Button size="sm" variant="ghost" onClick={() => setEditing({ ...editing, scheduled_at: null })}>Limpar</Button>
+                  )}
+                </div>
+                <p className="mt-2 text-xs text-muted-foreground">
+                  {editing.scheduled_at && new Date(editing.scheduled_at).getTime() > Date.now()
+                    ? `Será publicado automaticamente em ${formatScheduled(editing.scheduled_at)} (horário do seu computador).`
+                    : "Defina data e hora futuras para publicar automaticamente. Deixe em branco para publicar manualmente."}
+                </p>
+              </div>
               <div className="flex items-center gap-2">
-                <Switch checked={!!editing.published} onCheckedChange={(v) => setEditing({ ...editing, published: v })} />
-                <Label>Publicado</Label>
+                <Switch
+                  checked={!!editing.published}
+                  disabled={!!editing.scheduled_at && new Date(editing.scheduled_at).getTime() > Date.now()}
+                  onCheckedChange={(v) => setEditing({ ...editing, published: v, scheduled_at: v ? null : editing.scheduled_at })}
+                />
+                <Label>Publicado agora</Label>
               </div>
             </div>
           )}
