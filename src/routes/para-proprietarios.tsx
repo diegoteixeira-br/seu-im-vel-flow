@@ -3,6 +3,9 @@ import { BrandLogo } from "@/components/brand-logo";
 import { Button } from "@/components/ui/button";
 import { Building2, Users, FileText, Wallet, Check, Camera, BarChart3, ShieldCheck } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { formatBRL } from "@/lib/format";
 
 export const Route = createFileRoute("/para-proprietarios")({
   head: () => ({
@@ -27,14 +30,25 @@ const FEATURES = [
   { icon: FileText, title: "Documentos prontos", desc: "Distrato, confissão de dívida e mais." },
 ];
 
-const PLANS = [
-  { name: "Gratuito", price: "R$ 0", period: "para sempre", highlight: false, features: ["Até 2 anúncios no portal", "Gestão de imóveis e contratos", "Controle de pagamentos"], cta: "Começar grátis" },
-  { name: "Investidor", price: "R$ 49,90", period: "/mês", highlight: true, features: ["Anúncios ilimitados", "Relatórios completos", "Cobrança automática via ASAAS"], cta: "Assinar Investidor" },
-  { name: "Imobiliária", price: "R$ 197", period: "/mês", highlight: false, features: ["Múltiplos usuários", "Permissões por equipe", "Suporte dedicado"], cta: "Falar com vendas" },
-];
+type DbPlan = { id: string; name: string; price: number; promo_price: number | null; promo_until: string | null; active: boolean; benefits: unknown; sort_order: number };
+
+function isPromoActive(p: DbPlan) {
+  if (p.promo_price == null) return false;
+  if (!p.promo_until) return true;
+  return new Date(p.promo_until) >= new Date();
+}
 
 function Page() {
   const { user } = useAuth();
+  const { data: plans = [] } = useQuery({
+    queryKey: ["public-plans"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("plans").select("*").eq("active", true).order("sort_order");
+      if (error) throw error;
+      return (data ?? []) as DbPlan[];
+    },
+    staleTime: 30_000,
+  });
   return (
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-20 border-b bg-background/95 backdrop-blur">
