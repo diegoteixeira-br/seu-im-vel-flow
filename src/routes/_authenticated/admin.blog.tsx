@@ -97,9 +97,9 @@ function AdminBlog() {
         <Button onClick={() => setEditing({ published: false, author_name: "Equipe AlugaFlow" })}><Plus className="mr-2 h-4 w-4" /> Novo post</Button>
       </div>
 
-      <div className="mt-6 overflow-hidden rounded-lg border">
-        <table className="w-full text-sm">
-          <thead className="bg-muted/40 text-left"><tr><th className="p-3">Título</th><th className="p-3">Status</th><th className="p-3">Data</th><th className="p-3">Ações</th></tr></thead>
+      <div className="mt-6 overflow-x-auto rounded-lg border">
+        <table className="w-full min-w-[560px] text-sm">
+          <thead className="bg-muted/40 text-left"><tr><th className="p-3">Título</th><th className="p-3">Status</th><th className="p-3">Data</th><th className="p-3 text-right">Ações</th></tr></thead>
           <tbody>
             {loading ? <tr><td colSpan={4} className="p-4 text-center text-muted-foreground">Carregando...</td></tr> :
               posts.length === 0 ? <tr><td colSpan={4} className="p-4 text-center text-muted-foreground">Nenhum post ainda.</td></tr> :
