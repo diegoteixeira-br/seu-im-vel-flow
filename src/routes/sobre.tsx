@@ -43,6 +43,8 @@ function Page() {
         </div>
 
       </section>
+      <PublicFooter />
     </div>
   );
 }
+
