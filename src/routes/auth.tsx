@@ -179,7 +179,7 @@ function SignUpForm({ onDone }: { onDone: () => void }) {
       </div>
       <div className="space-y-2">
         <Label htmlFor="password2">Senha</Label>
-        <Input id="password2" type="password" autoComplete="new-password" {...form.register("password")} />
+        <PasswordInput id="password2" autoComplete="new-password" {...form.register("password")} />
         {form.formState.errors.password && <p className="text-xs text-destructive">{form.formState.errors.password.message}</p>}
       </div>
       <div className="flex items-start gap-2 rounded-md border bg-muted/30 p-3">
