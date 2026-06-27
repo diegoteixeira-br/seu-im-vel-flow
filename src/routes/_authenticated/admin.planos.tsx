@@ -16,7 +16,13 @@ export const Route = createFileRoute("/_authenticated/admin/planos")({
   component: AdminPlans,
 });
 
-type Plan = { id: string; name: string; price: number; promo_price: number | null; promo_until: string | null; active: boolean; benefits: string[]; sort_order: number };
+type Plan = {
+  id: string; name: string; price: number; promo_price: number | null; promo_until: string | null;
+  active: boolean; benefits: string[]; sort_order: number;
+  max_properties: number | null; max_listings: number | null;
+  asaas_enabled: boolean; advanced_reports: boolean; max_users: number;
+  stripe_price_id: string | null;
+};
 
 function AdminPlans() {
   const [plans, setPlans] = useState<Plan[]>([]);
@@ -33,6 +39,9 @@ function AdminPlans() {
     const { error } = await supabase.from("plans").update({
       name: p.name, price: p.price, promo_price: p.promo_price, promo_until: p.promo_until,
       active: p.active, benefits: p.benefits,
+      max_properties: p.max_properties, max_listings: p.max_listings,
+      asaas_enabled: p.asaas_enabled, advanced_reports: p.advanced_reports, max_users: p.max_users,
+      stripe_price_id: p.stripe_price_id || null,
     }).eq("id", p.id);
     if (error) return toast.error(error.message);
     toast.success(`Plano "${p.name}" salvo`);
@@ -63,6 +72,19 @@ function AdminPlans() {
               <div>
                 <Label>Benefícios (um por linha)</Label>
                 <Textarea rows={4} value={p.benefits.join("\n")} onChange={(e) => update(p.id, { benefits: e.target.value.split("\n").filter(Boolean) })} />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div><Label>Máx. imóveis (vazio = ilimitado)</Label><Input type="number" value={p.max_properties ?? ""} onChange={(e) => update(p.id, { max_properties: e.target.value ? Number(e.target.value) : null })} /></div>
+                <div><Label>Máx. anúncios (vazio = ilimitado)</Label><Input type="number" value={p.max_listings ?? ""} onChange={(e) => update(p.id, { max_listings: e.target.value ? Number(e.target.value) : null })} /></div>
+              </div>
+              <div className="grid grid-cols-3 gap-3">
+                <div className="flex items-end gap-2"><Switch checked={p.asaas_enabled} onCheckedChange={(v) => update(p.id, { asaas_enabled: v })} /><Label>ASAAS</Label></div>
+                <div className="flex items-end gap-2"><Switch checked={p.advanced_reports} onCheckedChange={(v) => update(p.id, { advanced_reports: v })} /><Label>Relatórios</Label></div>
+                <div><Label>Máx. usuários</Label><Input type="number" value={p.max_users} onChange={(e) => update(p.id, { max_users: Number(e.target.value) || 1 })} /></div>
+              </div>
+              <div>
+                <Label>Stripe Price ID (price_xxx) — necessário para cobrança</Label>
+                <Input placeholder="price_..." value={p.stripe_price_id ?? ""} onChange={(e) => update(p.id, { stripe_price_id: e.target.value })} />
               </div>
               <div className="rounded-md border bg-muted/30 p-4">
                 <div className="text-xs text-muted-foreground">Prévia na landing page</div>
