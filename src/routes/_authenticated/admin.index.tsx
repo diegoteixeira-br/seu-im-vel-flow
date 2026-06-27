@@ -10,7 +10,7 @@ export const Route = createFileRoute("/_authenticated/admin/")({
 });
 
 function AdminHome() {
-  const fn = useServerFn(getAdminMetrics);
+  const fn = getAdminMetrics;
   const { data, isLoading } = useQuery({ queryKey: ["admin-metrics"], queryFn: () => fn() });
 
   const m = (data ?? {}) as Record<string, unknown>;
