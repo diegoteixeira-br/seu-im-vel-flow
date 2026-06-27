@@ -21,7 +21,7 @@ export const Route = createFileRoute("/_authenticated/admin/emails")({
 type Row = { id: string; subject: string; target_plan: string; recipients_count: number; status: string; created_at: string };
 
 function AdminEmails() {
-  const send = useServerFn(adminSendBroadcast);
+  const send = adminSendBroadcast;
   const [subject, setSubject] = useState("");
   const [body, setBody] = useState("");
   const [target, setTarget] = useState<"all" | "free" | "investidor" | "imobiliaria">("all");
