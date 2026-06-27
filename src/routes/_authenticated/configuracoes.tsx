@@ -182,11 +182,12 @@ function ConfigPage() {
           <TabsList className="flex flex-wrap justify-center h-auto gap-1 w-full">
             <TabsTrigger value="pessoal" className="gap-1.5"><User className="h-4 w-4" />Dados pessoais</TabsTrigger>
             <TabsTrigger value="endereco" className="gap-1.5"><MapPin className="h-4 w-4" />Endereço</TabsTrigger>
-            <TabsTrigger value="bancario" className="gap-1.5"><Landmark className="h-4 w-4" />Dados bancários</TabsTrigger>
-            <TabsTrigger value="asaas" className="gap-1.5"><Zap className="h-4 w-4" />Integração ASAAS</TabsTrigger>
-            <TabsTrigger value="automacao" className="gap-1.5"><Bell className="h-4 w-4" />Automação</TabsTrigger>
-            <TabsTrigger value="identidade" className="gap-1.5"><Palette className="h-4 w-4" />Identidade visual</TabsTrigger>
+            {!isMember && <TabsTrigger value="bancario" className="gap-1.5"><Landmark className="h-4 w-4" />Dados bancários</TabsTrigger>}
+            {!isMember && <TabsTrigger value="asaas" className="gap-1.5"><Zap className="h-4 w-4" />Integração ASAAS</TabsTrigger>}
+            {!isMember && <TabsTrigger value="automacao" className="gap-1.5"><Bell className="h-4 w-4" />Automação</TabsTrigger>}
+            {!isMember && <TabsTrigger value="identidade" className="gap-1.5"><Palette className="h-4 w-4" />Identidade visual</TabsTrigger>}
             <TabsTrigger value="seguranca" className="gap-1.5"><ShieldCheck className="h-4 w-4" />Segurança</TabsTrigger>
+            {showTeamTab && <TabsTrigger value="equipe" className="gap-1.5"><UserCog className="h-4 w-4" />Equipe</TabsTrigger>}
           </TabsList>
 
           <TabsContent value="pessoal">
