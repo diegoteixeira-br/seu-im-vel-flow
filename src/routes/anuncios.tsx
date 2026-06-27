@@ -24,8 +24,8 @@ export function PublicHeader() {
 
         {/* Desktop nav */}
         <nav className="hidden items-center justify-end gap-2 md:flex">
-          <Button asChild variant="ghost" size="sm"><Link to="/">Imóveis</Link></Button>
           <Button asChild variant="ghost" size="sm"><Link to="/blog">Blog</Link></Button>
+          <Button asChild variant="ghost" size="sm"><Link to="/sobre">Sobre</Link></Button>
           <Button asChild variant="outline" size="sm"><Link to="/para-proprietarios">Anunciar meu imóvel</Link></Button>
         </nav>
         <span className="md:hidden" />
@@ -44,7 +44,6 @@ export function PublicHeader() {
                 <SheetTitle>Menu</SheetTitle>
               </SheetHeader>
               <nav className="mt-4 flex flex-col gap-1">
-                <SheetClose asChild><Link to="/" className="rounded-md px-3 py-2 text-sm hover:bg-muted">Imóveis</Link></SheetClose>
                 <SheetClose asChild><Link to="/blog" className="rounded-md px-3 py-2 text-sm hover:bg-muted">Blog</Link></SheetClose>
                 <SheetClose asChild><Link to="/sobre" className="rounded-md px-3 py-2 text-sm hover:bg-muted">Sobre</Link></SheetClose>
                 <SheetClose asChild><Link to="/para-proprietarios" className="rounded-md px-3 py-2 text-sm hover:bg-muted">Anunciar meu imóvel</Link></SheetClose>
