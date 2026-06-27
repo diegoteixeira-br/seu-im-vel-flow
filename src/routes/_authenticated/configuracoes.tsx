@@ -363,6 +363,12 @@ function ConfigPage() {
           <TabsContent value="seguranca">
             <SecurityTab />
           </TabsContent>
+
+          {showTeamTab && (
+            <TabsContent value="equipe">
+              <TeamTab />
+            </TabsContent>
+          )}
         </Tabs>
 
         <div className="flex justify-end sticky bottom-0 bg-background/80 backdrop-blur py-3">
