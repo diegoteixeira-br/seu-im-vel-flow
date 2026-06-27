@@ -86,6 +86,30 @@ Deno.serve(async (req) => {
       return json({ ok: true });
     }
 
+    if (action === "set_email") {
+      const { userId: target, email } = payload;
+      if (!target || typeof email !== "string" || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        return json({ error: "Invalid payload" }, 400);
+      }
+      const SERVICE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+      if (!SERVICE) return json({ error: "Service role not configured" }, 500);
+      const admin = createClient(SUPABASE_URL, SERVICE, {
+        auth: { autoRefreshToken: false, persistSession: false },
+      });
+      // Atualiza o e-mail diretamente, sem exigir confirmação (admin action).
+      // O `id` do usuário permanece o mesmo — todos os dados ficam preservados.
+      const { error } = await admin.auth.admin.updateUserById(target, {
+        email: email.toLowerCase().trim(),
+        email_confirm: true,
+      });
+      if (error) throw error;
+      await sb.from("admin_logs").insert({
+        user_id: userId, action: "set_email",
+        details: { target, new_email: email },
+      });
+      return json({ ok: true });
+    }
+
     if (action === "send_broadcast") {
       const { subject, body, targetPlan } = payload;
       if (!subject || !body || !["all", "free", "investidor", "imobiliaria"].includes(targetPlan)) {
