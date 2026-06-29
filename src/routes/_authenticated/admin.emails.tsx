@@ -185,7 +185,13 @@ function AdminEmails() {
         <CardHeader><CardTitle>Novo envio</CardTitle></CardHeader>
         <CardContent className="space-y-3">
           <div><Label>Assunto</Label><Input value={subject} onChange={(e) => setSubject(e.target.value)} /></div>
-          <div><Label>Corpo do email</Label><Textarea rows={8} value={body} onChange={(e) => setBody(e.target.value)} /></div>
+          <div>
+            <Label>Corpo do email</Label>
+            <Textarea rows={8} value={body} onChange={(e) => setBody(e.target.value)} />
+            <p className="text-xs text-muted-foreground mt-1">
+              Personalize usando variáveis: <code>{"{{nome}}"}</code>, <code>{"{{primeiro_nome}}"}</code>, <code>{"{{email}}"}</code>, <code>{"{{plano}}"}</code>. O logo da AlugaFlow é incluído automaticamente no topo.
+            </p>
+          </div>
           <div className="grid gap-3 sm:grid-cols-2">
             <div>
               <Label>Destinatários</Label>
