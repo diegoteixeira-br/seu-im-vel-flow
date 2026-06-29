@@ -157,7 +157,11 @@ export function broadcastEmail(
 ): string {
   const personalized = vars ? personalize(body, vars) : body;
   const safeBody = personalized.replace(/\n/g, "<br/>");
+  // Só adiciona saudação automática quando o corpo NÃO começa com uma saudação
+  // (evita duplicar "Olá, Diego" + "Olá, equipe" quando o autor já cumprimentou).
+  const startsWithGreeting = /^\s*(olá|ola|oi|prezad|caro|bom dia|boa tarde|boa noite)/i.test(personalized);
   const greetName = vars?.name ? (vars.name.split(/\s+/)[0]) : "";
-  const hello = greetName ? `<p style="margin-top:0">Olá, <b>${greetName}</b> 👋</p>` : "";
+  const hello = !startsWithGreeting && greetName ? `<p style="margin-top:0">Olá, <b>${greetName}</b> 👋</p>` : "";
   return layout(subject, `<h1>${subject}</h1>${hello}<p>${safeBody}</p>`);
 }
+
