@@ -2,14 +2,21 @@
 // dependências externas no runtime do Deno.
 import { brl, dateBR } from "./resend.ts";
 
+export const LOGO_URL = Deno.env.get("EMAIL_LOGO_URL") || "https://alugaflow.com.br/alugaflow-logo.png";
+export const SITE_URL = Deno.env.get("EMAIL_SITE_URL") || "https://alugaflow.com.br";
+
 const baseStyle = `
   body{margin:0;padding:0;background:#f4f6f8;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:#1f2937}
   .wrap{max-width:560px;margin:0 auto;padding:24px}
+  .header{text-align:center;padding:8px 0 20px}
+  .header img{max-width:140px;height:auto;display:inline-block}
   .card{background:#fff;border-radius:12px;padding:28px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
   h1{font-size:20px;margin:0 0 12px;color:#0f172a}
   p{line-height:1.6;margin:0 0 12px}
-  .btn{display:inline-block;background:#2563eb;color:#fff !important;text-decoration:none;padding:12px 20px;border-radius:8px;font-weight:600;margin:12px 0}
-  .muted{color:#6b7280;font-size:12px;margin-top:24px}
+  .btn{display:inline-block;background:#0f5b6e;color:#fff !important;text-decoration:none;padding:12px 20px;border-radius:8px;font-weight:600;margin:12px 0}
+  .muted{color:#6b7280;font-size:12px;margin-top:24px;text-align:center}
+  .footer{text-align:center;color:#6b7280;font-size:12px;padding:16px 8px 0}
+  .footer a{color:#0f5b6e;text-decoration:none}
   .box{background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:16px;margin:12px 0}
   .row{display:flex;justify-content:space-between;padding:4px 0}
   .late{background:#fef2f2;border-color:#fecaca}
@@ -17,7 +24,13 @@ const baseStyle = `
 
 function layout(title: string, inner: string): string {
   return `<!doctype html><html><head><meta charset="utf-8"><title>${title}</title><style>${baseStyle}</style></head>
-  <body><div class="wrap"><div class="card">${inner}<p class="muted">Enviado por AlugaFlow • Gestão de imóveis</p></div></div></body></html>`;
+  <body><div class="wrap">
+    <div class="header"><a href="${SITE_URL}"><img src="${LOGO_URL}" alt="AlugaFlow" /></a></div>
+    <div class="card">${inner}</div>
+    <div class="footer">© ${new Date().getFullYear()} AlugaFlow • Gestão de imóveis<br/>
+      <a href="${SITE_URL}">${SITE_URL.replace(/^https?:\/\//, "")}</a>
+    </div>
+  </div></body></html>`;
 }
 
 export function welcomeEmail(name: string): { subject: string; html: string } {
