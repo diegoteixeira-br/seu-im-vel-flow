@@ -38,7 +38,8 @@ const baseStyle = `
 function layout(title: string, inner: string): string {
   return `<!doctype html><html><head><meta charset="utf-8"><title>${title}</title><style>${baseStyle}</style></head>
   <body><div class="wrap">
-    <div class="header"><a href="${SITE_URL}"><img src="${LOGO_URL}" alt="AlugaFlow" /></a></div>
+    <div class="header"><a href="${SITE_URL}"><img src="${LOGO_SRC}" alt="AlugaFlow" /></a></div>
+
     <div class="card">${inner}</div>
     <div class="footer">© ${new Date().getFullYear()} AlugaFlow • Gestão de imóveis<br/>
       <a href="${SITE_URL}">${SITE_URL.replace(/^https?:\/\//, "")}</a>
