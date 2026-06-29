@@ -1,9 +1,22 @@
 // Templates HTML simples e responsivos. Mantidos em uma string só para evitar
 // dependências externas no runtime do Deno.
-import { brl, dateBR } from "./resend.ts";
+import { brl, dateBR, type EmailAttachment } from "./resend.ts";
+import { LOGO_PNG_BASE64 } from "./logo-base64.ts";
 
-export const LOGO_URL = Deno.env.get("EMAIL_LOGO_URL") || "https://alugaflow.com.br/alugaflow-logo.png";
+// Logo embutido via Content-ID (cid:) — funciona no Gmail/Outlook sem depender
+// do domínio público estar publicado. Usamos um anexo inline com este content_id.
+export const LOGO_CID = "alugaflow-logo";
+export const LOGO_SRC = `cid:${LOGO_CID}`;
 export const SITE_URL = Deno.env.get("EMAIL_SITE_URL") || "https://alugaflow.com.br";
+
+/** Anexo inline do logo. Inclua em `attachments` em TODO envio que use o layout. */
+export const LOGO_ATTACHMENT: EmailAttachment = {
+  filename: "alugaflow-logo.png",
+  content: LOGO_PNG_BASE64,
+  content_id: LOGO_CID,
+  content_type: "image/png",
+};
+
 
 const baseStyle = `
   body{margin:0;padding:0;background:#f4f6f8;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:#1f2937}
