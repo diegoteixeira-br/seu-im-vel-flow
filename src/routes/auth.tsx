@@ -30,9 +30,44 @@ const signInSchema = z.object({
   email: z.string().trim().email("E-mail inválido").max(255),
   password: z.string().min(6, "Mínimo 6 caracteres").max(72),
 });
+
+const onlyDigits = (s: string) => (s || "").replace(/\D/g, "");
+const maskCPF = (s: string) => onlyDigits(s).slice(0, 11).replace(/(\d{3})(\d)/, "$1.$2").replace(/(\d{3})(\d)/, "$1.$2").replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+const maskCNPJ = (s: string) => onlyDigits(s).slice(0, 14).replace(/^(\d{2})(\d)/, "$1.$2").replace(/^(\d{2})\.(\d{3})(\d)/, "$1.$2.$3").replace(/\.(\d{3})(\d)/, ".$1/$2").replace(/(\d{4})(\d{1,2})$/, "$1-$2");
+function isValidCPF(cpf: string) {
+  const d = onlyDigits(cpf);
+  if (d.length !== 11 || /^(\d)\1+$/.test(d)) return false;
+  let s = 0;
+  for (let i = 0; i < 9; i++) s += parseInt(d[i]) * (10 - i);
+  let r = (s * 10) % 11; if (r === 10) r = 0; if (r !== parseInt(d[9])) return false;
+  s = 0; for (let i = 0; i < 10; i++) s += parseInt(d[i]) * (11 - i);
+  r = (s * 10) % 11; if (r === 10) r = 0; return r === parseInt(d[10]);
+}
+function isValidCNPJ(cnpj: string) {
+  const d = onlyDigits(cnpj);
+  if (d.length !== 14 || /^(\d)\1+$/.test(d)) return false;
+  const calc = (base: string, weights: number[]) => {
+    const sum = weights.reduce((acc, w, i) => acc + parseInt(base[i]) * w, 0);
+    const r = sum % 11; return r < 2 ? 0 : 11 - r;
+  };
+  const w1 = [5,4,3,2,9,8,7,6,5,4,3,2];
+  const w2 = [6,5,4,3,2,9,8,7,6,5,4,3,2];
+  return calc(d.slice(0,12), w1) === parseInt(d[12]) && calc(d.slice(0,13), w2) === parseInt(d[13]);
+}
+
 const signUpSchema = signInSchema.extend({
   full_name: z.string().trim().min(2, "Informe seu nome").max(100),
+  profile_type: z.enum(["owner", "broker"], { errorMap: () => ({ message: "Selecione o tipo de perfil" }) }),
+  document: z.string().min(1, "Informe o CPF ou CNPJ").refine((v) => {
+    const d = onlyDigits(v);
+    return (d.length === 11 && isValidCPF(d)) || (d.length === 14 && isValidCNPJ(d));
+  }, "CPF ou CNPJ inválido"),
+  creci: z.string().optional(),
   accept_terms: z.literal(true, { errorMap: () => ({ message: "Você precisa aceitar os Termos e a Política de Privacidade" }) }),
+}).superRefine((val, ctx) => {
+  if (val.profile_type === "broker" && !val.creci?.trim()) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["creci"], message: "CRECI obrigatório para corretores" });
+  }
 });
 
 function AuthPage() {
