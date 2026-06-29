@@ -8,8 +8,9 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { sendEmail } from "../_shared/resend.ts";
 import {
-  welcomeEmail, leadNotificationEmail, paymentReceiptEmail,
+  welcomeEmail, leadNotificationEmail, paymentReceiptEmail, LOGO_ATTACHMENT,
 } from "../_shared/email-templates.ts";
+
 
 const cors = {
   "Access-Control-Allow-Origin": "*",
