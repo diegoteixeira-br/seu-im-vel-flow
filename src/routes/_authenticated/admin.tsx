@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
-import { LayoutDashboard, Users, DollarSign, Tags, Mail, FileText, CreditCard, ArrowLeft, ShieldAlert } from "lucide-react";
+import { LayoutDashboard, Users, DollarSign, Tags, Mail, FileText, CreditCard, ArrowLeft, ShieldAlert, ScrollText } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/admin")({
@@ -18,8 +18,10 @@ const items: NavItem[] = [
   { to: "/admin/planos", label: "Planos e Preços", icon: Tags },
   { to: "/admin/emails", label: "Emails", icon: Mail },
   { to: "/admin/blog", label: "Blog", icon: FileText },
+  { to: "/admin/legais", label: "Páginas Legais", icon: ScrollText },
   { to: "/admin/pagamentos", label: "Pagamentos", icon: CreditCard },
 ];
+
 
 function AdminLayout() {
   const { user, loading } = useAuth();
