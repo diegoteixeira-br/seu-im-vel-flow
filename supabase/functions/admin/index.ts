@@ -4,7 +4,7 @@
 // deno-lint-ignore-file no-explicit-any
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { sendEmail } from "../_shared/resend.ts";
-import { broadcastEmail } from "../_shared/email-templates.ts";
+import { broadcastEmail, personalize } from "../_shared/email-templates.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
