@@ -53,12 +53,25 @@ export async function adminSetUserEmail(args: { data: { userId: string; email: s
 }
 
 export async function adminSendBroadcast(args: {
-  data: { subject: string; body: string; targetPlan: "all" | PlanId };
+  data: { subject: string; body: string; targetPlan: "all" | PlanId | "user"; userId?: string };
 }) {
   return invoke<{ ok: true; recipients: number }>({
     action: "send_broadcast",
     subject: args.data.subject,
     body: args.data.body,
     targetPlan: args.data.targetPlan,
+    userId: args.data.userId,
   });
+}
+
+export async function adminAiCompose(args: {
+  data: {
+    mode: "subject" | "body" | "improve";
+    prompt?: string;
+    currentSubject?: string;
+    currentBody?: string;
+    tone?: string;
+  };
+}) {
+  return invoke<{ ok: true; text: string }>({ action: "ai_compose", ...args.data });
 }
