@@ -532,9 +532,12 @@ export type Database = {
           id: string
           method: Database["public"]["Enums"]["payment_method"] | null
           notes: string | null
+          overdue_notice_sent_at: string | null
           paid_amount: number | null
           paid_date: string | null
+          receipt_sent_at: string | null
           reference_month: string
+          reminder_sent_at: string | null
           status: Database["public"]["Enums"]["payment_status"]
           updated_at: string
           user_id: string
@@ -550,9 +553,12 @@ export type Database = {
           id?: string
           method?: Database["public"]["Enums"]["payment_method"] | null
           notes?: string | null
+          overdue_notice_sent_at?: string | null
           paid_amount?: number | null
           paid_date?: string | null
+          receipt_sent_at?: string | null
           reference_month: string
+          reminder_sent_at?: string | null
           status?: Database["public"]["Enums"]["payment_status"]
           updated_at?: string
           user_id: string
@@ -568,9 +574,12 @@ export type Database = {
           id?: string
           method?: Database["public"]["Enums"]["payment_method"] | null
           notes?: string | null
+          overdue_notice_sent_at?: string | null
           paid_amount?: number | null
           paid_date?: string | null
+          receipt_sent_at?: string | null
           reference_month?: string
+          reminder_sent_at?: string | null
           status?: Database["public"]["Enums"]["payment_status"]
           updated_at?: string
           user_id?: string
