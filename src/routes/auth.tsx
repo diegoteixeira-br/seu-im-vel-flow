@@ -110,6 +110,18 @@ function SignInForm() {
   };
   return (
     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      {needsConfirm && (
+        <Alert>
+          <MailCheck className="h-4 w-4" />
+          <AlertTitle>Confirme seu e-mail para entrar</AlertTitle>
+          <AlertDescription className="space-y-2">
+            <p>Enviamos um link de confirmação para <b>{needsConfirm}</b>. Verifique sua caixa de entrada e a pasta de spam.</p>
+            <Button type="button" size="sm" variant="outline" onClick={resend} disabled={resending}>
+              {resending ? "Reenviando..." : "Reenviar e-mail de confirmação"}
+            </Button>
+          </AlertDescription>
+        </Alert>
+      )}
       <div className="space-y-2">
         <Label htmlFor="email">E-mail</Label>
         <Input id="email" type="email" autoComplete="email" {...form.register("email")} />
