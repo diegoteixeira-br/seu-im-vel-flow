@@ -15,6 +15,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
 import { PasswordInput } from "@/components/password-input";
 
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { MailCheck } from "lucide-react";
+
 const searchSchema = z.object({ mode: z.enum(["signin", "signup"]).optional() });
 
 export const Route = createFileRoute("/auth")({
