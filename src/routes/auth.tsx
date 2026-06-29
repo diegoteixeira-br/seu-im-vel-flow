@@ -30,9 +30,44 @@ const signInSchema = z.object({
   email: z.string().trim().email("E-mail inválido").max(255),
   password: z.string().min(6, "Mínimo 6 caracteres").max(72),
 });
+
+const onlyDigits = (s: string) => (s || "").replace(/\D/g, "");
+const maskCPF = (s: string) => onlyDigits(s).slice(0, 11).replace(/(\d{3})(\d)/, "$1.$2").replace(/(\d{3})(\d)/, "$1.$2").replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+const maskCNPJ = (s: string) => onlyDigits(s).slice(0, 14).replace(/^(\d{2})(\d)/, "$1.$2").replace(/^(\d{2})\.(\d{3})(\d)/, "$1.$2.$3").replace(/\.(\d{3})(\d)/, ".$1/$2").replace(/(\d{4})(\d{1,2})$/, "$1-$2");
+function isValidCPF(cpf: string) {
+  const d = onlyDigits(cpf);
+  if (d.length !== 11 || /^(\d)\1+$/.test(d)) return false;
+  let s = 0;
+  for (let i = 0; i < 9; i++) s += parseInt(d[i]) * (10 - i);
+  let r = (s * 10) % 11; if (r === 10) r = 0; if (r !== parseInt(d[9])) return false;
+  s = 0; for (let i = 0; i < 10; i++) s += parseInt(d[i]) * (11 - i);
+  r = (s * 10) % 11; if (r === 10) r = 0; return r === parseInt(d[10]);
+}
+function isValidCNPJ(cnpj: string) {
+  const d = onlyDigits(cnpj);
+  if (d.length !== 14 || /^(\d)\1+$/.test(d)) return false;
+  const calc = (base: string, weights: number[]) => {
+    const sum = weights.reduce((acc, w, i) => acc + parseInt(base[i]) * w, 0);
+    const r = sum % 11; return r < 2 ? 0 : 11 - r;
+  };
+  const w1 = [5,4,3,2,9,8,7,6,5,4,3,2];
+  const w2 = [6,5,4,3,2,9,8,7,6,5,4,3,2];
+  return calc(d.slice(0,12), w1) === parseInt(d[12]) && calc(d.slice(0,13), w2) === parseInt(d[13]);
+}
+
 const signUpSchema = signInSchema.extend({
   full_name: z.string().trim().min(2, "Informe seu nome").max(100),
+  profile_type: z.enum(["owner", "broker"], { errorMap: () => ({ message: "Selecione o tipo de perfil" }) }),
+  document: z.string().min(1, "Informe o CPF ou CNPJ").refine((v) => {
+    const d = onlyDigits(v);
+    return (d.length === 11 && isValidCPF(d)) || (d.length === 14 && isValidCNPJ(d));
+  }, "CPF ou CNPJ inválido"),
+  creci: z.string().optional(),
   accept_terms: z.literal(true, { errorMap: () => ({ message: "Você precisa aceitar os Termos e a Política de Privacidade" }) }),
+}).superRefine((val, ctx) => {
+  if (val.profile_type === "broker" && !val.creci?.trim()) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["creci"], message: "CRECI obrigatório para corretores" });
+  }
 });
 
 function AuthPage() {
@@ -189,15 +224,25 @@ function SignUpForm({ onDone }: { onDone: () => void }) {
   const [resending, setResending] = useState(false);
   const form = useForm<z.infer<typeof signUpSchema>>({
     resolver: zodResolver(signUpSchema),
-    defaultValues: { full_name: "", email: "", password: "", accept_terms: false as unknown as true },
+    defaultValues: { full_name: "", email: "", password: "", profile_type: "owner", document: "", creci: "", accept_terms: false as unknown as true },
   });
+  const profileType = form.watch("profile_type");
+  const documentValue = form.watch("document") || "";
+  const docDigits = onlyDigits(documentValue);
+  const docIsCNPJ = docDigits.length > 11;
   const onSubmit = async (values: z.infer<typeof signUpSchema>) => {
     const { data, error } = await supabase.auth.signUp({
       email: values.email,
       password: values.password,
       options: {
         emailRedirectTo: `${window.location.origin}/dashboard`,
-        data: { full_name: values.full_name, accepted_terms_at: new Date().toISOString() },
+        data: {
+          full_name: values.full_name,
+          profile_type: values.profile_type,
+          document: onlyDigits(values.document),
+          creci: values.creci?.trim() || null,
+          accepted_terms_at: new Date().toISOString(),
+        },
       },
     });
     if (error) { toast.error("Falha no cadastro: " + error.message); return; }
@@ -269,6 +314,49 @@ function SignUpForm({ onDone }: { onDone: () => void }) {
         <Input id="full_name" {...form.register("full_name")} />
         {form.formState.errors.full_name && <p className="text-xs text-destructive">{form.formState.errors.full_name.message}</p>}
       </div>
+      <div className="space-y-2">
+        <Label>Tipo de perfil</Label>
+        <div className="grid grid-cols-2 gap-2">
+          {([
+            { v: "owner", label: "Proprietário Direto", desc: "Administro meus imóveis" },
+            { v: "broker", label: "Corretor/Imobiliária", desc: "Atuo profissionalmente" },
+          ] as const).map((opt) => (
+            <button
+              type="button"
+              key={opt.v}
+              onClick={() => form.setValue("profile_type", opt.v, { shouldValidate: true })}
+              className={`rounded-md border p-3 text-left text-xs transition ${profileType === opt.v ? "border-primary bg-primary/5" : "hover:bg-muted/50"}`}
+            >
+              <div className="text-sm font-medium">{opt.label}</div>
+              <div className="text-muted-foreground">{opt.desc}</div>
+            </button>
+          ))}
+        </div>
+        {form.formState.errors.profile_type && <p className="text-xs text-destructive">{form.formState.errors.profile_type.message as string}</p>}
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="document">CPF ou CNPJ</Label>
+        <Input
+          id="document"
+          inputMode="numeric"
+          placeholder="000.000.000-00 ou 00.000.000/0000-00"
+          value={documentValue}
+          onChange={(e) => {
+            const digits = onlyDigits(e.target.value);
+            const masked = digits.length > 11 ? maskCNPJ(digits) : maskCPF(digits);
+            form.setValue("document", masked, { shouldValidate: true });
+          }}
+        />
+        <p className="text-[11px] text-muted-foreground">{docIsCNPJ ? "Formato CNPJ" : "Formato CPF"} — usado para verificação anti-fraude.</p>
+        {form.formState.errors.document && <p className="text-xs text-destructive">{form.formState.errors.document.message}</p>}
+      </div>
+      {profileType === "broker" && (
+        <div className="space-y-2">
+          <Label htmlFor="creci">CRECI</Label>
+          <Input id="creci" placeholder="Ex.: 123456-F/SP" {...form.register("creci")} />
+          {form.formState.errors.creci && <p className="text-xs text-destructive">{form.formState.errors.creci.message as string}</p>}
+        </div>
+      )}
       <div className="space-y-2">
         <Label htmlFor="email2">E-mail</Label>
         <Input id="email2" type="email" autoComplete="email" {...form.register("email")} />

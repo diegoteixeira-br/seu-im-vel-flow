@@ -716,6 +716,7 @@ export type Database = {
           cnpj: string | null
           cpf: string | null
           created_at: string
+          creci: string | null
           email: string | null
           full_name: string | null
           id: string
@@ -727,6 +728,7 @@ export type Database = {
           phone: string | null
           pix_key: string | null
           plan: string
+          profile_type: string | null
           public_phone: string | null
           razao_social: string | null
           role: string
@@ -753,6 +755,7 @@ export type Database = {
           cnpj?: string | null
           cpf?: string | null
           created_at?: string
+          creci?: string | null
           email?: string | null
           full_name?: string | null
           id: string
@@ -764,6 +767,7 @@ export type Database = {
           phone?: string | null
           pix_key?: string | null
           plan?: string
+          profile_type?: string | null
           public_phone?: string | null
           razao_social?: string | null
           role?: string
@@ -790,6 +794,7 @@ export type Database = {
           cnpj?: string | null
           cpf?: string | null
           created_at?: string
+          creci?: string | null
           email?: string | null
           full_name?: string | null
           id?: string
@@ -801,6 +806,7 @@ export type Database = {
           phone?: string | null
           pix_key?: string | null
           plan?: string
+          profile_type?: string | null
           public_phone?: string | null
           razao_social?: string | null
           role?: string
