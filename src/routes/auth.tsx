@@ -224,15 +224,25 @@ function SignUpForm({ onDone }: { onDone: () => void }) {
   const [resending, setResending] = useState(false);
   const form = useForm<z.infer<typeof signUpSchema>>({
     resolver: zodResolver(signUpSchema),
-    defaultValues: { full_name: "", email: "", password: "", accept_terms: false as unknown as true },
+    defaultValues: { full_name: "", email: "", password: "", profile_type: "owner", document: "", creci: "", accept_terms: false as unknown as true },
   });
+  const profileType = form.watch("profile_type");
+  const documentValue = form.watch("document") || "";
+  const docDigits = onlyDigits(documentValue);
+  const docIsCNPJ = docDigits.length > 11;
   const onSubmit = async (values: z.infer<typeof signUpSchema>) => {
     const { data, error } = await supabase.auth.signUp({
       email: values.email,
       password: values.password,
       options: {
         emailRedirectTo: `${window.location.origin}/dashboard`,
-        data: { full_name: values.full_name, accepted_terms_at: new Date().toISOString() },
+        data: {
+          full_name: values.full_name,
+          profile_type: values.profile_type,
+          document: onlyDigits(values.document),
+          creci: values.creci?.trim() || null,
+          accepted_terms_at: new Date().toISOString(),
+        },
       },
     });
     if (error) { toast.error("Falha no cadastro: " + error.message); return; }
