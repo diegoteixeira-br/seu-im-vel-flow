@@ -1,5 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import { BrandLogo } from "@/components/brand-logo";
+import { supabase } from "@/integrations/supabase/client";
+import { Loader2 } from "lucide-react";
 
 export const Route = createFileRoute("/privacidade")({
   head: () => ({
@@ -12,6 +15,19 @@ export const Route = createFileRoute("/privacidade")({
 });
 
 function PrivacidadePage() {
+  const [content, setContent] = useState<string | null>(null);
+  const [updatedAt, setUpdatedAt] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase.from("legal_pages").select("content, updated_at").eq("slug", "privacidade").maybeSingle();
+      setContent(data?.content ?? "");
+      setUpdatedAt(data?.updated_at ?? null);
+      setLoading(false);
+    })();
+  }, []);
+
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b">
@@ -23,64 +39,20 @@ function PrivacidadePage() {
 
       <main className="mx-auto max-w-4xl px-4 py-10">
         <h1 className="text-3xl font-bold tracking-tight">Política de Privacidade</h1>
-        <p className="mt-2 text-sm text-muted-foreground">Última atualização: 26 de junho de 2026</p>
+        {updatedAt && (
+          <p className="mt-2 text-sm text-muted-foreground">
+            Última atualização: {new Date(updatedAt).toLocaleDateString("pt-BR")}
+          </p>
+        )}
 
-        <div className="prose prose-sm mt-8 max-w-none space-y-6 text-sm leading-relaxed text-foreground">
-          <section>
-            <h2 className="text-xl font-semibold">1. Introdução</h2>
-            <p>O AlugaFlow ("nós", "nosso") respeita a sua privacidade e está comprometido com a proteção dos seus dados pessoais, em conformidade com a Lei Geral de Proteção de Dados Pessoais — LGPD (Lei nº 13.709/2018). Esta Política descreve como coletamos, usamos, armazenamos e compartilhamos as informações dos usuários da plataforma.</p>
-          </section>
-
-          <section>
-            <h2 className="text-xl font-semibold">2. Dados coletados</h2>
-            <ul className="list-disc pl-6">
-              <li><strong>Dados cadastrais:</strong> nome, e-mail, telefone, CPF/CNPJ, endereço.</li>
-              <li><strong>Dados de imóveis e contratos:</strong> informações de propriedades, inquilinos, contratos e pagamentos inseridos pelo proprietário.</li>
-              <li><strong>Dados financeiros:</strong> dados bancários e chave PIX para emissão de cobranças.</li>
-              <li><strong>Dados de navegação:</strong> endereço IP, tipo de dispositivo, cookies e logs de acesso.</li>
-            </ul>
-          </section>
-
-          <section>
-            <h2 className="text-xl font-semibold">3. Finalidade do tratamento</h2>
-            <p>Utilizamos os dados para: (i) prestar os serviços contratados de gestão imobiliária; (ii) emitir cobranças via boleto, PIX ou cartão por meio de parceiros como o ASAAS; (iii) cumprir obrigações legais e regulatórias; (iv) melhorar a plataforma; (v) comunicar avisos importantes ao titular.</p>
-          </section>
-
-          <section>
-            <h2 className="text-xl font-semibold">4. Base legal (LGPD)</h2>
-            <p>O tratamento de dados ocorre com base em: execução de contrato (art. 7º, V), cumprimento de obrigação legal (art. 7º, II), legítimo interesse (art. 7º, IX) e consentimento (art. 7º, I) quando aplicável.</p>
-          </section>
-
-          <section>
-            <h2 className="text-xl font-semibold">5. Compartilhamento de dados</h2>
-            <p>Compartilhamos dados estritamente com: provedores de infraestrutura em nuvem; gateways de pagamento (ex.: ASAAS); autoridades públicas quando exigido por lei. Não vendemos dados pessoais.</p>
-          </section>
-
-          <section>
-            <h2 className="text-xl font-semibold">6. Direitos do titular</h2>
-            <p>Você pode, a qualquer momento: confirmar a existência de tratamento; acessar, corrigir, anonimizar, bloquear ou eliminar seus dados; solicitar portabilidade; revogar o consentimento. Para exercer seus direitos, envie um e-mail para <a href="mailto:contato@alugaflow.com.br" className="text-primary hover:underline">contato@alugaflow.com.br</a>.</p>
-          </section>
-
-          <section>
-            <h2 className="text-xl font-semibold">7. Segurança e retenção</h2>
-            <p>Adotamos medidas técnicas e administrativas para proteger os dados (criptografia, controle de acesso, RLS no banco de dados). Os dados são mantidos pelo período necessário ao cumprimento das finalidades ou por obrigação legal.</p>
-          </section>
-
-          <section>
-            <h2 className="text-xl font-semibold">8. Cookies</h2>
-            <p>Utilizamos cookies essenciais para autenticação e funcionamento da plataforma. Você pode gerenciá-los nas configurações do seu navegador.</p>
-          </section>
-
-          <section>
-            <h2 className="text-xl font-semibold">9. Alterações desta política</h2>
-            <p>Esta Política pode ser atualizada. Notificaremos alterações relevantes por e-mail ou na plataforma.</p>
-          </section>
-
-          <section>
-            <h2 className="text-xl font-semibold">10. Contato — Encarregado (DPO)</h2>
-            <p>Dúvidas, solicitações ou reclamações: <a href="mailto:contato@alugaflow.com.br" className="text-primary hover:underline">contato@alugaflow.com.br</a>.</p>
-          </section>
-        </div>
+        {loading ? (
+          <div className="py-10 text-center"><Loader2 className="mx-auto h-5 w-5 animate-spin text-muted-foreground" /></div>
+        ) : (
+          <div
+            className="prose prose-sm mt-8 max-w-none space-y-6 text-sm leading-relaxed text-foreground"
+            dangerouslySetInnerHTML={{ __html: content ?? "" }}
+          />
+        )}
       </main>
     </div>
   );
