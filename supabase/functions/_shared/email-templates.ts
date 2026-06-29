@@ -120,7 +120,30 @@ export function paymentOverdueEmail(args: {
   };
 }
 
-export function broadcastEmail(subject: string, body: string): string {
-  const safeBody = body.replace(/\n/g, "<br/>");
-  return layout(subject, `<h1>${subject}</h1><p>${safeBody}</p>`);
+/**
+ * Substitui variáveis no formato {{nome}} pelos dados do destinatário.
+ * Suporta: {{nome}}, {{primeiro_nome}}, {{email}}, {{plano}}.
+ */
+export function personalize(text: string, vars: { name?: string | null; email?: string | null; plan?: string | null }): string {
+  const name = (vars.name || "").trim();
+  const first = name.split(/\s+/)[0] || "";
+  const map: Record<string, string> = {
+    nome: name || "cliente",
+    primeiro_nome: first || "olá",
+    email: vars.email || "",
+    plano: vars.plan || "",
+  };
+  return text.replace(/\{\{\s*(nome|primeiro_nome|email|plano)\s*\}\}/gi, (_, k) => map[k.toLowerCase()] ?? "");
+}
+
+export function broadcastEmail(
+  subject: string,
+  body: string,
+  vars?: { name?: string | null; email?: string | null; plan?: string | null },
+): string {
+  const personalized = vars ? personalize(body, vars) : body;
+  const safeBody = personalized.replace(/\n/g, "<br/>");
+  const greetName = vars?.name ? (vars.name.split(/\s+/)[0]) : "";
+  const hello = greetName ? `<p style="margin-top:0">Olá, <b>${greetName}</b> 👋</p>` : "";
+  return layout(subject, `<h1>${subject}</h1>${hello}<p>${safeBody}</p>`);
 }
