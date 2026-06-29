@@ -520,6 +520,24 @@ export type Database = {
           },
         ]
       }
+      legal_pages: {
+        Row: {
+          content: string
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          content?: string
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          content?: string
+          slug?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       payments: {
         Row: {
           amount: number
