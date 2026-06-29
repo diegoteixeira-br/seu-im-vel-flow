@@ -152,7 +152,7 @@ Deno.serve(async (req) => {
           const vars = { name: p.full_name, email, plan: p.plan };
           const personalSubject = personalize(subject, vars);
           const personalHtml = broadcastEmail(personalSubject, body, vars);
-          const r = await sendEmail({ to: email, subject: personalSubject, html: personalHtml });
+          const r = await sendEmail({ to: email, subject: personalSubject, html: personalHtml, attachments: [LOGO_ATTACHMENT] });
           if (r.error) { failed++; errs.push(r.error); } else { sent++; }
         } catch (e) { failed++; errs.push((e as Error).message); }
       }
