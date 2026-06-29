@@ -185,12 +185,14 @@ function ForgotPasswordDialog({ defaultEmail }: { defaultEmail?: string }) {
 }
 
 function SignUpForm({ onDone }: { onDone: () => void }) {
+  const [pendingEmail, setPendingEmail] = useState<string | null>(null);
+  const [resending, setResending] = useState(false);
   const form = useForm<z.infer<typeof signUpSchema>>({
     resolver: zodResolver(signUpSchema),
     defaultValues: { full_name: "", email: "", password: "", accept_terms: false as unknown as true },
   });
   const onSubmit = async (values: z.infer<typeof signUpSchema>) => {
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email: values.email,
       password: values.password,
       options: {
@@ -199,12 +201,69 @@ function SignUpForm({ onDone }: { onDone: () => void }) {
       },
     });
     if (error) { toast.error("Falha no cadastro: " + error.message); return; }
-    toast.success("Conta criada! Verifique seu e-mail se a confirmação estiver ativada.");
+    // Sem sessão = confirmação por e-mail ativada
+    if (data.user && !data.session) {
+      setPendingEmail(values.email);
+      return;
+    }
+    toast.success("Conta criada com sucesso!");
     onDone();
   };
+  const resend = async () => {
+    if (!pendingEmail) return;
+    setResending(true);
+    const { error } = await supabase.auth.resend({
+      type: "signup",
+      email: pendingEmail,
+      options: { emailRedirectTo: `${window.location.origin}/dashboard` },
+    });
+    setResending(false);
+    if (error) { toast.error(error.message); return; }
+    toast.success("Novo link enviado para " + pendingEmail);
+  };
+
+  if (pendingEmail) {
+    return (
+      <div className="space-y-4 text-center">
+        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-primary/10">
+          <MailCheck className="h-7 w-7 text-primary" />
+        </div>
+        <div className="space-y-1">
+          <h3 className="text-lg font-semibold">Confirme seu e-mail</h3>
+          <p className="text-sm text-muted-foreground">
+            Enviamos um link de ativação para <b>{pendingEmail}</b>.<br />
+            Abra o e-mail e clique no botão de confirmação para ativar sua conta.
+          </p>
+        </div>
+        <div className="rounded-md border bg-muted/30 p-3 text-left text-xs text-muted-foreground">
+          <p className="mb-1 font-medium text-foreground">Não recebeu?</p>
+          <ul className="list-disc pl-4 space-y-0.5">
+            <li>Verifique a pasta de <b>spam</b> ou <b>promoções</b>.</li>
+            <li>Confirme se digitou o e-mail correto.</li>
+            <li>O link pode levar até 1 minuto para chegar.</li>
+          </ul>
+        </div>
+        <div className="flex flex-col gap-2">
+          <Button type="button" variant="outline" onClick={resend} disabled={resending}>
+            {resending ? "Reenviando..." : "Reenviar e-mail de confirmação"}
+          </Button>
+          <Button type="button" variant="ghost" onClick={() => { setPendingEmail(null); onDone(); }}>
+            Já confirmei — ir para o login
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   const accepted = form.watch("accept_terms");
   return (
     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <Alert>
+        <MailCheck className="h-4 w-4" />
+        <AlertDescription className="text-xs">
+          Após criar sua conta, você receberá um <b>e-mail de confirmação</b>. É preciso clicar no link para ativar o acesso.
+        </AlertDescription>
+      </Alert>
       <div className="space-y-2">
         <Label htmlFor="full_name">Nome completo</Label>
         <Input id="full_name" {...form.register("full_name")} />
