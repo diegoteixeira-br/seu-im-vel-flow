@@ -75,15 +75,38 @@ function AuthPage() {
 
 function SignInForm() {
   const navigate = useNavigate();
+  const [needsConfirm, setNeedsConfirm] = useState<string | null>(null);
+  const [resending, setResending] = useState(false);
   const form = useForm<z.infer<typeof signInSchema>>({
     resolver: zodResolver(signInSchema),
     defaultValues: { email: "", password: "" },
   });
   const onSubmit = async (values: z.infer<typeof signInSchema>) => {
+    setNeedsConfirm(null);
     const { error } = await supabase.auth.signInWithPassword(values);
-    if (error) { toast.error("Falha no login: " + error.message); return; }
+    if (error) {
+      const msg = (error.message || "").toLowerCase();
+      if (msg.includes("not confirmed") || msg.includes("email not confirmed")) {
+        setNeedsConfirm(values.email);
+        return;
+      }
+      toast.error("Falha no login: " + error.message);
+      return;
+    }
     toast.success("Bem-vindo de volta!");
     navigate({ to: "/dashboard" });
+  };
+  const resend = async () => {
+    if (!needsConfirm) return;
+    setResending(true);
+    const { error } = await supabase.auth.resend({
+      type: "signup",
+      email: needsConfirm,
+      options: { emailRedirectTo: `${window.location.origin}/dashboard` },
+    });
+    setResending(false);
+    if (error) { toast.error(error.message); return; }
+    toast.success("Enviamos um novo link de confirmação para " + needsConfirm);
   };
   return (
     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
