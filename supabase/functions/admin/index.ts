@@ -3,6 +3,8 @@
 // Ações: metrics | list_users | set_plan | toggle_active | toggle_admin | send_broadcast
 // deno-lint-ignore-file no-explicit-any
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { sendEmail } from "../_shared/resend.ts";
+import { broadcastEmail } from "../_shared/email-templates.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -115,19 +117,41 @@ Deno.serve(async (req) => {
       if (!subject || !body || !["all", "free", "investidor", "imobiliaria"].includes(targetPlan)) {
         return json({ error: "Invalid payload" }, 400);
       }
-      let query = sb.from("profiles").select("id", { count: "exact", head: true });
-      if (targetPlan !== "all") query = query.eq("plan", targetPlan);
-      const { count } = await query;
-      const { error } = await sb.from("admin_email_log").insert({
+      const SERVICE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+      if (!SERVICE) return json({ error: "Service role not configured" }, 500);
+      const admin = createClient(SUPABASE_URL, SERVICE, {
+        auth: { autoRefreshToken: false, persistSession: false },
+      });
+
+      // Buscar destinatários
+      let profQ = admin.from("profiles").select("id, full_name, plan");
+      if (targetPlan !== "all") profQ = profQ.eq("plan", targetPlan);
+      const { data: profs, error: pErr } = await profQ;
+      if (pErr) throw pErr;
+
+      // Resolver e-mails via auth.users em paralelo controlado
+      const html = broadcastEmail(subject, body);
+      let sent = 0; let failed = 0; const errs: string[] = [];
+      for (const p of profs ?? []) {
+        try {
+          const { data: u } = await admin.auth.admin.getUserById(p.id);
+          const email = u?.user?.email;
+          if (!email) { failed++; continue; }
+          const r = await sendEmail({ to: email, subject, html });
+          if (r.error) { failed++; errs.push(r.error); } else { sent++; }
+        } catch (e) { failed++; errs.push((e as Error).message); }
+      }
+
+      await admin.from("admin_email_log").insert({
         subject, body, target_plan: targetPlan,
-        recipients_count: count ?? 0, sent_by: userId, status: "queued",
+        recipients_count: sent, sent_by: userId,
+        status: failed === 0 ? "sent" : (sent === 0 ? "failed" : "partial"),
       });
-      if (error) throw error;
-      await sb.from("admin_logs").insert({
+      await admin.from("admin_logs").insert({
         user_id: userId, action: "send_broadcast",
-        details: { subject, target: targetPlan, count },
+        details: { subject, target: targetPlan, sent, failed, errors: errs.slice(0, 5) },
       });
-      return json({ ok: true, recipients: count ?? 0 });
+      return json({ ok: true, recipients: sent, failed });
     }
 
     return json({ error: `Unknown action: ${action}` }, 400);
