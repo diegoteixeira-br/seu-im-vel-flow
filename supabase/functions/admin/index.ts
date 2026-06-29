@@ -214,7 +214,41 @@ Deno.serve(async (req) => {
       return json({ ok: true, text });
     }
 
+    if (action === "legal_ai_edit") {
+      const { slug, currentContent, instruction } = payload;
+      if (!["termos", "privacidade"].includes(slug)) return json({ error: "slug inválido" }, 400);
+      if (!instruction || typeof instruction !== "string") return json({ error: "instruction obrigatória" }, 400);
+      const LOVABLE_KEY = Deno.env.get("LOVABLE_API_KEY");
+      if (!LOVABLE_KEY) return json({ error: "LOVABLE_API_KEY ausente" }, 500);
+
+      const titulo = slug === "termos" ? "Termos de Uso" : "Política de Privacidade";
+      const sys = `Você é um assistente jurídico que edita o documento "${titulo}" da plataforma AlugaFlow (SaaS de gestão imobiliária no Brasil). Mantenha conformidade com LGPD e legislação brasileira. Devolva SEMPRE o documento INTEIRO atualizado em HTML simples (use apenas <h2>, <h3>, <p>, <ul>, <li>, <strong>, <em>, <a>). Não use markdown, não envolva em <html> ou <body>, não inclua comentários, não use blocos de código. Preserve numeração e estrutura existente, alterando apenas o que foi pedido.`;
+      const userMsg = `Conteúdo atual (HTML):\n"""\n${currentContent ?? ""}\n"""\n\nInstrução do administrador:\n"""\n${instruction}\n"""\n\nResponda apenas com o HTML final completo do documento.`;
+
+      const aiRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${LOVABLE_KEY}` },
+        body: JSON.stringify({
+          model: "google/gemini-2.5-flash",
+          messages: [{ role: "system", content: sys }, { role: "user", content: userMsg }],
+          temperature: 0.3,
+        }),
+      });
+      if (aiRes.status === 429) return json({ error: "Limite de uso da IA atingido. Tente novamente em instantes." }, 429);
+      if (aiRes.status === 402) return json({ error: "Créditos de IA esgotados. Adicione créditos no workspace." }, 402);
+      if (!aiRes.ok) {
+        const t = await aiRes.text();
+        return json({ error: `IA falhou: ${aiRes.status} ${t.slice(0, 200)}` }, 500);
+      }
+      const aiData = await aiRes.json();
+      let text = aiData?.choices?.[0]?.message?.content?.trim?.() ?? "";
+      // strip eventual fences
+      text = text.replace(/^```(?:html)?\s*/i, "").replace(/\s*```$/i, "").trim();
+      return json({ ok: true, content: text });
+    }
+
     return json({ error: `Unknown action: ${action}` }, 400);
+
   } catch (e: any) {
     console.error("[admin]", action, e?.message ?? e);
     return json({ error: e?.message ?? "Internal error" }, 500);
