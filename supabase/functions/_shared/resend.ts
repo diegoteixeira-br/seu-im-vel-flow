@@ -1,12 +1,20 @@
 // Helper compartilhado para envio via Resend.
 // Lê RESEND_API_KEY e RESEND_FROM_EMAIL do ambiente.
 
+export type EmailAttachment = {
+  filename: string;
+  content: string; // base64
+  content_id?: string; // para imagens inline via cid:
+  content_type?: string;
+};
+
 export type SendArgs = {
   to: string | string[];
   subject: string;
   html: string;
   replyTo?: string;
   from?: string;
+  attachments?: EmailAttachment[];
 };
 
 export async function sendEmail(args: SendArgs): Promise<{ id?: string; error?: string }> {
@@ -14,13 +22,17 @@ export async function sendEmail(args: SendArgs): Promise<{ id?: string; error?: 
   const defaultFrom = Deno.env.get("RESEND_FROM_EMAIL") || "AlugaFlow <onboarding@resend.dev>";
   if (!key) return { error: "RESEND_API_KEY ausente" };
 
-  const body = {
+  const body: Record<string, unknown> = {
     from: args.from || defaultFrom,
     to: Array.isArray(args.to) ? args.to : [args.to],
     subject: args.subject,
     html: args.html,
     reply_to: args.replyTo,
   };
+  if (args.attachments && args.attachments.length > 0) {
+    body.attachments = args.attachments;
+  }
+
 
   try {
     const res = await fetch("https://api.resend.com/emails", {
