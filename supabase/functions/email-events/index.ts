@@ -8,8 +8,9 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { sendEmail } from "../_shared/resend.ts";
 import {
-  welcomeEmail, leadNotificationEmail, paymentReceiptEmail,
+  welcomeEmail, leadNotificationEmail, paymentReceiptEmail, LOGO_ATTACHMENT,
 } from "../_shared/email-templates.ts";
+
 
 const cors = {
   "Access-Control-Allow-Origin": "*",
@@ -49,7 +50,7 @@ Deno.serve(async (req) => {
       const email = u?.user?.email;
       if (!email) return json({ skipped: "no email" });
       const tpl = welcomeEmail(rec.full_name || "");
-      const r = await sendEmail({ to: email, ...tpl });
+      const r = await sendEmail({ to: email, ...tpl, attachments: [LOGO_ATTACHMENT] });
       return json({ ok: true, kind: "welcome", id: r.id, error: r.error });
     }
 
@@ -74,7 +75,7 @@ Deno.serve(async (req) => {
         propertyTitle,
         message: rec.message || rec.notes || "",
       });
-      const r = await sendEmail({ to: ownerEmail, ...tpl, replyTo: rec.email || undefined });
+      const r = await sendEmail({ to: ownerEmail, ...tpl, replyTo: rec.email || undefined, attachments: [LOGO_ATTACHMENT] });
       return json({ ok: true, kind: "lead", id: r.id, error: r.error });
     }
 
@@ -97,7 +98,7 @@ Deno.serve(async (req) => {
         referenceMonth: rec.reference_month,
         paidAt: rec.paid_at || new Date().toISOString(),
       });
-      const r = await sendEmail({ to: tenant.email, ...tpl });
+      const r = await sendEmail({ to: tenant.email, ...tpl, attachments: [LOGO_ATTACHMENT] });
       if (r.id) await sb.from("payments").update({ receipt_sent_at: new Date().toISOString() }).eq("id", rec.id);
       return json({ ok: true, kind: "receipt", id: r.id, error: r.error });
     }

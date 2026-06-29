@@ -6,7 +6,7 @@
 // deno-lint-ignore-file no-explicit-any
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { sendEmail } from "../_shared/resend.ts";
-import { paymentReminderEmail, paymentOverdueEmail } from "../_shared/email-templates.ts";
+import { paymentReminderEmail, paymentOverdueEmail, LOGO_ATTACHMENT } from "../_shared/email-templates.ts";
 
 const cors = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "*" };
 
@@ -59,7 +59,7 @@ Deno.serve(async (req) => {
         tenantName: tenant.full_name || "",
         amount: Number(p.amount), dueDate: p.due_date, invoiceUrl: p.asaas_invoice_url || undefined,
       });
-      const r = await sendEmail({ to: tenant.email, ...tpl });
+      const r = await sendEmail({ to: tenant.email, ...tpl, attachments: [LOGO_ATTACHMENT] });
       if (r.error) { errors.push(`reminder ${p.id}: ${r.error}`); continue; }
       await sb.from("payments").update({ reminder_sent_at: new Date().toISOString() }).eq("id", p.id);
       remindersSent++;
@@ -80,7 +80,7 @@ Deno.serve(async (req) => {
       amount: Number(p.amount), dueDate: p.due_date, invoiceUrl: p.asaas_invoice_url || undefined,
       daysLate: daysBetween(today, p.due_date),
     });
-    const r = await sendEmail({ to: tenant.email, ...tpl });
+    const r = await sendEmail({ to: tenant.email, ...tpl, attachments: [LOGO_ATTACHMENT] });
     if (r.error) { errors.push(`overdue ${p.id}: ${r.error}`); continue; }
     await sb.from("payments").update({ overdue_notice_sent_at: new Date().toISOString() }).eq("id", p.id);
     overdueSent++;
