@@ -75,3 +75,10 @@ export async function adminAiCompose(args: {
 }) {
   return invoke<{ ok: true; text: string }>({ action: "ai_compose", ...args.data });
 }
+
+export async function adminLegalAiEdit(args: {
+  data: { slug: "termos" | "privacidade"; currentContent: string; instruction: string };
+}) {
+  return invoke<{ ok: true; content: string }>({ action: "legal_ai_edit", ...args.data });
+}
+

@@ -40,6 +40,7 @@ import { Route as AuthenticatedMinhaContaPlanoRouteImport } from './routes/_auth
 import { Route as AuthenticatedAdminUsuariosRouteImport } from './routes/_authenticated/admin.usuarios'
 import { Route as AuthenticatedAdminPlanosRouteImport } from './routes/_authenticated/admin.planos'
 import { Route as AuthenticatedAdminPagamentosRouteImport } from './routes/_authenticated/admin.pagamentos'
+import { Route as AuthenticatedAdminLegaisRouteImport } from './routes/_authenticated/admin.legais'
 import { Route as AuthenticatedAdminFinanceiroRouteImport } from './routes/_authenticated/admin.financeiro'
 import { Route as AuthenticatedAdminEmailsRouteImport } from './routes/_authenticated/admin.emails'
 import { Route as AuthenticatedAdminBlogRouteImport } from './routes/_authenticated/admin.blog'
@@ -204,6 +205,12 @@ const AuthenticatedAdminPagamentosRoute =
     path: '/pagamentos',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
+const AuthenticatedAdminLegaisRoute =
+  AuthenticatedAdminLegaisRouteImport.update({
+    id: '/legais',
+    path: '/legais',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const AuthenticatedAdminFinanceiroRoute =
   AuthenticatedAdminFinanceiroRouteImport.update({
     id: '/financeiro',
@@ -251,6 +258,7 @@ export interface FileRoutesByFullPath {
   '/admin/blog': typeof AuthenticatedAdminBlogRoute
   '/admin/emails': typeof AuthenticatedAdminEmailsRoute
   '/admin/financeiro': typeof AuthenticatedAdminFinanceiroRoute
+  '/admin/legais': typeof AuthenticatedAdminLegaisRoute
   '/admin/pagamentos': typeof AuthenticatedAdminPagamentosRoute
   '/admin/planos': typeof AuthenticatedAdminPlanosRoute
   '/admin/usuarios': typeof AuthenticatedAdminUsuariosRoute
@@ -283,6 +291,7 @@ export interface FileRoutesByTo {
   '/admin/blog': typeof AuthenticatedAdminBlogRoute
   '/admin/emails': typeof AuthenticatedAdminEmailsRoute
   '/admin/financeiro': typeof AuthenticatedAdminFinanceiroRoute
+  '/admin/legais': typeof AuthenticatedAdminLegaisRoute
   '/admin/pagamentos': typeof AuthenticatedAdminPagamentosRoute
   '/admin/planos': typeof AuthenticatedAdminPlanosRoute
   '/admin/usuarios': typeof AuthenticatedAdminUsuariosRoute
@@ -320,6 +329,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/blog': typeof AuthenticatedAdminBlogRoute
   '/_authenticated/admin/emails': typeof AuthenticatedAdminEmailsRoute
   '/_authenticated/admin/financeiro': typeof AuthenticatedAdminFinanceiroRoute
+  '/_authenticated/admin/legais': typeof AuthenticatedAdminLegaisRoute
   '/_authenticated/admin/pagamentos': typeof AuthenticatedAdminPagamentosRoute
   '/_authenticated/admin/planos': typeof AuthenticatedAdminPlanosRoute
   '/_authenticated/admin/usuarios': typeof AuthenticatedAdminUsuariosRoute
@@ -357,6 +367,7 @@ export interface FileRouteTypes {
     | '/admin/blog'
     | '/admin/emails'
     | '/admin/financeiro'
+    | '/admin/legais'
     | '/admin/pagamentos'
     | '/admin/planos'
     | '/admin/usuarios'
@@ -389,6 +400,7 @@ export interface FileRouteTypes {
     | '/admin/blog'
     | '/admin/emails'
     | '/admin/financeiro'
+    | '/admin/legais'
     | '/admin/pagamentos'
     | '/admin/planos'
     | '/admin/usuarios'
@@ -425,6 +437,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/blog'
     | '/_authenticated/admin/emails'
     | '/_authenticated/admin/financeiro'
+    | '/_authenticated/admin/legais'
     | '/_authenticated/admin/pagamentos'
     | '/_authenticated/admin/planos'
     | '/_authenticated/admin/usuarios'
@@ -665,6 +678,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminPagamentosRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/legais': {
+      id: '/_authenticated/admin/legais'
+      path: '/legais'
+      fullPath: '/admin/legais'
+      preLoaderRoute: typeof AuthenticatedAdminLegaisRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/admin/financeiro': {
       id: '/_authenticated/admin/financeiro'
       path: '/financeiro'
@@ -693,6 +713,7 @@ interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminBlogRoute: typeof AuthenticatedAdminBlogRoute
   AuthenticatedAdminEmailsRoute: typeof AuthenticatedAdminEmailsRoute
   AuthenticatedAdminFinanceiroRoute: typeof AuthenticatedAdminFinanceiroRoute
+  AuthenticatedAdminLegaisRoute: typeof AuthenticatedAdminLegaisRoute
   AuthenticatedAdminPagamentosRoute: typeof AuthenticatedAdminPagamentosRoute
   AuthenticatedAdminPlanosRoute: typeof AuthenticatedAdminPlanosRoute
   AuthenticatedAdminUsuariosRoute: typeof AuthenticatedAdminUsuariosRoute
@@ -703,6 +724,7 @@ const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminBlogRoute: AuthenticatedAdminBlogRoute,
   AuthenticatedAdminEmailsRoute: AuthenticatedAdminEmailsRoute,
   AuthenticatedAdminFinanceiroRoute: AuthenticatedAdminFinanceiroRoute,
+  AuthenticatedAdminLegaisRoute: AuthenticatedAdminLegaisRoute,
   AuthenticatedAdminPagamentosRoute: AuthenticatedAdminPagamentosRoute,
   AuthenticatedAdminPlanosRoute: AuthenticatedAdminPlanosRoute,
   AuthenticatedAdminUsuariosRoute: AuthenticatedAdminUsuariosRoute,
