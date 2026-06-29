@@ -142,14 +142,17 @@ Deno.serve(async (req) => {
         profs = data ?? [];
       }
 
-      const html = broadcastEmail(subject, body);
+      const html0 = broadcastEmail(subject, body); void html0;
       let sent = 0; let failed = 0; const errs: string[] = [];
       for (const p of profs) {
         try {
           const { data: u } = await admin.auth.admin.getUserById(p.id);
           const email = u?.user?.email;
           if (!email) { failed++; continue; }
-          const r = await sendEmail({ to: email, subject, html });
+          const vars = { name: p.full_name, email, plan: p.plan };
+          const personalSubject = personalize(subject, vars);
+          const personalHtml = broadcastEmail(personalSubject, body, vars);
+          const r = await sendEmail({ to: email, subject: personalSubject, html: personalHtml });
           if (r.error) { failed++; errs.push(r.error); } else { sent++; }
         } catch (e) { failed++; errs.push((e as Error).message); }
       }
