@@ -315,6 +315,49 @@ function SignUpForm({ onDone }: { onDone: () => void }) {
         {form.formState.errors.full_name && <p className="text-xs text-destructive">{form.formState.errors.full_name.message}</p>}
       </div>
       <div className="space-y-2">
+        <Label>Tipo de perfil</Label>
+        <div className="grid grid-cols-2 gap-2">
+          {([
+            { v: "owner", label: "Proprietário Direto", desc: "Administro meus imóveis" },
+            { v: "broker", label: "Corretor/Imobiliária", desc: "Atuo profissionalmente" },
+          ] as const).map((opt) => (
+            <button
+              type="button"
+              key={opt.v}
+              onClick={() => form.setValue("profile_type", opt.v, { shouldValidate: true })}
+              className={`rounded-md border p-3 text-left text-xs transition ${profileType === opt.v ? "border-primary bg-primary/5" : "hover:bg-muted/50"}`}
+            >
+              <div className="text-sm font-medium">{opt.label}</div>
+              <div className="text-muted-foreground">{opt.desc}</div>
+            </button>
+          ))}
+        </div>
+        {form.formState.errors.profile_type && <p className="text-xs text-destructive">{form.formState.errors.profile_type.message as string}</p>}
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="document">CPF ou CNPJ</Label>
+        <Input
+          id="document"
+          inputMode="numeric"
+          placeholder="000.000.000-00 ou 00.000.000/0000-00"
+          value={documentValue}
+          onChange={(e) => {
+            const digits = onlyDigits(e.target.value);
+            const masked = digits.length > 11 ? maskCNPJ(digits) : maskCPF(digits);
+            form.setValue("document", masked, { shouldValidate: true });
+          }}
+        />
+        <p className="text-[11px] text-muted-foreground">{docIsCNPJ ? "Formato CNPJ" : "Formato CPF"} — usado para verificação anti-fraude.</p>
+        {form.formState.errors.document && <p className="text-xs text-destructive">{form.formState.errors.document.message}</p>}
+      </div>
+      {profileType === "broker" && (
+        <div className="space-y-2">
+          <Label htmlFor="creci">CRECI</Label>
+          <Input id="creci" placeholder="Ex.: 123456-F/SP" {...form.register("creci")} />
+          {form.formState.errors.creci && <p className="text-xs text-destructive">{form.formState.errors.creci.message as string}</p>}
+        </div>
+      )}
+      <div className="space-y-2">
         <Label htmlFor="email2">E-mail</Label>
         <Input id="email2" type="email" autoComplete="email" {...form.register("email")} />
         {form.formState.errors.email && <p className="text-xs text-destructive">{form.formState.errors.email.message}</p>}
