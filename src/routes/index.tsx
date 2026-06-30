@@ -5,6 +5,10 @@ import { PublicListings } from "@/components/public-listings";
 import { PublicFooter, PublicHeader } from "./anuncios";
 import { listPublishedPosts } from "@/lib/posts.functions";
 import { formatDateBR } from "@/lib/blog-utils";
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
+import Autoplay from "embla-carousel-autoplay";
+import { useRef } from "react";
+
 
 export const Route = createFileRoute("/")({
   head: () => ({
