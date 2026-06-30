@@ -62,22 +62,33 @@ function Landing() {
               </div>
               <Link to="/blog" className="text-sm font-medium text-primary hover:underline">Ver todas →</Link>
             </div>
-            <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {latest.map((p) => (
-                <Link key={p.id} to="/blog/$slug" params={{ slug: p.slug }} className="group overflow-hidden rounded-lg border bg-card transition hover:shadow-md">
-                  {p.cover_image_url && (
-                    <div className="aspect-[16/10] overflow-hidden bg-muted">
-                      <img src={p.cover_image_url} alt={p.title} loading="lazy" className="h-full w-full object-cover transition group-hover:scale-105" />
-                    </div>
-                  )}
-                  <div className="p-4">
-                    <h3 className="line-clamp-2 font-semibold leading-tight">{p.title}</h3>
-                    <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">{p.excerpt}</p>
-                    <p className="mt-3 text-xs text-muted-foreground">{formatDateBR(p.created_at)}</p>
-                  </div>
-                </Link>
-              ))}
-            </div>
+            <Carousel
+              opts={{ align: "start", loop: true }}
+              plugins={[autoplay.current]}
+              className="mt-6"
+            >
+              <CarouselContent className="-ml-4">
+                {latest.map((p) => (
+                  <CarouselItem key={p.id} className="pl-4 sm:basis-1/2 lg:basis-1/3">
+                    <Link to="/blog/$slug" params={{ slug: p.slug }} className="group block h-full overflow-hidden rounded-lg border bg-card transition hover:shadow-md">
+                      {p.cover_image_url && (
+                        <div className="aspect-[16/10] overflow-hidden bg-muted">
+                          <img src={p.cover_image_url} alt={p.title} loading="lazy" className="h-full w-full object-cover transition group-hover:scale-105" />
+                        </div>
+                      )}
+                      <div className="p-4">
+                        <h3 className="line-clamp-2 font-semibold leading-tight">{p.title}</h3>
+                        <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">{p.excerpt}</p>
+                        <p className="mt-3 text-xs text-muted-foreground">{formatDateBR(p.created_at)}</p>
+                      </div>
+                    </Link>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <CarouselPrevious className="hidden sm:flex" />
+              <CarouselNext className="hidden sm:flex" />
+            </Carousel>
+
           </div>
         </section>
       )}
