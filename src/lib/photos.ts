@@ -5,12 +5,25 @@ export const PHOTO_BUCKET = "property-photos";
 export const PHOTO_CATEGORIES = [
   "fachada",
   "sala",
+  "sala_jantar",
   "quarto",
+  "suite",
   "cozinha",
+  "cozinha_americana",
   "banheiro",
+  "lavabo",
+  "area_servico",
   "area_externa",
+  "varanda",
+  "garagem",
+  "quintal",
+  "piscina",
+  "churrasqueira",
+  "escritorio",
+  "closet",
   "vistoria_entrada",
   "vistoria_saida",
+  "outro",
 ] as const;
 
 export type PhotoCategory = (typeof PHOTO_CATEGORIES)[number];
@@ -18,15 +31,28 @@ export type PhotoCategory = (typeof PHOTO_CATEGORIES)[number];
 export const CATEGORY_LABEL: Record<PhotoCategory, string> = {
   fachada: "Fachada",
   sala: "Sala",
+  sala_jantar: "Sala de Jantar",
   quarto: "Quarto",
+  suite: "Suíte",
   cozinha: "Cozinha",
+  cozinha_americana: "Cozinha Americana",
   banheiro: "Banheiro",
+  lavabo: "Lavabo",
+  area_servico: "Área de Serviço",
   area_externa: "Área Externa",
+  varanda: "Varanda / Sacada",
+  garagem: "Garagem",
+  quintal: "Quintal",
+  piscina: "Piscina",
+  churrasqueira: "Churrasqueira",
+  escritorio: "Escritório",
+  closet: "Closet",
   vistoria_entrada: "Vistoria Entrada",
   vistoria_saida: "Vistoria Saída",
+  outro: "Outro",
 };
 
-export const MAX_PHOTOS_PER_PROPERTY = 20;
+export const MAX_PHOTOS_PER_PROPERTY = 30;
 
 export async function uploadPropertyPhoto(params: {
   userId: string;
