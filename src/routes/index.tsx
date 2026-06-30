@@ -31,8 +31,10 @@ export const Route = createFileRoute("/")({
 
 function Landing() {
   useAuth();
-  const { data } = useQuery({ queryKey: ["latest-posts"], queryFn: () => listPublishedPosts({ data: { limit: 3 } }) });
+  const { data } = useQuery({ queryKey: ["latest-posts-carousel"], queryFn: () => listPublishedPosts({ data: { limit: 9 } }) });
   const latest = data?.rows ?? [];
+  const autoplay = useRef(Autoplay({ delay: 4500, stopOnInteraction: false, stopOnMouseEnter: true }));
+
 
   return (
     <div className="min-h-screen bg-background">
