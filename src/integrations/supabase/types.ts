@@ -1218,6 +1218,19 @@ export type Database = {
         | "area_externa"
         | "vistoria_entrada"
         | "vistoria_saida"
+        | "sala_jantar"
+        | "suite"
+        | "cozinha_americana"
+        | "lavabo"
+        | "area_servico"
+        | "varanda"
+        | "garagem"
+        | "quintal"
+        | "piscina"
+        | "churrasqueira"
+        | "escritorio"
+        | "closet"
+        | "outro"
       property_status: "disponivel" | "alugado" | "manutencao" | "inativo"
       property_type:
         | "apartamento"
@@ -1385,6 +1398,19 @@ export const Constants = {
         "area_externa",
         "vistoria_entrada",
         "vistoria_saida",
+        "sala_jantar",
+        "suite",
+        "cozinha_americana",
+        "lavabo",
+        "area_servico",
+        "varanda",
+        "garagem",
+        "quintal",
+        "piscina",
+        "churrasqueira",
+        "escritorio",
+        "closet",
+        "outro",
       ],
       property_status: ["disponivel", "alugado", "manutencao", "inativo"],
       property_type: [

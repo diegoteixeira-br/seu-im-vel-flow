@@ -1,0 +1,13 @@
+ALTER TYPE public.photo_category ADD VALUE IF NOT EXISTS 'sala_jantar';
+ALTER TYPE public.photo_category ADD VALUE IF NOT EXISTS 'suite';
+ALTER TYPE public.photo_category ADD VALUE IF NOT EXISTS 'cozinha_americana';
+ALTER TYPE public.photo_category ADD VALUE IF NOT EXISTS 'lavabo';
+ALTER TYPE public.photo_category ADD VALUE IF NOT EXISTS 'area_servico';
+ALTER TYPE public.photo_category ADD VALUE IF NOT EXISTS 'varanda';
+ALTER TYPE public.photo_category ADD VALUE IF NOT EXISTS 'garagem';
+ALTER TYPE public.photo_category ADD VALUE IF NOT EXISTS 'quintal';
+ALTER TYPE public.photo_category ADD VALUE IF NOT EXISTS 'piscina';
+ALTER TYPE public.photo_category ADD VALUE IF NOT EXISTS 'churrasqueira';
+ALTER TYPE public.photo_category ADD VALUE IF NOT EXISTS 'escritorio';
+ALTER TYPE public.photo_category ADD VALUE IF NOT EXISTS 'closet';
+ALTER TYPE public.photo_category ADD VALUE IF NOT EXISTS 'outro';
